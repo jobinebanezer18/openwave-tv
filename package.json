@@ -1,0 +1,20 @@
+{
+  "name": "openwave-tv",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test src/*.test.js"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.3.1",
+    "hls.js": "^1.6.13",
+    "lucide": "^0.468.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  }
+}

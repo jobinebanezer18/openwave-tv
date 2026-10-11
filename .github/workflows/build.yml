@@ -1,0 +1,56 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: npm ci
+      - run: npm run build
+      - run: go test ./...
+      - run: npm test
+      - run: npm audit --audit-level=moderate
+      - name: Build downloads
+        run: |
+          mkdir -p release
+          for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64; do
+            os="${target%/*}"
+            arch="${target#*/}"
+            name="openwave-tv-${os}-${arch}"
+            extension=""
+            if [ "$os" = windows ]; then extension=".exe"; fi
+            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath -ldflags='-s -w' -o "release/${name}${extension}" .
+            if [ "$os" = windows ]; then
+              (cd release && zip "${name}.zip" "${name}.exe")
+              rm "release/${name}.exe"
+            else
+              (cd release && tar -czf "${name}.tar.gz" "$name")
+              rm "release/$name"
+            fi
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openwave-tv-downloads
+          path: release/*
+      - name: Publish tagged release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" release/* --generate-notes
