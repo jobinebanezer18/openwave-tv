@@ -1,106 +1,289 @@
 import Hls from 'hls.js';
+import { animate, stagger } from 'motion';
 import { inferCategory, rankChannels, parseQuery } from './search.js';
+import { mountRadioMode } from './radio.js';
+import { createOnboarding } from './onboarding.js';
 import './style.css';
 
 const app = document.querySelector('#app');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const categories = ['all', 'news', 'sports', 'movies', 'music', 'kids', 'documentary', 'entertainment', 'education', 'cooking', 'travel', 'religious', 'business', 'culture', 'general'];
+const quickCategories = categories.slice(0, 6);
 const state = {
   channels: [], countries: [], languages: [], results: [], selected: null, hls: null,
   search: '', category: 'all', country: 'all', language: 'all', favoritesOnly: false,
-  favorites: new Set(JSON.parse(localStorage.getItem('openwave-favorites') || '[]')),
-  aiCategory: null, searchSerial: 0, playSerial: 0, sourceCount: 0, sourceAttempt: 0
+  favorites: new Set(readStore('openwave-favorites', [])),
+  recent: readStore('openwave-recent', []),
+  aiCategory: null, searchSerial: 0, playSerial: 0, sourceCount: 0, sourceAttempt: 0,
+  filterTimer: null, tuneAnimation: null, tuneTimer: null, unavailable: readStore('openwave-unavailable', {})
 };
 
-const icon = (name, size = 20) => {
+function readStore(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key) || 'null') || fallback; }
+  catch { return fallback; }
+}
+
+const glyph = (name, size = 20) => {
   const paths = {
     play: '<path d="m8 5 11 7-11 7V5Z"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/>',
-    spark: '<path d="m12 2 1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z"/><path d="m19 17 .6 1.4L21 19l-1.4.6L19 21l-.6-1.4L17 19l1.4-.6L19 17Z"/>',
     heart: '<path d="M20.8 8.4c0 4.7-8.8 10.5-8.8 10.5S3.2 13.1 3.2 8.4a4.3 4.3 0 0 1 8.8-1.1 4.3 4.3 0 0 1 8.8 1.1Z"/>',
     globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.7 2.5 4 5.5 4 9s-1.3 6.5-4 9c-2.7-2.5-4-5.5-4-9s1.3-6.5 4-9Z"/>',
     refresh: '<path d="M20 11a8 8 0 1 0-2.2 6.7M20 4v7h-7"/>',
     chevron: '<path d="m9 18 6-6-6-6"/>',
     tv: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 22h8M12 19v3"/>',
     arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
-    close: '<path d="M5 5l14 14M19 5 5 19"/>'
+    expand: '<path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/>',
+    signal: '<path d="M2 17h2l2-9 3 13 3-17 3 13 2-5 2 5h3"/>',
+    sliders: '<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2"/><circle cx="16" cy="17" r="2"/>'
   };
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
 };
-
-const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
-const categories = ['all','news','sports','movies','music','kids','documentary','entertainment','education','cooking','travel','religious','business','culture','general'];
+const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const titleCase = value => value === 'all' ? 'All' : value[0].toUpperCase() + value.slice(1);
 
 app.innerHTML = `
   <div class="app-shell">
-    <header class="topbar"><div class="brand">${icon('tv',21)} <strong>OPENWAVE</strong><span>TV</span></div><div class="topbar-right"><span class="local-badge"><i></i> LOCAL PLAYER</span><a href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${icon('arrow',15)}</a></div></header>
-    <div class="layout">
-      <aside class="guide" aria-label="Channel guide">
-        <div class="guide-head"><div><h1>Channels</h1><p id="result-summary">Loading guide…</p></div><button id="favorites-filter" class="favorites-filter" aria-pressed="false" title="Show favorites">${icon('heart',17)}<span class="favorite-count"></span></button></div>
-        <form id="search-form" class="search-box"><label class="sr-only" for="search-input">Search channels</label>${icon('search',18)}<input id="search-input" type="search" placeholder="Name, place, or what to watch" autocomplete="off"><button type="submit" aria-label="Search with AI" title="Search with AI">AI</button></form>
-        <div class="ai-hint" id="ai-hint">Press Enter to search by meaning. Model runs locally.</div>
-        <div class="filters"><div><label for="country-filter">Country</label><select id="country-filter" aria-label="Filter by country"><option value="all">All countries</option></select></div><div><label for="language-filter">Language</label><select id="language-filter" aria-label="Filter by language"><option value="all">All languages</option></select></div></div>
-        <div class="category-field"><label for="category-filter">Category</label><select id="category-filter" aria-label="Filter by category"></select></div>
-        <div class="list-heading"><span>Available channels</span><span id="list-count"></span></div>
-        <div class="channel-list" id="channel-list" aria-live="polite"></div>
-        <button id="show-more" class="show-more" hidden>Show more ${icon('chevron',16)}</button>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="OpenWave TV home"><span class="brand-emblem">${glyph('signal', 23)}</span><span>OPENWAVE</span></a>
+      <nav class="top-nav" aria-label="Primary"><button id="nav-home" class="active">Home</button><button id="nav-guide">Channels</button><button id="nav-radio">Radio</button><button id="nav-favorites">Favorites</button></nav>
+      <div class="topbar-actions"><a class="github-link" href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${glyph('arrow', 15)}</a><button id="mobile-radio" class="mobile-radio">Radio</button><button id="preferences-button" class="preferences-button" aria-label="Preferences" title="Preferences">${glyph('sliders', 18)}</button><button id="header-guide" class="topbar-guide">Watch now <span>↗</span></button></div>
+    </header>
+    <main class="layout" id="top" data-tv-layout>
+      <div class="stage-column">
+        <div class="stage-heading"><div><h1>THE WORLD IS LIVE.<br><span>JUST TUNE IN.</span></h1></div><span id="stage-count" class="stage-count">Connecting to the guide…</span></div>
+        <section class="player-shell" id="player-shell" aria-label="Live player" tabindex="-1">
+          <video id="video" controls playsinline preload="none"></video>
+          <div id="player-cover" class="player-cover">
+            <svg class="signal-graphic" viewBox="0 0 1200 680" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="M-90 460C190 60 430 720 710 310S1120 10 1310 430"/><path d="M-90 510C190 110 430 770 710 360S1120 60 1310 480"/><path d="M-90 560C190 160 430 820 710 410S1120 110 1310 530"/><path d="M-90 610C190 210 430 870 710 460S1120 160 1310 580"/></svg>
+            <div class="cover-content"><h2>ALL THE WORLD.<br><em>ONE SCREEN.</em></h2><p>Find a channel. The live feed starts here.</p><button id="cover-browse" class="cover-cta">Explore live TV ${glyph('arrow', 19)}</button></div>
+            <div class="cover-footer"><span>OPENWAVE · LIVE SIGNAL</span><time id="local-clock"></time></div>
+          </div>
+          <div id="tune-overlay" class="tune-overlay" hidden>
+            <div class="tune-mark">${glyph('signal', 28)}</div>
+            <span class="tune-label">TUNING IN</span>
+            <h2 id="tune-name"></h2>
+            <p id="tune-status">Finding a live feed…</p>
+            <div class="tune-progress"><span></span></div>
+            <button id="tap-to-play" class="tap-to-play" hidden>Play channel ${glyph('play', 16)}</button>
+          </div>
+          <div class="player-live"><span class="broadcast-dot"></span> LIVE</div>
+        </section>
+        <div class="now-panel">
+          <div class="now-identity"><span class="now-label">NOW PLAYING</span><h2 id="now-title">Pick your first channel</h2><p id="now-meta">The guide is ready when you are.</p></div>
+          <div class="now-actions"><button id="favorite-button" class="stage-icon-button" aria-label="Add to favorites" title="Add to favorites" hidden>${glyph('heart', 21)}</button><button id="fullscreen-button" class="stage-icon-button" aria-label="Enter fullscreen" title="Enter fullscreen" hidden>${glyph('expand', 21)}</button></div>
+        </div>
+        <div id="player-error" class="player-error" role="alert" hidden><span id="error-text"></span><div class="player-error-actions"><button id="alternative-button" hidden></button><button id="retry-button">Retry ${glyph('refresh', 16)}</button></div></div>
+        <section class="rail-section" aria-label="Suggested channels"><div class="rail-heading"><div><h2 id="rail-title">Start watching</h2><p id="rail-subtitle">Good places to begin.</p></div><span class="rail-hint">PICK A SIGNAL →</span></div><div id="recent-rail" class="recent-rail"></div></section>
+      </div>
+      <aside class="guide" id="guide" aria-label="Channel guide">
+        <div class="guide-heading"><div><h2>Explore live</h2><p id="result-summary" aria-live="polite">Loading channels…</p></div><button id="favorites-filter" class="favorites-filter" aria-pressed="false" title="Show saved channels">${glyph('heart', 17)}<span>My channels</span><span class="favorite-count"></span></button></div>
+        <form id="search-form" class="search-box"><label class="sr-only" for="search-input">Search channels</label>${glyph('search', 19)}<input id="search-input" type="search" placeholder="Find a channel, mood, or place" autocomplete="off"><button type="submit" aria-label="Smart search using on-device MiniLM" title="Smart search using on-device MiniLM"><span class="ai-star">✦</span> Smart</button></form>
+        <p class="ai-hint" id="ai-hint">Smart search uses MiniLM on this device. First use downloads the model.</p>
+        <div class="quick-categories" id="quick-categories" role="group" aria-label="Quick category filters"></div>
+        <div class="filter-area"><button id="filter-toggle" class="filter-toggle" aria-expanded="false" aria-controls="advanced-filters">${glyph('sliders', 17)}<span>Refine channels</span><span id="filter-count" class="filter-count"></span>${glyph('chevron', 15)}</button>
+          <div id="advanced-filters" class="advanced-filters" hidden><div class="filters"><div><span class="filter-label">Country</span><button id="country-trigger" class="filter-choice" aria-haspopup="dialog">Everywhere ${glyph('chevron', 15)}</button></div><div><span class="filter-label">Language</span><button id="language-trigger" class="filter-choice" aria-haspopup="dialog">Any language ${glyph('chevron', 15)}</button></div></div><div class="category-field"><span class="filter-label">Browse category</span><button id="category-trigger" class="filter-choice" aria-haspopup="dialog">All categories ${glyph('chevron', 15)}</button></div></div></div>
+        <div class="list-heading"><span>CHANNELS</span><span id="list-count">—</span></div>
+        <div class="channel-list" id="channel-list"></div>
+        <button id="show-more" class="show-more" hidden>Show more channels ${glyph('chevron', 16)}</button>
+        <div id="filter-picker" class="filter-picker" role="dialog" aria-modal="true" aria-labelledby="picker-title" hidden><div class="picker-heading"><button id="picker-back" class="picker-back" aria-label="Back to filters">←</button><h3 id="picker-title">Choose</h3></div><label class="picker-search">${glyph('search', 19)}<span class="sr-only">Search options</span><input id="picker-search-input" type="search" placeholder="Search" autocomplete="off"></label><div id="picker-list" class="picker-list" role="listbox"></div></div>
       </aside>
-      <main class="watch" aria-label="Live player">
-        <div class="player-frame"><video id="video" controls playsinline preload="none"></video><div id="player-cover" class="player-cover">${icon('tv',46)}<h2>Select a channel</h2><p>Live TV plays here in your browser.</p></div><div class="player-live"><span></span> LIVE</div></div>
-        <div class="watch-details"><div class="now-row"><div class="now-copy"><p class="now-label">NOW PLAYING</p><h2 id="now-title">No channel selected</h2><p id="now-meta">Choose a channel from the guide.</p></div><button id="favorite-button" class="icon-button" aria-label="Add to favorites" title="Add to favorites" hidden>${icon('heart',20)}</button></div><div id="player-error" class="player-error" hidden><span id="error-text"></span><button id="retry-button">Retry ${icon('refresh',16)}</button></div></div>
-        <div class="source-note">Public links from <a href="https://github.com/iptv-org/iptv" target="_blank" rel="noopener noreferrer">iptv-org</a>, with recent health checks from <a href="https://github.com/dearbulut/iptv" target="_blank" rel="noopener noreferrer">IPTV Nexus</a>. Playback can still vary by location.</div>
-      </main>
-    </div>
+    </main>
   </div>`;
 
 const els = {
-  video: document.querySelector('#video'), cover: document.querySelector('#player-cover'), list: document.querySelector('#channel-list'),
-  result: document.querySelector('#result-summary'), count: document.querySelector('#list-count'), search: document.querySelector('#search-input'),
-  category: document.querySelector('#category-filter'), country: document.querySelector('#country-filter'), language: document.querySelector('#language-filter'), more: document.querySelector('#show-more'),
+  video: document.querySelector('#video'), shell: document.querySelector('#player-shell'), cover: document.querySelector('#player-cover'), tune: document.querySelector('#tune-overlay'),
+  tuneName: document.querySelector('#tune-name'), tuneStatus: document.querySelector('#tune-status'), tap: document.querySelector('#tap-to-play'),
+  list: document.querySelector('#channel-list'), rail: document.querySelector('#recent-rail'), railTitle: document.querySelector('#rail-title'), railSubtitle: document.querySelector('#rail-subtitle'),
+  result: document.querySelector('#result-summary'), count: document.querySelector('#list-count'), stageCount: document.querySelector('#stage-count'),
+  search: document.querySelector('#search-input'), quick: document.querySelector('#quick-categories'),
+  countryTrigger: document.querySelector('#country-trigger'), languageTrigger: document.querySelector('#language-trigger'), categoryTrigger: document.querySelector('#category-trigger'), more: document.querySelector('#show-more'),
   ai: document.querySelector('#ai-hint'), error: document.querySelector('#player-error'), errorText: document.querySelector('#error-text'),
-  title: document.querySelector('#now-title'), meta: document.querySelector('#now-meta'), favorite: document.querySelector('#favorite-button')
+  title: document.querySelector('#now-title'), meta: document.querySelector('#now-meta'), favorite: document.querySelector('#favorite-button'),
+  fullscreen: document.querySelector('#fullscreen-button'), favoritesFilter: document.querySelector('#favorites-filter'), clock: document.querySelector('#local-clock'),
+  filterToggle: document.querySelector('#filter-toggle'), advanced: document.querySelector('#advanced-filters'), filterCount: document.querySelector('#filter-count'),
+  picker: document.querySelector('#filter-picker'), pickerTitle: document.querySelector('#picker-title'), pickerSearch: document.querySelector('#picker-search-input'), pickerList: document.querySelector('#picker-list'), stageCount: document.querySelector('#stage-count')
 };
-
-let shown = 80;
-function renderCategories() {
-  els.category.innerHTML = categories.map(c => `<option value="${c}" ${state.category === c ? 'selected' : ''}>${c === 'all' ? 'All categories' : c[0].toUpperCase()+c.slice(1)}</option>`).join('');
-}
-
-function channelMarkup(ch) {
-  const selected = state.selected?.id === ch.id;
-  const favorite = state.favorites.has(ch.id);
-  return `<button class="channel-row ${selected ? 'playing' : ''}" data-id="${ch.id}" aria-label="Play ${escapeHTML(ch.name)}">
-    <span class="channel-logo">${ch.logo ? `<img src="${escapeHTML(ch.logo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : `<span>${escapeHTML(ch.name.slice(0,2).toUpperCase())}</span>`}</span>
-    <span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>${escapeHTML(countryName(ch.country))} <i>·</i> ${escapeHTML((ch.languages || []).map(languageName).slice(0,2).join(', ') || ch.categories[0] || 'TV')}</small></span>
-    ${favorite ? `<span class="row-favorite" aria-label="Favorite">${icon('heart',14)}</span>` : ''}<span class="row-play">${icon('play',16)}</span>
-  </button>`;
-}
+const alternativeButton = document.querySelector('#alternative-button');
+const radioMode = mountRadioMode();
+const onboarding = createOnboarding(preferences => {
+  state.preferences = preferences;
+  state.country = preferences.country || 'all';
+  state.language = preferences.language || 'all';
+  state.category = 'all';
+  state.search = '';
+  els.search.value = '';
+  state.aiCategory = null;
+  state.favoritesOnly = false;
+  els.favoritesFilter.classList.remove('active');
+  els.favoritesFilter.setAttribute('aria-pressed', 'false');
+  setFiltersOpen(false);
+  radioMode.hide();
+  setNavActive('nav-home');
+  radioMode.applyPreferences(preferences);
+  filterChannels(true);
+  renderRail();
+  if (window.matchMedia('(max-width: 860px)').matches) document.querySelector('#guide').scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'start' });
+});
 
 function countryName(code) { return state.countries.find(c => c.code === code)?.name || code || 'Worldwide'; }
 function languageName(code) { return state.languages.find(l => l.code === code)?.name || code; }
-function renderList() {
-  const displayed = state.results.slice(0, shown);
-  els.list.innerHTML = displayed.length ? displayed.map(channelMarkup).join('') : `<div class="empty-list"><div>${icon('search',24)}</div><strong>No channels found</strong><p>Try a broader search or choose another country.</p></div>`;
-  els.count.textContent = state.results.length.toLocaleString();
-  els.result.textContent = `${state.results.length.toLocaleString()} channels`;
-  els.more.hidden = state.results.length <= shown;
-  document.querySelector('.favorite-count').textContent = state.favorites.size || '';
+function channelMeta(ch) { return `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0, 2).join(', ') || ch.categories[0] || 'TV'}`; }
+function isUnavailable(ch) { return Date.now() - (state.unavailable[ch.id] || 0) < 30 * 60 * 1000; }
+function rememberUnavailable(ch) {
+  state.unavailable[ch.id] = Date.now();
+  localStorage.setItem('openwave-unavailable', JSON.stringify(state.unavailable));
+  filterChannels(); renderRail();
+}
+function clearUnavailable(ch) {
+  if (!state.unavailable[ch.id]) return;
+  delete state.unavailable[ch.id];
+  localStorage.setItem('openwave-unavailable', JSON.stringify(state.unavailable));
+  filterChannels(); renderRail();
+}
+function suggestAlternative(ch) {
+  return state.channels.filter(candidate => candidate.id !== ch.id && !isUnavailable(candidate) && candidate.country === ch.country && candidate.categories.some(category => ch.categories.includes(category)))
+    .sort((a, b) => (Number(b.languages?.some(language => ch.languages?.includes(language))) - Number(a.languages?.some(language => ch.languages?.includes(language)))) || (b.health_score || 0) - (a.health_score || 0))[0];
 }
 
-function filterChannels() {
+function renderClock() {
+  els.clock.textContent = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date());
+}
+renderClock(); setInterval(renderClock, 60_000);
+
+function renderCategories() {
+  els.quick.innerHTML = quickCategories.map(c => `<button class="quick-chip ${state.category === c ? 'selected' : ''}" data-category="${c}" aria-pressed="${state.category === c}">${titleCase(c)}</button>`).join('');
+  els.countryTrigger.innerHTML = `${escapeHTML(state.country === 'all' ? 'Everywhere' : countryName(state.country))} ${glyph('chevron', 15)}`;
+  els.languageTrigger.innerHTML = `${escapeHTML(state.language === 'all' ? 'Any language' : languageName(state.language))} ${glyph('chevron', 15)}`;
+  els.categoryTrigger.innerHTML = `${escapeHTML(state.category === 'all' ? 'All categories' : titleCase(state.category))} ${glyph('chevron', 15)}`;
+}
+
+function channelMarkup(ch, index) {
+  const selected = state.selected?.id === ch.id;
+  const favorite = state.favorites.has(ch.id);
+  const unavailable = isUnavailable(ch);
+  return `<div class="channel-row ${selected ? 'playing' : ''} ${unavailable ? 'unavailable' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="${unavailable ? 'Retry' : 'Play'} ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}>
+    <span class="row-index">${String(index + 1).padStart(2, '0')}</span>
+    <span class="channel-logo">${ch.logo ? `<img src="${escapeHTML(ch.logo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : `<span>${escapeHTML(ch.name.slice(0, 2).toUpperCase())}</span>`}</span>
+    <span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>${escapeHTML(unavailable ? 'Unavailable just now · Tap to retry' : channelMeta(ch))}</small></span><span class="row-arrow">${glyph('arrow', 17)}</span>
+  </button><button class="row-save ${favorite ? 'saved' : ''}" data-save-id="${escapeHTML(ch.id)}" aria-label="${favorite ? 'Remove' : 'Save'} ${escapeHTML(ch.name)} ${favorite ? 'from' : 'to'} My channels" aria-pressed="${favorite}" title="${favorite ? 'Remove from' : 'Save to'} My channels">${glyph('heart', 17)}</button></div>`;
+}
+
+let shown = 60;
+function renderList(withMotion = false) {
+  const displayed = state.results.slice(0, shown);
+  els.list.innerHTML = displayed.length ? displayed.map(channelMarkup).join('') : `<div class="empty-list">${glyph(state.favoritesOnly ? 'heart' : 'search', 25)}<strong>${state.favoritesOnly ? 'Your shortlist starts here' : 'No channels here yet'}</strong><p>${state.favoritesOnly ? 'Tap a heart beside any channel to save it here.' : 'Try a broader search or clear a filter.'}</p></div>`;
+  const count = state.results.length.toLocaleString();
+  els.count.textContent = count;
+  els.result.textContent = `${count} channels ready to explore`;
+  els.more.hidden = state.results.length <= shown;
+  document.querySelector('.favorite-count').textContent = state.favorites.size || '';
+  if (withMotion && !reduceMotion.matches) {
+    const rows = [...els.list.querySelectorAll('.channel-row')].slice(0, 9);
+    if (rows.length) animate(rows, { opacity: [0.6, 1], transform: ['translateY(9px)', 'translateY(0)'] }, { duration: 0.34, delay: stagger(0.025), ease: [0.16, 1, 0.3, 1] });
+  }
+}
+
+function renderRail() {
+  const favorites = [...state.favorites].map(id => state.channels.find(ch => ch.id === id)).filter(Boolean);
+  const recent = state.recent.map(id => state.channels.find(ch => ch.id === id)).filter(Boolean).slice(0, 5);
+  const picks = ['BBC News', 'France 24', 'ABC News Live', 'Euronews English', 'Bloomberg TV']
+    .map(name => state.channels.find(ch => ch.name === name)).filter(Boolean);
+  const preferences = state.preferences;
+  const tailored = preferences?.completed ? state.channels.filter(ch => !isUnavailable(ch) &&
+    (preferences.country === 'all' || ch.country === preferences.country) &&
+    (preferences.language === 'all' || ch.languages?.includes(preferences.language)) &&
+    (!preferences.interests?.length || ch.categories.some(category => preferences.interests.includes(category)))
+  ).sort((a, b) => (b.health_score || 0) - (a.health_score || 0)).slice(0, 5) : [];
+  const channels = favorites.length ? [...favorites.filter(ch => !isUnavailable(ch)), ...tailored.filter(ch => !favorites.some(f => f.id === ch.id))].slice(0, 5) : tailored.length ? tailored : recent.length ? [...recent.filter(ch => !isUnavailable(ch)), ...picks.filter(ch => !recent.some(r => r.id === ch.id) && !isUnavailable(ch))].slice(0, 5) : (picks.filter(ch => !isUnavailable(ch)).length ? picks.filter(ch => !isUnavailable(ch)) : state.channels.filter(ch => !isUnavailable(ch)).slice(0, 5));
+  els.railTitle.textContent = favorites.length ? 'My channels' : tailored.length ? 'For you' : recent.length ? 'Recently tuned' : 'Start watching';
+  els.railSubtitle.textContent = favorites.length ? 'The stations you keep close.' : tailored.length ? `Live picks for ${countryName(preferences.country)}.` : recent.length ? 'Jump back in or switch stations.' : 'Good places to begin.';
+  els.rail.innerHTML = channels.map((ch, i) => `<button class="rail-card ${state.selected?.id === ch.id ? 'active' : ''}" data-id="${escapeHTML(ch.id)}" aria-label="Play ${escapeHTML(ch.name)}">
+    <span class="rail-card-numeral">${String(i + 1).padStart(2, '0')}</span><span class="rail-card-sigil">${escapeHTML(ch.name.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 2).toUpperCase())}</span>
+    <span class="rail-card-bottom"><span class="rail-card-logo">${ch.logo ? `<img src="${escapeHTML(ch.logo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : escapeHTML(ch.name.slice(0, 2).toUpperCase())}</span><span><strong>${escapeHTML(ch.name)}</strong><small>${escapeHTML(countryName(ch.country))}</small></span>${glyph('arrow', 18)}</span>
+  </button>`).join('');
+}
+
+function filterChannels(withMotion = false) {
   let pool = state.channels;
   if (state.favoritesOnly) pool = pool.filter(ch => state.favorites.has(ch.id));
+  else if (!state.search.trim()) pool = pool.filter(ch => !isUnavailable(ch));
   if (state.country !== 'all') pool = pool.filter(ch => ch.country === state.country);
-  if (state.category !== 'all') pool = pool.filter(ch => ch.categories.includes(state.category));
   if (state.language !== 'all') pool = pool.filter(ch => ch.languages?.includes(state.language));
+  if (state.category !== 'all') pool = pool.filter(ch => ch.categories.includes(state.category));
   state.results = rankChannels(pool, state.search, state.countries, state.languages, state.aiCategory);
-  if (state.search && state.results.length === 0 && state.aiCategory) {
+  state.results.sort((a, b) => Number(isUnavailable(a)) - Number(isUnavailable(b)));
+  if (state.search && !state.results.length && state.aiCategory) {
     const parsed = parseQuery(state.search, state.countries, state.languages);
     state.results = pool.filter(ch => (!parsed.countryCode || ch.country === parsed.countryCode) && (!parsed.languageCode || ch.languages?.includes(parsed.languageCode)) && ch.categories.includes(state.aiCategory));
   }
-  renderCategories(); renderList();
+  renderCategories(); renderList(withMotion);
+  els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>CHANNELS TO EXPLORE</small>`;
+  const activeFilters = [state.country !== 'all', state.language !== 'all', state.category !== 'all'].filter(Boolean).length;
+  els.filterCount.textContent = activeFilters ? String(activeFilters) : '';
 }
 
-function showError(message) { els.errorText.textContent = message; els.error.hidden = false; }
 function clearError() { els.error.hidden = true; }
+function showError(message, failedChannel = null) {
+  clearTimeout(state.tuneTimer);
+  if (failedChannel) rememberUnavailable(failedChannel);
+  els.errorText.textContent = message;
+  els.error.hidden = false;
+  const alternative = failedChannel ? suggestAlternative(failedChannel) : null;
+  alternativeButton.hidden = !alternative;
+  alternativeButton.textContent = alternative ? `Try ${alternative.name} ↗` : '';
+  alternativeButton.dataset.id = alternative?.id || '';
+  els.tuneStatus.textContent = 'NO SIGNAL';
+  els.tune.classList.add('failed');
+  els.tap.hidden = true;
+  if (!reduceMotion.matches) animate(els.error, { opacity: [0, 1], transform: ['translateY(-8px)', 'translateY(0)'] }, { duration: 0.3, ease: [0.16, 1, 0.3, 1] });
+}
+function handlePlayRejection(error, ch) {
+  if (error?.name === 'NotAllowedError') {
+    clearTimeout(state.tuneTimer);
+    els.tap.hidden = false;
+    els.tuneStatus.textContent = 'Press play to start this channel';
+    return;
+  }
+  if (error?.name === 'AbortError') {
+    showError('Playback was interrupted. Retry or choose another channel.');
+    return;
+  }
+  showError(`This feed for ${ch.name} could not start.`, ch);
+}
+
+function startTune(ch, attempt) {
+  clearTimeout(state.tuneTimer);
+  const serial = state.playSerial;
+  state.tuneTimer = setTimeout(() => {
+    if (state.playSerial === serial && !els.shell.classList.contains('is-playing')) showError(`No video arrived from ${ch.name}.`, ch);
+  }, 15000);
+  state.tuneAnimation?.stop?.();
+  els.tune.hidden = false;
+  els.tune.classList.remove('failed');
+  els.tuneName.textContent = ch.name;
+  els.tuneStatus.textContent = attempt ? `Trying another feed · ${attempt + 1}` : 'Finding a live feed…';
+  els.tap.hidden = true;
+  els.tune.style.opacity = '1';
+  if (!reduceMotion.matches) state.tuneAnimation = animate(els.tune, { opacity: [0, 1], transform: ['translateX(-18px)', 'translateX(0)'] }, { duration: 0.42, ease: [0.16, 1, 0.3, 1] });
+}
+
+function finishTune() {
+  clearTimeout(state.tuneTimer);
+  if (els.tune.hidden) return;
+  const serial = state.playSerial;
+  if (reduceMotion.matches) { els.tune.hidden = true; return; }
+  state.tuneAnimation?.stop?.();
+  const animation = animate(els.tune, { opacity: [1, 0], transform: ['translateX(0)', 'translateX(18px)'] }, { duration: 0.3, ease: [0.55, 0, 1, 0.45] });
+  animation.finished.then(() => { if (state.playSerial === serial) els.tune.hidden = true; }).catch(() => {});
+  animate(els.video, { opacity: [0.45, 1] }, { duration: 0.45, ease: 'easeOut' });
+}
+
+function rememberChannel(id) {
+  state.recent = [id, ...state.recent.filter(item => item !== id)].slice(0, 12);
+  localStorage.setItem('openwave-recent', JSON.stringify(state.recent));
+  renderRail();
+}
 
 async function playChannel(id, attempt = 0, preferredLanguage = null) {
   const ch = state.channels.find(item => item.id === id);
@@ -109,93 +292,212 @@ async function playChannel(id, attempt = 0, preferredLanguage = null) {
   if (preferredLanguage === null) preferredLanguage = state.language !== 'all' ? state.language : (parseQuery(state.search, state.countries, state.languages).languageCode || '');
   state.selected = ch;
   state.sourceAttempt = attempt;
-  clearError();
+  clearError(); startTune(ch, attempt);
+  els.shell.classList.remove('is-playing');
   els.cover.hidden = true;
   els.video.classList.add('visible');
   els.title.textContent = ch.name;
-  els.meta.textContent = attempt ? `Trying another feed (${attempt + 1} of ${state.sourceCount})…` : `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0,2).join(', ') || ch.categories[0] || 'TV'}`;
-  els.favorite.hidden = false;
+  els.meta.textContent = attempt ? `Trying another feed · ${attempt + 1}` : channelMeta(ch);
+  els.favorite.hidden = false; els.fullscreen.hidden = false;
   els.favorite.classList.toggle('is-favorite', state.favorites.has(id));
   els.favorite.setAttribute('aria-label', state.favorites.has(id) ? 'Remove from favorites' : 'Add to favorites');
-  renderList();
+  renderList(); rememberChannel(id);
   if (state.hls) { state.hls.destroy(); state.hls = null; }
   els.video.pause(); els.video.removeAttribute('src'); els.video.load();
   try {
-    const response = await fetch('/api/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({id, attempt, language: preferredLanguage}) });
+    const response = await fetch('/api/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, attempt, language: preferredLanguage }) });
     if (!response.ok) throw new Error(response.status === 503 ? 'No working feed is available for this channel right now.' : 'This channel could not be opened.');
-    const {url, sources, sourceIndex} = await response.json();
+    const { url, sources, sourceIndex } = await response.json();
     if (state.playSerial !== serial) return;
     state.sourceCount = sources;
     state.sourceAttempt = sourceIndex;
+    els.tuneStatus.textContent = `Live feed found · ${sourceIndex + 1} of ${sources}`;
     const tryNext = () => {
       if (state.playSerial !== serial) return;
       if (sourceIndex + 1 < sources) playChannel(id, sourceIndex + 1, preferredLanguage);
-      else showError(`No working feed for ${ch.name} right now. The listed source may be offline or restricted in your region.`);
+      else showError(`No working feed for ${ch.name} right now.`, ch);
     };
     if (Hls.isSupported()) {
       const hls = new Hls({ maxBufferLength: 15, liveSyncDurationCount: 3 });
       state.hls = hls;
       hls.loadSource(url);
       hls.attachMedia(els.video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => { els.meta.textContent = `${countryName(ch.country)} · Feed ${sourceIndex + 1} of ${sources}`; els.video.play().catch(() => {}); });
-      let handled = false;
-      hls.on(Hls.Events.ERROR, (_, data) => {
-        if (data.fatal && !handled) { handled = true; tryNext(); }
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        if (state.playSerial !== serial) return;
+        els.meta.textContent = `${channelMeta(ch)} · Feed ${sourceIndex + 1} of ${sources}`;
+        els.video.play().catch(error => { if (state.playSerial === serial) handlePlayRejection(error, ch); });
       });
+      let handled = false;
+      hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal && !handled) { handled = true; tryNext(); } });
     } else if (els.video.canPlayType('application/vnd.apple.mpegurl')) {
       els.video.src = url;
-      els.video.play().catch(() => {});
-    } else { showError('This browser cannot play this stream format. Try a current version of Chrome, Edge, Firefox, or Safari.'); }
-  } catch (error) { if (state.playSerial === serial) showError(error.message || 'This channel could not be opened.'); }
+      els.video.play().catch(error => { if (state.playSerial === serial) handlePlayRejection(error, ch); });
+    } else showError('This browser cannot play HLS video. Try current Chrome, Edge, Firefox, or Safari.');
+  } catch (error) { if (state.playSerial === serial) showError(error.message || 'The channel could not be opened.', responseFailureIsUnavailable(error) ? ch : null); }
 }
 
+function responseFailureIsUnavailable(error) { return error?.message === 'No working feed is available for this channel right now.'; }
+
+els.video.addEventListener('playing', () => { finishTune(); els.shell.classList.add('is-playing'); if (state.selected) clearUnavailable(state.selected); });
 els.video.addEventListener('error', () => {
   if (!state.selected || state.hls) return;
   if (state.sourceAttempt + 1 < state.sourceCount) playChannel(state.selected.id, state.sourceAttempt + 1);
-  else showError(`No working feed for ${state.selected.name} right now.`);
+  else showError(`No working feed for ${state.selected.name} right now.`, state.selected);
 });
-els.list.addEventListener('click', event => { const row = event.target.closest('[data-id]'); if (row) playChannel(row.dataset.id); });
-els.category.addEventListener('change', event => { state.category = event.target.value; shown = 80; filterChannels(); });
-els.country.addEventListener('change', event => { state.country = event.target.value; shown = 80; filterChannels(); });
-els.language.addEventListener('change', event => { state.language = event.target.value; shown = 80; filterChannels(); });
-els.more.addEventListener('click', () => { shown += 80; renderList(); });
-els.search.addEventListener('input', event => { state.search = event.target.value; state.aiCategory = null; state.searchSerial++; shown = 80; filterChannels(); els.ai.textContent = 'Press Enter to search by meaning. Model runs locally.'; });
+els.tap.addEventListener('click', () => els.video.play().catch(error => { if (state.selected) handlePlayRejection(error, state.selected); }));
+alternativeButton.addEventListener('click', () => { if (alternativeButton.dataset.id) playChannel(alternativeButton.dataset.id); });
+
+function jumpToGuide() {
+  radioMode.hide();
+  document.querySelector('#guide').scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'start' });
+  els.search.focus({ preventScroll: true });
+}
+function jumpToPlayer() {
+  els.shell.scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'center' });
+  els.shell.focus({ preventScroll: true });
+}
+document.querySelector('#cover-browse').addEventListener('click', jumpToGuide);
+document.querySelector('#header-guide').addEventListener('click', jumpToGuide);
+function setNavActive(id) { document.querySelectorAll('.top-nav button').forEach(button => button.classList.toggle('active', button.id === id)); }
+document.querySelector('#nav-home').addEventListener('click', () => { radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
+document.querySelector('#nav-guide').addEventListener('click', () => { setNavActive('nav-guide'); jumpToGuide(); });
+document.querySelector('#nav-favorites').addEventListener('click', () => { state.favoritesOnly = true; els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); jumpToGuide(); });
+function showRadio() { els.video.pause(); setNavActive('nav-radio'); radioMode.show(); }
+document.querySelector('#nav-radio').addEventListener('click', showRadio);
+document.querySelector('#mobile-radio').addEventListener('click', showRadio);
+document.querySelector('#preferences-button').addEventListener('click', () => { if (state.countries.length) onboarding.show(state.countries, state.languages, state.preferences); });
+document.querySelector('.brand').addEventListener('click', event => { event.preventDefault(); radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
+els.list.addEventListener('click', event => {
+  const save = event.target.closest('[data-save-id]');
+  if (save) { toggleFavorite(save.dataset.saveId, save); return; }
+  const row = event.target.closest('[data-id]'); if (row) { jumpToPlayer(); playChannel(row.dataset.id); }
+});
+els.rail.addEventListener('click', event => { const card = event.target.closest('[data-id]'); if (card) { jumpToPlayer(); playChannel(card.dataset.id); } });
+els.list.addEventListener('keydown', event => {
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+  const rows = [...els.list.querySelectorAll('.row-main')];
+  const index = rows.indexOf(document.activeElement);
+  rows[Math.max(0, Math.min(rows.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))]?.focus();
+  event.preventDefault();
+});
+els.quick.addEventListener('click', event => { const button = event.target.closest('[data-category]'); if (!button) return; state.category = button.dataset.category; shown = 60; filterChannels(true); });
+function setFiltersOpen(open) {
+  els.advanced.hidden = !open;
+  els.filterToggle.setAttribute('aria-expanded', String(open));
+  els.filterToggle.classList.toggle('open', open);
+  if (open && !reduceMotion.matches) animate(els.advanced, { opacity: [0, 1], transform: ['translateY(-8px)', 'translateY(0)'] }, { duration: 0.25, ease: [0.16, 1, 0.3, 1] });
+}
+els.filterToggle.addEventListener('click', () => setFiltersOpen(els.advanced.hidden));
+document.addEventListener('click', event => { if (!els.advanced.hidden && !event.target.closest('.filter-area')) setFiltersOpen(false); });
+let activePicker = null;
+const pickerTriggers = { country: els.countryTrigger, language: els.languageTrigger, category: els.categoryTrigger };
+function pickerOptions() {
+  if (activePicker === 'country') return [{ value: 'all', label: 'Everywhere' }, ...state.countries.map(c => ({ value: c.code, label: c.name }))];
+  if (activePicker === 'language') return [{ value: 'all', label: 'Any language' }, ...state.languages.map(l => ({ value: l.code, label: l.name }))];
+  return categories.map(c => ({ value: c, label: c === 'all' ? 'All categories' : titleCase(c) }));
+}
+function renderPickerOptions() {
+  const query = els.pickerSearch.value.trim().toLowerCase();
+  const items = pickerOptions().filter(item => item.label.toLowerCase().includes(query));
+  els.pickerList.innerHTML = items.length ? items.map(item => `<button class="picker-option ${state[activePicker] === item.value ? 'selected' : ''}" role="option" aria-selected="${state[activePicker] === item.value}" data-pick-value="${escapeHTML(item.value)}"><span>${escapeHTML(item.label)}</span><span class="picker-check">${state[activePicker] === item.value ? '✓' : ''}</span></button>`).join('') : '<p class="picker-empty">No matching options</p>';
+  els.pickerList.scrollTop = 0;
+}
+function openPicker(kind) {
+  activePicker = kind;
+  els.pickerTitle.textContent = kind === 'country' ? 'Choose country' : kind === 'language' ? 'Choose language' : 'Choose category';
+  els.pickerSearch.placeholder = kind === 'country' ? 'Search countries' : kind === 'language' ? 'Search languages' : 'Search categories';
+  els.pickerSearch.value = '';
+  els.picker.hidden = false;
+  renderPickerOptions();
+  els.pickerSearch.focus();
+  if (!reduceMotion.matches) animate(els.picker, { opacity: [0, 1], transform: ['translateX(14px)', 'translateX(0)'] }, { duration: 0.26, ease: [0.16, 1, 0.3, 1] });
+}
+function closePicker(focusTrigger = true) {
+  const trigger = pickerTriggers[activePicker];
+  els.picker.hidden = true;
+  activePicker = null;
+  if (focusTrigger) trigger?.focus();
+}
+Object.entries(pickerTriggers).forEach(([kind, button]) => button.addEventListener('click', () => openPicker(kind)));
+document.querySelector('#picker-back').addEventListener('click', () => closePicker());
+els.pickerSearch.addEventListener('input', renderPickerOptions);
+els.pickerSearch.addEventListener('keydown', event => {
+  if (event.key === 'ArrowDown') { els.pickerList.querySelector('.picker-option')?.focus(); event.preventDefault(); }
+  if (event.key === 'Enter') { els.pickerList.querySelector('.picker-option')?.click(); event.preventDefault(); }
+});
+els.pickerList.addEventListener('keydown', event => {
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+  const options = [...els.pickerList.querySelectorAll('.picker-option')];
+  const index = options.indexOf(document.activeElement);
+  options[Math.max(0, Math.min(options.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))]?.focus();
+  event.preventDefault();
+});
+els.pickerList.addEventListener('click', event => {
+  const option = event.target.closest('[data-pick-value]'); if (!option || !activePicker) return;
+  state[activePicker] = option.dataset.pickValue;
+  shown = 60;
+  filterChannels(true);
+  closePicker(false);
+  setFiltersOpen(false);
+  els.filterToggle.focus();
+});
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape') return;
+  if (activePicker) closePicker();
+  else if (!els.advanced.hidden) { setFiltersOpen(false); els.filterToggle.focus(); }
+});
+els.more.addEventListener('click', () => { shown += 60; renderList(true); });
+els.search.addEventListener('input', event => {
+  state.search = event.target.value; state.aiCategory = null; state.searchSerial++; shown = 60;
+  els.ai.textContent = 'Smart search uses MiniLM on this device. First use downloads the model.';
+  clearTimeout(state.filterTimer); state.filterTimer = setTimeout(() => filterChannels(true), 90);
+});
 document.querySelector('#search-form').addEventListener('submit', async event => {
   event.preventDefault();
   const query = state.search.trim(); if (!query) { els.search.focus(); return; }
+  clearTimeout(state.filterTimer);
   const serial = ++state.searchSerial;
   const parsed = parseQuery(query, state.countries, state.languages);
   if (parsed.category || ((parsed.countryCode || parsed.languageCode) && parsed.terms.length === 0) || query.split(/\s+/).length < 2) {
-    state.aiCategory = null;
-    filterChannels();
+    state.aiCategory = null; filterChannels(true);
     els.ai.textContent = parsed.category || parsed.countryCode || parsed.languageCode ? 'Matched your channel, place, or language terms.' : 'Try a phrase such as “relaxing nature shows” for AI search.';
     return;
   }
-  els.ai.textContent = 'Loading on-device AI model and understanding your search…';
+  els.ai.textContent = 'MiniLM is understanding your search on this device…';
   try {
     const category = await inferCategory(query);
     if (serial !== state.searchSerial) return;
-    state.aiCategory = category;
-    filterChannels();
-    els.ai.textContent = category ? `AI matched “${category}” · results stay on your device` : 'AI search ready · try a broader phrase';
-  } catch { if (serial === state.searchSerial) els.ai.textContent = 'AI model unavailable right now · regular search still works'; }
+    state.aiCategory = category; filterChannels(true);
+    els.ai.textContent = category ? `Matched ${category}. Results stay on this device.` : 'Try a broader phrase or a channel name.';
+  } catch { if (serial === state.searchSerial) els.ai.textContent = 'Smart search unavailable. Name, country, and category search still work.'; }
 });
-document.querySelector('#favorites-filter').addEventListener('click', event => {
+els.favoritesFilter.addEventListener('click', () => {
   state.favoritesOnly = !state.favoritesOnly;
-  event.currentTarget.classList.toggle('active', state.favoritesOnly);
-  event.currentTarget.setAttribute('aria-pressed', String(state.favoritesOnly));
-  filterChannels();
+  els.favoritesFilter.classList.toggle('active', state.favoritesOnly);
+  els.favoritesFilter.setAttribute('aria-pressed', String(state.favoritesOnly));
+  setNavActive(state.favoritesOnly ? 'nav-favorites' : 'nav-guide');
+  filterChannels(true);
 });
-els.favorite.addEventListener('click', () => {
-  if (!state.selected) return;
-  const id = state.selected.id;
+function toggleFavorite(id, sourceButton = null) {
   if (state.favorites.has(id)) state.favorites.delete(id); else state.favorites.add(id);
   localStorage.setItem('openwave-favorites', JSON.stringify([...state.favorites]));
-  els.favorite.classList.toggle('is-favorite', state.favorites.has(id));
-  els.favorite.setAttribute('aria-label', state.favorites.has(id) ? 'Remove from favorites' : 'Add to favorites');
+  if (state.selected?.id === id) {
+    els.favorite.classList.toggle('is-favorite', state.favorites.has(id));
+    els.favorite.setAttribute('aria-label', state.favorites.has(id) ? 'Remove from favorites' : 'Add to favorites');
+  }
+  if (!reduceMotion.matches && sourceButton) animate(sourceButton, { transform: ['scale(0.78)', 'scale(1)'] }, { duration: 0.35, type: 'spring', bounce: 0.2 });
+  const scrollTop = els.list.scrollTop;
   filterChannels();
-});
+  els.list.scrollTop = scrollTop;
+  renderRail();
+}
+els.favorite.addEventListener('click', () => { if (state.selected) toggleFavorite(state.selected.id, els.favorite); });
+els.fullscreen.addEventListener('click', () => els.shell.requestFullscreen?.());
 document.querySelector('#retry-button').addEventListener('click', () => { if (state.selected) playChannel(state.selected.id); });
+document.addEventListener('keydown', event => {
+  if (event.target.closest('input, select, button, textarea')) return;
+  if (event.key === '/') { event.preventDefault(); jumpToGuide(); }
+});
 
 async function loadGuide() {
   try {
@@ -203,14 +505,24 @@ async function loadGuide() {
     if (!response.ok) throw new Error(await response.text());
     const data = await response.json();
     state.channels = data.channels;
-    state.countries = data.countries.sort((a,b) => a.name.localeCompare(b.name));
+    state.countries = data.countries.sort((a, b) => a.name.localeCompare(b.name));
     state.languages = data.languages || [];
-    els.country.innerHTML = '<option value="all">All countries</option>' + state.countries.map(c => `<option value="${escapeHTML(c.code)}">${escapeHTML(c.name)}</option>`).join('');
-    els.language.innerHTML = '<option value="all">All languages</option>' + state.languages.map(l => `<option value="${escapeHTML(l.code)}">${escapeHTML(l.name)}</option>`).join('');
-    filterChannels();
+    state.preferences = readStore('openwave-preferences', null);
+    if (state.preferences?.completed) {
+      state.country = state.preferences.country || 'all';
+      state.language = state.preferences.language || 'all';
+      radioMode.applyPreferences(state.preferences);
+    }
+    renderRail(); filterChannels(true);
+    if (!state.preferences?.completed) onboarding.show(state.countries, state.languages, null);
   } catch {
-    els.result.textContent = 'Could not load the channel guide';
-    els.list.innerHTML = `<div class="empty-list"><div>${icon('refresh',24)}</div><strong>Guide unavailable</strong><p>Check your connection, then reload this page.</p></div>`;
+    els.result.textContent = 'The guide could not load';
+    els.stageCount.textContent = 'Guide unavailable';
+    els.list.innerHTML = `<div class="empty-list">${glyph('refresh', 24)}<strong>Guide unavailable</strong><p>Check your internet connection, then reload this page.</p></div>`;
   }
 }
 renderCategories(); loadGuide();
+if (!reduceMotion.matches) {
+  animate('.topbar', { opacity: [0, 1] }, { duration: 0.5, ease: 'easeOut' });
+  animate('.stage-heading h1, .player-shell, .guide', { opacity: [0.75, 1], transform: ['translateY(12px)', 'translateY(0)'] }, { duration: 0.65, delay: stagger(0.08), ease: [0.16, 1, 0.3, 1] });
+}

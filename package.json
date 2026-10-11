@@ -1,6 +1,6 @@
 {
   "name": "openwave-tv",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,9 +10,11 @@
     "test": "node --test src/*.test.js"
   },
   "dependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource/anton": "^5.3.0",
     "@huggingface/transformers": "^4.3.1",
     "hls.js": "^1.6.13",
-    "lucide": "^0.468.0"
+    "motion": "^14.1.0"
   },
   "devDependencies": {
     "vite": "^7.1.7"

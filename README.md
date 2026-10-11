@@ -1,6 +1,6 @@
 # OpenWave TV
 
-A local, open-source TV guide that plays public live streams in your browser. No VLC setup, account, or API key is needed.
+A local, open-source TV and radio guide that plays public live streams in your browser. No VLC setup, account, or API key is needed.
 
 ## Download and watch
 
@@ -11,9 +11,11 @@ An internet connection is needed for the guide and streams. The optional AI mode
 ## What it does
 
 - Plays HLS streams in Chrome, Edge, Firefox, or Safari using [hls.js](https://github.com/video-dev/hls.js) or native HLS support.
-- Shows only feeds recently marked online by [IPTV Nexus](https://github.com/dearbulut/iptv), which builds on [iptv-org](https://github.com/iptv-org/iptv).
-- Checks a playlist and a media segment locally before opening a feed, then tries another source when one exists.
-- Filters by country, language, and category. Favorites are kept in your browser.
+- Starts with a two-step choice of country, language, and interests; the channel guide then opens with matching channels. Preferences and favorites stay in your browser.
+- Shows feeds recently marked online by [IPTV Nexus](https://github.com/dearbulut/iptv), which builds on [iptv-org](https://github.com/iptv-org/iptv). Matching streams from [Free-TV](https://github.com/Free-TV/IPTV) and [World IPTV](https://github.com/Romaxa55/world_ip_tv) may provide alternate sources.
+- Checks HLS playlists and the newest media segments locally before opening a feed. Empty transport packets are rejected. A failed channel is removed from the default guide for 30 minutes and a similar channel is suggested.
+- Filters TV by country, language, and category. Selecting a channel brings the player into view.
+- Offers internet radio by country, city, and genre, with saved stations and an FM-frequency filter when station metadata provides a frequency. Optional location matching happens on your device against a bundled city index; coordinates are not sent to a geocoding service.
 - Uses an optional on-device [MiniLM model](https://huggingface.co/Xenova/all-MiniLM-L6-v2) to interpret ambiguous search phrases. Names, countries, languages, and common categories work without loading the model.
 
 ## Run from source
@@ -38,7 +40,7 @@ For interface development, run `go run . -no-browser -addr 127.0.0.1:8765` and `
 
 The Go process downloads channel metadata, serves the interface, and proxies HLS playlists and segments to the browser. This allows playback of feeds that require request headers or do not permit cross-origin browser requests. A media session is created only for an indexed channel; the proxy does not accept arbitrary URLs. The app does not record, store, or rebroadcast video.
 
-Stream health is temporary. A broadcaster may remove a link, block a region, change format, or require rights that this app cannot supply. A health check confirms that a playlist and segment respond; it cannot guarantee continuous playback or codec support. The guide refreshes from the index every 12 hours while the app is running.
+Stream health is temporary. A broadcaster may remove a link, block a region, change format, or require rights that this app cannot supply. A health check confirms that recent segments contain media; it cannot guarantee continuous playback or codec support. The guide refreshes from the index every 12 hours while the app is running. The UI count reflects the current filtered guide, not the size of the upstream index.
 
 ## Contributing
 
@@ -46,4 +48,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and pull requests are welcome for
 
 ## Credits and license
 
-OpenWave TV code is MIT licensed. Channel metadata and stream links come from independent projects and broadcasters; their own terms apply. [iptv-org](https://github.com/iptv-org/iptv) supplies the base catalog, [IPTV Nexus](https://github.com/dearbulut/iptv) supplies recent health status, and the on-device AI model is [Apache 2.0 licensed](https://huggingface.co/Xenova/all-MiniLM-L6-v2). OpenWave is not affiliated with broadcasters or those projects.
+OpenWave TV code is MIT licensed. Channel metadata and stream links come from independent projects and broadcasters; their own terms apply. [iptv-org](https://github.com/iptv-org/iptv) supplies the base catalog, [IPTV Nexus](https://github.com/dearbulut/iptv) supplies recent health status, and [Free-TV](https://github.com/Free-TV/IPTV) and [World IPTV](https://github.com/Romaxa55/world_ip_tv) supply possible alternate public streams. Radio metadata comes from [Verified Radio Streams](https://github.com/eyalev/verified-radio-streams) under CC0. The bundled city index is derived from [GeoNames cities15000](https://www.geonames.org/) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The on-device AI model is [Apache 2.0 licensed](https://huggingface.co/Xenova/all-MiniLM-L6-v2). OpenWave is not affiliated with broadcasters or those projects.

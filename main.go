@@ -23,12 +23,15 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 )
 
 //go:embed dist/*
 var webFiles embed.FS
 
 const apiBase = "https://dearbulut.github.io/iptv/api/v1/"
+const freeTVPlaylist = "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8"
+const worldTVPlaylist = "https://romaxa55.github.io/world_ip_tv/output/index.m3u"
 
 type apiChannel struct {
 	ID         string   `json:"id"`
@@ -82,17 +85,18 @@ type country struct {
 	Code string `json:"code"`
 }
 type channel struct {
-	ID         string         `json:"id"`
-	Name       string         `json:"name"`
-	Title      string         `json:"title"`
-	Country    string         `json:"country"`
-	Categories []string       `json:"categories"`
-	Languages  []string       `json:"languages"`
-	Quality    string         `json:"quality"`
-	Logo       string         `json:"logo"`
-	Featured   bool           `json:"featured"`
-	Sources    int            `json:"sources"`
-	Streams    []streamSource `json:"-"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Title       string         `json:"title"`
+	Country     string         `json:"country"`
+	Categories  []string       `json:"categories"`
+	Languages   []string       `json:"languages"`
+	Quality     string         `json:"quality"`
+	Logo        string         `json:"logo"`
+	Featured    bool           `json:"featured"`
+	HealthScore float64        `json:"health_score"`
+	Sources     int            `json:"sources"`
+	Streams     []streamSource `json:"-"`
 }
 type streamSource struct {
 	Stream    apiStream
@@ -118,6 +122,8 @@ type server struct {
 	client     *http.Client
 	probeMu    sync.Mutex
 	probeCache map[string]probeResult
+	deadMu     sync.Mutex
+	dead       map[string]time.Time
 }
 type probeResult struct {
 	OK bool
@@ -128,7 +134,7 @@ func main() {
 	addr := flag.String("addr", "127.0.0.1:0", "local listen address")
 	noBrowser := flag.Bool("no-browser", false, "do not open browser automatically")
 	flag.Parse()
-	s := &server{sessions: map[string]*session{}, probeCache: map[string]probeResult{}, client: safeClient()}
+	s := &server{sessions: map[string]*session{}, probeCache: map[string]probeResult{}, dead: map[string]time.Time{}, client: safeClient()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/channels", s.channels)
 	mux.HandleFunc("POST /api/session", s.createSession)
@@ -210,6 +216,101 @@ func fetchJSON[T any](client *http.Client, name string, dest *T) error {
 	return json.NewDecoder(io.LimitReader(res.Body, 30<<20)).Decode(dest)
 }
 
+func fetchPlaylist(client *http.Client, address string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 18*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "GET", address, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("User-Agent", "OpenWaveTV/0.2 (+https://github.com/jobinebanezer18/openwave-tv)")
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return "", fmt.Errorf("playlist HTTP %d", res.StatusCode)
+	}
+	data, err := io.ReadAll(io.LimitReader(res.Body, 8<<20))
+	return string(data), err
+}
+
+func m3uAttr(line, key string) string {
+	marker := key + `="`
+	start := strings.Index(line, marker)
+	if start < 0 {
+		return ""
+	}
+	rest := line[start+len(marker):]
+	end := strings.IndexByte(rest, '"')
+	if end < 0 {
+		return ""
+	}
+	return rest[:end]
+}
+
+func parseM3U(data string, visit func(metadata string, stream apiStream)) {
+	var metadata string
+	var stream apiStream
+	for _, raw := range strings.Split(data, "\n") {
+		line := strings.TrimSpace(raw)
+		switch {
+		case strings.HasPrefix(line, "#EXTINF"):
+			metadata = line
+			stream = apiStream{}
+		case strings.HasPrefix(line, "#EXTVLCOPT:http-referrer="):
+			stream.Referrer = strings.TrimPrefix(line, "#EXTVLCOPT:http-referrer=")
+		case strings.HasPrefix(line, "#EXTVLCOPT:http-user-agent="):
+			stream.UserAgent = strings.TrimPrefix(line, "#EXTVLCOPT:http-user-agent=")
+		case line != "" && !strings.HasPrefix(line, "#") && metadata != "":
+			stream.URL = line
+			if comma := strings.LastIndex(metadata, ","); comma >= 0 {
+				stream.Title = strings.TrimSpace(metadata[comma+1:])
+			}
+			visit(metadata, stream)
+			metadata = ""
+		}
+	}
+}
+
+func normalizedName(name string) string {
+	if cut := strings.LastIndex(name, " ("); cut >= 0 && strings.HasSuffix(name, ")") {
+		name = name[:cut]
+	}
+	name = strings.ToLower(strings.TrimSpace(name))
+	for _, suffix := range []string{" hd", " fhd", " sd", " 4k"} {
+		name = strings.TrimSuffix(name, suffix)
+	}
+	var result strings.Builder
+	for _, r := range name {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) {
+			result.WriteRune(r)
+		}
+	}
+	return result.String()
+}
+
+func appendBackup(byID map[string]channel, id string, stream apiStream) bool {
+	item, ok := byID[id]
+	if !ok || len(item.Streams) >= 12 {
+		return false
+	}
+	parsed, err := url.Parse(stream.URL)
+	if err != nil || validURL(parsed) != nil || !strings.Contains(strings.ToLower(parsed.Path), ".m3u8") {
+		return false
+	}
+	for _, existing := range item.Streams {
+		if existing.Stream.URL == stream.URL {
+			return false
+		}
+	}
+	item.Streams = append(item.Streams, streamSource{Stream: stream, Languages: item.Languages})
+	item.Sources = len(item.Streams)
+	byID[id] = item
+	return true
+}
+
 func (s *server) getCatalog() (catalog, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -233,7 +334,7 @@ func (s *server) getCatalog() (catalog, error) {
 		if meta.NSFW || !meta.Online {
 			continue
 		}
-		item := channel{ID: meta.ID, Name: meta.Name, Country: meta.Country, Categories: meta.Categories, Languages: meta.Languages, Logo: meta.Logo}
+		item := channel{ID: meta.ID, Name: meta.Name, Country: meta.Country, Categories: meta.Categories, Languages: meta.Languages, Logo: meta.Logo, HealthScore: meta.Score}
 		for _, st := range meta.Streams {
 			parsed, err := url.Parse(st.URL)
 			if err != nil || validURL(parsed) != nil || !strings.Contains(strings.ToLower(parsed.Path), ".m3u8") || st.Health.Status != "online" {
@@ -248,6 +349,46 @@ func (s *server) getCatalog() (catalog, error) {
 		item.Quality = item.Streams[0].Stream.Quality
 		item.Sources = len(item.Streams)
 		byID[item.ID] = item
+	}
+	// Add alternate HLS links only for channels already present in the checked catalog.
+	// Free-TV supplies channel IDs; World IPTV is matched by unique name and country.
+	type playlistResult struct {
+		body string
+		err  error
+	}
+	var free, world playlistResult
+	var downloads sync.WaitGroup
+	downloads.Add(2)
+	go func() { defer downloads.Done(); free.body, free.err = fetchPlaylist(s.client, freeTVPlaylist) }()
+	go func() { defer downloads.Done(); world.body, world.err = fetchPlaylist(s.client, worldTVPlaylist) }()
+	downloads.Wait()
+	if free.err == nil {
+		parseM3U(free.body, func(metadata string, stream apiStream) {
+			id := m3uAttr(metadata, "tvg-id")
+			appendBackup(byID, id, stream)
+		})
+	}
+	if world.err == nil {
+		countryNames := map[string]string{}
+		for _, c := range countries {
+			countryNames[c.Code] = c.Name
+		}
+		nameAndCountry := map[string]string{}
+		ambiguous := map[string]bool{}
+		for _, item := range byID {
+			key := normalizedName(item.Name) + "|" + normalizedName(countryNames[item.Country])
+			if nameAndCountry[key] != "" {
+				ambiguous[key] = true
+			} else {
+				nameAndCountry[key] = item.ID
+			}
+		}
+		parseM3U(world.body, func(metadata string, stream apiStream) {
+			key := normalizedName(stream.Title) + "|" + normalizedName(m3uAttr(metadata, "group-title"))
+			if !ambiguous[key] {
+				appendBackup(byID, nameAndCountry[key], stream)
+			}
+		})
 	}
 	result := make([]channel, 0, len(byID))
 	for _, item := range byID {
@@ -279,7 +420,33 @@ func (s *server) channels(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
-	json.NewEncoder(w).Encode(data)
+	visible := make([]channel, 0, len(data.Channels))
+	for _, ch := range data.Channels {
+		if !s.channelDead(ch.ID) {
+			visible = append(visible, ch)
+		}
+	}
+	json.NewEncoder(w).Encode(struct {
+		Channels  []channel  `json:"channels"`
+		Countries []country  `json:"countries"`
+		Languages []language `json:"languages"`
+	}{visible, data.Countries, data.Languages})
+}
+
+func (s *server) channelDead(id string) bool {
+	s.deadMu.Lock()
+	defer s.deadMu.Unlock()
+	return time.Since(s.dead[id]) < 30*time.Minute
+}
+
+func (s *server) setChannelDead(id string, dead bool) {
+	s.deadMu.Lock()
+	defer s.deadMu.Unlock()
+	if dead {
+		s.dead[id] = time.Now()
+	} else {
+		delete(s.dead, id)
+	}
 }
 
 func (s *server) createSession(w http.ResponseWriter, r *http.Request) {
@@ -330,9 +497,13 @@ func (s *server) createSession(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if chosenIndex == -1 {
+		if body.Attempt == 0 && len(choices) == len(ch.Streams) {
+			s.setChannelDead(ch.ID, true)
+		}
 		http.Error(w, "No working feed is available for this channel", http.StatusServiceUnavailable)
 		return
 	}
+	s.setChannelDead(ch.ID, false)
 	chosen := choices[chosenIndex].Stream
 	tokenBytes := make([]byte, 20)
 	if _, err := rand.Read(tokenBytes); err != nil {
@@ -391,18 +562,17 @@ func (s *server) probe(st apiStream) bool {
 			break
 		}
 		base := res.Request.URL
-		var next string
+		var entries []string
 		for _, line := range strings.Split(string(data), "\n") {
 			line = strings.TrimSpace(line)
 			if line != "" && !strings.HasPrefix(line, "#") {
-				next = line
-				break
+				entries = append(entries, line)
 			}
 		}
-		if next == "" {
+		if len(entries) == 0 {
 			break
 		}
-		ref, err := url.Parse(next)
+		ref, err := url.Parse(entries[0])
 		if err != nil {
 			break
 		}
@@ -412,27 +582,25 @@ func (s *server) probe(st apiStream) bool {
 		}
 		current = resolved.String()
 		if !strings.Contains(strings.ToLower(resolved.Path), ".m3u8") {
-			segmentReq, err := http.NewRequestWithContext(ctx, "GET", current, nil)
-			if err != nil {
-				break
+			// Check the newest two media segments; a healthy playlist can briefly
+			// carry old media while its current segments are empty.
+			start := len(entries) - 2
+			if start < 0 {
+				start = 0
 			}
-			segmentReq.Header.Set("Range", "bytes=0-1023")
-			if st.UserAgent != "" {
-				segmentReq.Header.Set("User-Agent", st.UserAgent)
+			ok = true
+			for _, entry := range entries[start:] {
+				segmentRef, err := url.Parse(entry)
+				if err != nil {
+					ok = false
+					break
+				}
+				segmentURL := base.ResolveReference(segmentRef)
+				if validURL(segmentURL) != nil || !s.probeSegment(ctx, st, segmentURL.String()) {
+					ok = false
+					break
+				}
 			}
-			if st.Referrer != "" {
-				segmentReq.Header.Set("Referer", st.Referrer)
-			}
-			segmentRes, err := s.client.Do(segmentReq)
-			if err != nil {
-				break
-			}
-			if segmentRes.StatusCode == 200 || segmentRes.StatusCode == 206 {
-				buf := make([]byte, 1)
-				_, readErr := segmentRes.Body.Read(buf)
-				ok = readErr == nil
-			}
-			segmentRes.Body.Close()
 			break
 		}
 	}
@@ -440,6 +608,51 @@ func (s *server) probe(st apiStream) bool {
 	s.probeCache[st.URL] = probeResult{OK: ok, At: time.Now()}
 	s.probeMu.Unlock()
 	return ok
+}
+
+func (s *server) probeSegment(ctx context.Context, st apiStream, rawURL string) bool {
+	req, err := http.NewRequestWithContext(ctx, "GET", rawURL, nil)
+	if err != nil {
+		return false
+	}
+	req.Header.Set("Range", "bytes=0-16383")
+	if st.UserAgent != "" {
+		req.Header.Set("User-Agent", st.UserAgent)
+	}
+	if st.Referrer != "" {
+		req.Header.Set("Referer", st.Referrer)
+	}
+	res, err := s.client.Do(req)
+	if err != nil {
+		return false
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 && res.StatusCode != 206 {
+		return false
+	}
+	data, err := io.ReadAll(io.LimitReader(res.Body, 16<<10))
+	return err == nil && segmentHasMedia(data)
+}
+
+// Some broken HLS feeds answer with one MPEG-TS null packet. That is a live
+// playlist and a successful HTTP response, but it cannot produce a video frame.
+func segmentHasMedia(data []byte) bool {
+	if len(data) < 1024 {
+		return false
+	}
+	if data[0] != 0x47 || len(data) < 188*2 || data[188] != 0x47 {
+		return true
+	}
+	for offset := 0; offset+188 <= len(data); offset += 188 {
+		if data[offset] != 0x47 {
+			return false
+		}
+		pid := uint16(data[offset+1]&0x1f)<<8 | uint16(data[offset+2])
+		if pid != 0x1fff {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *server) media(w http.ResponseWriter, r *http.Request) {
