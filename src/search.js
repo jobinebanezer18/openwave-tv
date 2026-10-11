@@ -23,13 +23,13 @@ const SYNONYMS = {
   nature: 'documentary', food: 'cooking', recipe: 'cooking', finance: 'business'
 };
 
-const COUNTRY_ALIASES = { indian:'IN', british:'GB', american:'US', brazilian:'BR', french:'FR', german:'DE', japanese:'JP', korean:'KR', australian:'AU', canadian:'CA' };
+const COUNTRY_ALIASES = { indian:'IN', british:'UK', american:'US', brazilian:'BR', french:'FR', german:'DE', japanese:'JP', korean:'KR', australian:'AU', canadian:'CA' };
 
 export function parseQuery(query, countries, languages = []) {
   const lower = query.toLowerCase().trim();
   const words = lower.match(/[\p{L}\p{N}]+/gu) || [];
   const country = countries.find(c => c.name && new RegExp(`\\b${escapeRegExp(c.name.toLowerCase())}\\b`, 'u').test(lower));
-  const countryCode = country?.code || words.map(w => COUNTRY_ALIASES[w]).find(Boolean) || (words.includes('usa') ? 'US' : words.includes('uk') ? 'GB' : null);
+  const countryCode = country?.code || words.map(w => COUNTRY_ALIASES[w]).find(Boolean) || (words.includes('usa') ? 'US' : words.includes('uk') ? 'UK' : null);
   const language = languages.find(l => l.name && new RegExp(`\\b${escapeRegExp(l.name.toLowerCase())}\\b`, 'u').test(lower));
   const languageCode = language?.code || null;
   const category = words.find(w => CATEGORY_PHRASES[w]) || words.map(w => SYNONYMS[w]).find(Boolean) || null;
