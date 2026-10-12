@@ -1,10 +1,11 @@
-const CACHE_NAME = 'openwave-web-shell-v2';
-const APP_SHELL = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/catalog/world/index.v1.json', '/catalog/world/IN.v1.json', '/radio/stations.v1.json'];
+const CACHE_NAME = 'openwave-web-shell-v3';
+const APP_SHELL = ['/', '/favicon.svg', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/catalog/world/index.v1.json', '/catalog/world/IN.v1.json', '/radio/stations.v1.json'];
 
 async function precacheAppShell(cache) {
   await cache.addAll(APP_SHELL);
-  const response = await cache.match('/index.html');
-  if (!response) return;
+  const response = await cache.match('/');
+  if (!response) throw new Error('App shell was not cached');
+  await cache.put('/index.html', response.clone());
   const html = await response.text();
   const entryAssets = [...html.matchAll(/(?:src|href)=["'](\.\/assets\/[^"']+\.(?:js|css))(?:\?[^"']*)?["']/g)]
     .map(match => new URL(match[1], self.location.origin).href)
