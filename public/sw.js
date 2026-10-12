@@ -1,4 +1,4 @@
-const CACHE_NAME = 'openwave-web-shell-v6';
+const CACHE_NAME = 'openwave-web-shell-v7';
 const APP_SHELL = ['/', '/favicon.svg', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/catalog/world/index.v1.json', '/catalog/world/IN.v1.json', '/catalog/world/sports.v1.json', '/radio/stations.v1.json'];
 
 async function precacheAppShell(cache) {

@@ -1,0 +1,491 @@
+{
+  "version": 1,
+  "source": "https://pwaapi.sunnxt.com/content/v2/contentList?type=live&fields=contents,images,generalInfo,publishingHouse,relatedMedia,relatedCast,subtitles,relatedMedia,relatedMultimedia&startIndex=1&count=100&orderBy=siblingOrder&orderMode=1&language=",
+  "checkedAt": "2026-10-12T15:29:56.485Z",
+  "channels": [
+    {
+      "contentId": "195491",
+      "name": "Sun TV HD - Dolby Vision",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/195491"
+    },
+    {
+      "contentId": "194403",
+      "name": "Sun TV HD",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194403"
+    },
+    {
+      "contentId": "194405",
+      "name": "KTV HD",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "movies"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194405"
+    },
+    {
+      "contentId": "194406",
+      "name": "Sun Music HD",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "music"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194406"
+    },
+    {
+      "contentId": "194391",
+      "name": "Sun Life",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194391"
+    },
+    {
+      "contentId": "194404",
+      "name": "Sun News",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "news"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194404"
+    },
+    {
+      "contentId": "194407",
+      "name": "Adithya TV",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "comedy"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194407"
+    },
+    {
+      "contentId": "194390",
+      "name": "Chutti TV",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194390"
+    },
+    {
+      "contentId": "194408",
+      "name": "Sun TV",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194408"
+    },
+    {
+      "contentId": "194409",
+      "name": "KTV",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "movies"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194409"
+    },
+    {
+      "contentId": "194410",
+      "name": "Sun Music",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "music"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194410"
+    },
+    {
+      "contentId": "195490",
+      "name": "Sun Gemini HD - Dolby Vision",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/195490"
+    },
+    {
+      "contentId": "194392",
+      "name": "Sun Gemini HD",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194392"
+    },
+    {
+      "contentId": "192537",
+      "name": "Sun Gemini Movies HD",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "movies"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/192537"
+    },
+    {
+      "contentId": "194393",
+      "name": "Sun Gemini Music HD",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "music"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194393"
+    },
+    {
+      "contentId": "194394",
+      "name": "Sun Gemini Comedy",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "comedy"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194394"
+    },
+    {
+      "contentId": "194337",
+      "name": "Sun Gemini Life",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194337"
+    },
+    {
+      "contentId": "200729",
+      "name": "TV9 Telugu",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "news"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/200729"
+    },
+    {
+      "contentId": "194346",
+      "name": "Kushi TV",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "kids"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194346"
+    },
+    {
+      "contentId": "194396",
+      "name": "Sun Gemini",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194396"
+    },
+    {
+      "contentId": "194384",
+      "name": "Sun Gemini Movies",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "movies"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194384"
+    },
+    {
+      "contentId": "194395",
+      "name": "Sun Gemini Music",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "music"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194395"
+    },
+    {
+      "contentId": "195489",
+      "name": "Sun Surya HD - Dolby Vision",
+      "languages": [
+        "mal"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/195489"
+    },
+    {
+      "contentId": "194397",
+      "name": "Sun Surya HD",
+      "languages": [
+        "mal"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194397"
+    },
+    {
+      "contentId": "194385",
+      "name": "Sun Surya Movies",
+      "languages": [
+        "mal"
+      ],
+      "categories": [
+        "movies"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194385"
+    },
+    {
+      "contentId": "194338",
+      "name": "Sun Surya Music",
+      "languages": [
+        "mal"
+      ],
+      "categories": [
+        "music"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194338"
+    },
+    {
+      "contentId": "202222",
+      "name": "24 News",
+      "languages": [
+        "mal"
+      ],
+      "categories": [
+        "news"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/202222"
+    },
+    {
+      "contentId": "193251",
+      "name": "Sun Surya Comedy",
+      "languages": [
+        "mal"
+      ],
+      "categories": [
+        "comedy"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/193251"
+    },
+    {
+      "contentId": "194348",
+      "name": "Kochu TV",
+      "languages": [
+        "mal"
+      ],
+      "categories": [
+        "kids"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194348"
+    },
+    {
+      "contentId": "194398",
+      "name": "Sun Surya",
+      "languages": [
+        "mal"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194398"
+    },
+    {
+      "contentId": "194411",
+      "name": "Sun Udaya HD - Dolby Vision",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194411"
+    },
+    {
+      "contentId": "194399",
+      "name": "Sun Udaya HD",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194399"
+    },
+    {
+      "contentId": "194386",
+      "name": "Sun Udaya Movies",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "movies"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194386"
+    },
+    {
+      "contentId": "194401",
+      "name": "Sun Udaya Music",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "music"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194401"
+    },
+    {
+      "contentId": "200730",
+      "name": "TV9 Kannada",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "news"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/200730"
+    },
+    {
+      "contentId": "202221",
+      "name": "Public TV",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "news"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/202221"
+    },
+    {
+      "contentId": "194400",
+      "name": "Sun Udaya Comedy",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "comedy"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194400"
+    },
+    {
+      "contentId": "194347",
+      "name": "Chintu TV",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "kids"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194347"
+    },
+    {
+      "contentId": "193239",
+      "name": "Sun Udaya",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/193239"
+    },
+    {
+      "contentId": "194388",
+      "name": "Sun Bangla",
+      "languages": [
+        "ben"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194388"
+    },
+    {
+      "contentId": "194387",
+      "name": "Sun Marathi",
+      "languages": [
+        "mar"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194387"
+    },
+    {
+      "contentId": "194389",
+      "name": "Sun Neo HD",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/194389"
+    },
+    {
+      "contentId": "200731",
+      "name": "TV9 Bharatvarsh",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "news"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/200731"
+    },
+    {
+      "contentId": "207724",
+      "name": "News9",
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "news"
+      ],
+      "website": "https://www.sunnxt.com/tv/detail/207724"
+    }
+  ]
+}

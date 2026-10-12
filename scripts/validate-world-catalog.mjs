@@ -71,6 +71,13 @@ for (const country of index.countries || []) {
 }
 
 const countryFiles = fs.readdirSync(root).filter(file => /^[A-Z]{2}\.v1\.json$/.test(file));
+const sunNxtSnapshot = JSON.parse(fs.readFileSync(path.resolve(root, '../../../catalog/sunnxt-live.v1.json'), 'utf8'));
+const indiaDirectory = JSON.parse(fs.readFileSync(path.join(root, 'IN.v1.json'), 'utf8'));
+const indiaEntries = [...indiaDirectory.channels, ...indiaDirectory.directory];
+if (sunNxtSnapshot.version !== 1 || !Array.isArray(sunNxtSnapshot.channels) || sunNxtSnapshot.channels.length < 30) errors.push('Invalid Sun NXT snapshot.');
+else for (const channel of sunNxtSnapshot.channels) {
+  if (indiaEntries.filter(entry => entry.website === channel.website && entry.provider === 'Sun NXT').length !== 1) errors.push(`Sun NXT channel ${channel.contentId} is missing or repeated in India.`);
+}
 const sportsFile = path.join(root, 'sports.v1.json');
 if (!fs.existsSync(sportsFile)) errors.push('Missing worldwide sports catalog.');
 else {

@@ -11,6 +11,7 @@ const defaults = {
   feeds: path.resolve(repoDir, 'work/catalog/iptv-org-feeds.json'),
   india: path.resolve(repoDir, 'public/catalog/india.v1.json'),
   checks: path.resolve(repoDir, 'catalog/india-browser-checks.v1.json'),
+  sunnxt: path.resolve(repoDir, 'catalog/sunnxt-live.v1.json'),
   outDir: path.resolve(repoDir, 'public/catalog/world'),
 };
 const SOURCE_URLS = [
@@ -21,23 +22,9 @@ const SOURCE_URLS = [
   'https://raw.githubusercontent.com/Romaxa55/world_ip_tv/master/output/in.m3u',
   'public/catalog/india.v1.json',
   'catalog/india-browser-checks.v1.json',
+  'catalog/sunnxt-live.v1.json',
 ];
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
-const SUN_NXT_IDS = new Set([
-  'AdithyaTV.in', 'ChuttiTV.in', 'KochuTV.in', 'KTV.in', 'KushiTV.in',
-  'SunBangla.in', 'SunGemini.in', 'SunGeminiComedy.in', 'SunGeminiLife.in',
-  'SunGeminiMovies.in', 'SunGeminiMusic.in', 'SunLife.in', 'SunMarathi.in',
-  'SunMusic.in', 'SunNeo.in', 'SunNews.in', 'SunSurya.in', 'SunSuryaComedy.in',
-  'SunSuryaMovies.in', 'SunSuryaMusic.in', 'SunTV.in', 'SunUdaya.in',
-  'SunUdayaComedy.in', 'SunUdayaMovies.in', 'SunUdayaMusic.in',
-]);
-const SUN_NXT_DEEP_LINKS = new Map([
-  ['SunTV.in', 'https://www.sunnxt.com/live/14020/sun-tv-hd'],
-  ['KTV.in', 'https://www.sunnxt.com/live/ktv-hd-tamil-live/194405/ktv-hd'],
-  ['SunGemini.in', 'https://www.sunnxt.com/live/gemini-tv-hd-telugu-live/194392/gemini-tv-hd'],
-  ['SunUdaya.in', 'https://www.sunnxt.com/live/sun-udaya-kannada-live/193239/sun-udaya'],
-  ['SunBangla.in', 'https://www.sunnxt.com/live/sun-bangla-bengali-live/194388/sun-bangla'],
-]);
 const officialSportsLink = (code, id) => {
   if (code !== 'IN') return null;
   if (/^StarSports|^Star4K/.test(id)) return 'https://www.hotstar.com/in/sports';
@@ -56,11 +43,11 @@ function parseArgs(args) {
   const result = { ...defaults };
   for (let i = 0; i < args.length; i += 1) {
     const key = args[i];
-    if (!['--channels', '--streams', '--feeds', '--india', '--checks', '--out-dir'].includes(key)) {
+    if (!['--channels', '--streams', '--feeds', '--india', '--checks', '--sunnxt', '--out-dir'].includes(key)) {
       throw new Error(`Unknown argument: ${key}`);
     }
     if (!args[i + 1]) throw new Error(`Missing value for ${key}`);
-    const dest = ({ '--channels': 'channels', '--streams': 'streams', '--feeds': 'feeds', '--india': 'india', '--checks': 'checks', '--out-dir': 'outDir' })[key];
+    const dest = ({ '--channels': 'channels', '--streams': 'streams', '--feeds': 'feeds', '--india': 'india', '--checks': 'checks', '--sunnxt': 'sunnxt', '--out-dir': 'outDir' })[key];
     result[dest] = path.resolve(args[++i]);
   }
   return result;
@@ -94,6 +81,10 @@ function normalizeCode(code) {
 function displayCountry(code) {
   const name = countryNames.of(code);
   return name && name !== code ? name : null;
+}
+
+function normalizeName(name) {
+  return String(name).normalize('NFKC').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]+/gu, '').trim();
 }
 
 function languageDictionary(channels) {
@@ -140,8 +131,12 @@ function main() {
   const upstreamFeeds = readJson(args.feeds, 'iptv-org feeds');
   const indiaCatalog = readJson(args.india, 'curated India catalog');
   const indiaChecks = readJson(args.checks, 'India browser checks');
+  const sunNxtCatalog = readJson(args.sunnxt, 'Sun NXT live catalog');
   if (!Array.isArray(upstreamChannels) || !Array.isArray(upstreamStreams) || !Array.isArray(upstreamFeeds) || !Array.isArray(indiaCatalog.channels)) {
     throw new Error('Expected channels.json, streams.json, feeds.json, and India catalog to contain channel arrays.');
+  }
+  if (sunNxtCatalog.version !== 1 || !Array.isArray(sunNxtCatalog.channels) || sunNxtCatalog.channels.length < 30) {
+    throw new Error('Expected a saved Sun NXT live-channel snapshot.');
   }
 
   const feedLanguages = new Map();
@@ -230,8 +225,7 @@ function main() {
     if (record.ids.has(channel.id)) continue;
     const normalizedName = channel.name.normalize('NFKC').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
     if (record.channels.some(entry => entry.name.normalize('NFKC').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]+/gu, ' ').trim() === normalizedName)) continue;
-    const provider = code === 'IN' && SUN_NXT_IDS.has(channel.id) ? 'Sun NXT' : null;
-    const website = safeHttpsUrl(provider ? SUN_NXT_DEEP_LINKS.get(channel.id) || 'https://www.sunnxt.com/live' : officialSportsLink(code, channel.id) || channel.website);
+    const website = safeHttpsUrl(officialSportsLink(code, channel.id) || channel.website);
     const languages = [...(feedLanguages.get(channel.id) || [])].sort();
     const categories = Array.isArray(channel.categories) ? [...new Set(channel.categories.filter(value => typeof value === 'string' && value.trim()))].sort() : [];
     record.directory.push({
@@ -240,10 +234,33 @@ function main() {
       country: code,
       languages,
       categories,
-      ...(provider ? { provider, title: 'Sun NXT' } : {}),
       ...(website ? { website } : {}),
     });
     record.ids.add(channel.id);
+  }
+  // Merge the provider's public live catalogue into India without copying its protected media URLs.
+  const india = ensureCountry('IN');
+  const aliases = new Map([['Sun Neo HD', 'SunNeo.in']]);
+  for (const channel of sunNxtCatalog.channels) {
+    const website = safeHttpsUrl(channel.website);
+    if (!/^\d+$/.test(String(channel.contentId)) || !channel.name || !website || !website.endsWith(`/tv/detail/${channel.contentId}`)) {
+      throw new Error('Sun NXT snapshot contains an invalid channel identity or viewing page.');
+    }
+    const name = channel.name.trim();
+    const matching = [...india.channels, ...india.directory].find(entry => entry.id === aliases.get(name) || normalizeName(entry.name) === normalizeName(name));
+    if (matching) {
+      if (matching.id === 'SunNeo.in') matching.name = name;
+      matching.website = website;
+      matching.provider = 'Sun NXT';
+      matching.title = 'Sun NXT';
+      matching.languages = [...new Set([...matching.languages, ...channel.languages])].sort();
+      matching.categories = [...new Set([...matching.categories, ...channel.categories])].sort();
+      continue;
+    }
+    const id = `SunNXT${channel.contentId}.in`;
+    if (india.ids.has(id)) throw new Error(`Repeated Sun NXT channel ${id}.`);
+    india.directory.push({ id, name, country: 'IN', languages: channel.languages, categories: channel.categories, provider: 'Sun NXT', title: 'Sun NXT', website });
+    india.ids.add(id);
   }
 
   if (indiaChecks.version !== 1 || !indiaChecks.results || typeof indiaChecks.results !== 'object') {

@@ -7,14 +7,15 @@
     "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
     "https://raw.githubusercontent.com/Romaxa55/world_ip_tv/master/output/in.m3u",
     "public/catalog/india.v1.json",
-    "catalog/india-browser-checks.v1.json"
+    "catalog/india-browser-checks.v1.json",
+    "catalog/sunnxt-live.v1.json"
   ],
   "countries": [
     {
       "code": "IN",
       "name": "India",
       "count": 619,
-      "directory_count": 1447,
+      "directory_count": 1460,
       "languages": [
         "asm",
         "ben",
@@ -7162,7 +7163,7 @@
     }
   ],
   "total": 6892,
-  "directory_total": 29743,
+  "directory_total": 29756,
   "sports_stream_count": 213,
   "sports_directory_count": 2303
 }
