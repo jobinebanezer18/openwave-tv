@@ -6,7 +6,7 @@ A local, open-source TV and radio guide that plays public live streams in your b
 
 ## Download and watch
 
-Download the executable for your computer from [Releases](https://github.com/jobinebanezer18/openwave-tv/releases), unzip it, and run it. On macOS, the universal preview DMG contains an app you can drag to Applications. It opens its own TV window and starts a loopback-only local server; if the usual port is occupied, it tries another local port. The DMG is ad-hoc signed and not notarized, so macOS may require Control-click → Open on first launch. Use **Quit app** in the guide when finished. The standalone command-line builds open your default browser.
+Download the executable for your computer from [Releases](https://github.com/jobinebanezer18/openwave-tv/releases), unzip it, and run it. On macOS, the universal preview DMG contains an app you can drag to Applications. It opens its own TV window and starts a loopback-only local server; if the usual port is occupied, it tries another local port. The DMG is ad-hoc signed and not notarized, so macOS may require Control-click → Open on first launch. Click **Updates** in the Mac app to check now or toggle automatic daily checks. When an update is ready, the app links to its DMG; drag the new app to Applications to install it. Use **Quit app** in the guide when finished. The standalone command-line builds open your default browser.
 
 An internet connection is needed for the guide and streams. The optional AI model downloads on first use and is cached by the browser. The model runs on your computer; search text is not sent to an AI service.
 

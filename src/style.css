@@ -73,6 +73,7 @@ html.openwave-native,html.openwave-native body,html.openwave-native #app{height:
 .openwave-native .brand{min-width:0;font-size:21px}
 .openwave-native .top-nav button{min-width:70px;height:38px;padding:0 11px}
 .openwave-native .topbar-actions{gap:10px}
+.updates-button{min-height:36px;padding:0 12px;border:1px solid #ffffff8f;border-radius:8px;background:#ffffff1b;color:#fff;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.updates-button:hover{background:#ffffff37}.updates-button.has-update{background:#fff;color:#064394}.updates-button.has-update::before{content:'●';margin-right:6px;color:#1977ff}.updates-button[hidden]{display:none}
 .openwave-native .github-link,.openwave-native .topbar-guide{display:none}
 .openwave-native .layout{width:100%;max-width:none;flex:1;min-height:0;margin:0;padding:12px 20px;grid-template-columns:minmax(0,1fr) minmax(310px,350px);gap:16px;align-items:stretch;overflow:hidden}
 .openwave-native .stage-column{position:relative;height:100%;min-height:0;display:flex;flex-direction:column}

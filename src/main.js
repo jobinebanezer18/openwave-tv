@@ -74,7 +74,7 @@ app.innerHTML = `
     <header class="topbar">
       <a class="brand" href="#top" aria-label="OpenWave TV home"><span class="brand-emblem">${glyph('signal', 23)}</span><span>OPENWAVE</span></a>
       <nav class="top-nav" aria-label="Primary"><button id="nav-home" class="active">Home</button><button id="nav-guide">Channels</button><button id="nav-radio">Radio</button><button id="nav-favorites">Favorites</button></nav>
-      <div class="topbar-actions"><a class="github-link" href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${glyph('arrow', 15)}</a><button id="quit-button" class="quit-button" type="button" ${WEB_MODE ? 'hidden' : ''}>Quit app</button><button id="mobile-radio" class="mobile-radio">Radio</button><button id="preferences-button" class="preferences-button" aria-label="Preferences" title="Preferences">${glyph('sliders', 18)}</button><button id="header-guide" class="topbar-guide">Watch now <span>↗</span></button></div>
+      <div class="topbar-actions"><a class="github-link" href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${glyph('arrow', 15)}</a><button id="updates-button" class="updates-button" type="button" ${nativeShell ? '' : 'hidden'}>Updates</button><button id="quit-button" class="quit-button" type="button" ${WEB_MODE ? 'hidden' : ''}>Quit app</button><button id="mobile-radio" class="mobile-radio">Radio</button><button id="preferences-button" class="preferences-button" aria-label="Preferences" title="Preferences">${glyph('sliders', 18)}</button><button id="header-guide" class="topbar-guide">Watch now <span>↗</span></button></div>
     </header>
     <div id="offline-banner" class="offline-banner" role="status" hidden>The guide is saved, but live channels need an internet connection.</div>
     <main class="layout" id="top" data-tv-layout>
@@ -586,6 +586,9 @@ document.querySelector('#quit-button').addEventListener('click', async () => {
   } catch { els.result.textContent = 'Could not close OpenWave TV. Try again.'; }
 });
 document.querySelector('#preferences-button').addEventListener('click', () => { if (state.countries.length) onboarding.show(state.countries, state.languages, state.preferences, onboardingOptions()); });
+document.querySelector('#updates-button').addEventListener('click', () => {
+  window.webkit?.messageHandlers?.openwaveUpdates?.postMessage('check');
+});
 document.querySelector('.brand').addEventListener('click', event => { event.preventDefault(); radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
 els.list.addEventListener('click', event => {
   const save = event.target.closest('[data-save-id]');
