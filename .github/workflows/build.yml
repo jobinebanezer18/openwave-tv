@@ -107,7 +107,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          app_binary="work/macos-package/OpenWave TV.app/Contents/MacOS/OpenWave TV"
+          app_binary="work/macos-package/dmg-stage/OpenWave TV.app/Contents/MacOS/OpenWave TV"
           "$app_binary" -no-browser -addr 127.0.0.1:8769 > work/macos-package/smoke.log 2>&1 &
           app_pid=$!
           trap 'kill "$app_pid" 2>/dev/null || true' EXIT

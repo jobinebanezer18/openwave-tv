@@ -6,8 +6,8 @@ output_dir="${1:-$(cd "$repo_dir/.." && pwd)}"
 version="$(cd "$repo_dir" && node -p "require('./package.json').version")"
 bundle_version="${version%%-*}"
 build_dir="$repo_dir/work/macos-package"
-app_dir="$build_dir/OpenWave TV.app"
 stage_dir="$build_dir/dmg-stage"
+app_dir="$stage_dir/OpenWave TV.app"
 dmg_path="$output_dir/OpenWave-TV-${version}-macOS-universal-unsigned.dmg"
 icon_source="$repo_dir/public/icons/icon-512.png"
 
@@ -21,6 +21,8 @@ CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags='-s -w' -o "$
 CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags='-s -w' -o "$build_dir/openwave-amd64" .
 lipo -create "$build_dir/openwave-arm64" "$build_dir/openwave-amd64" -output "$app_dir/Contents/MacOS/OpenWave TV"
 chmod 755 "$app_dir/Contents/MacOS/OpenWave TV"
+unlink "$build_dir/openwave-arm64"
+unlink "$build_dir/openwave-amd64"
 
 cat > "$app_dir/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -54,7 +56,6 @@ plutil -lint "$app_dir/Contents/Info.plist"
 codesign --force --sign - --timestamp=none "$app_dir"
 codesign --verify --deep --strict "$app_dir"
 
-cp -R "$app_dir" "$stage_dir/"
 ln -s /Applications "$stage_dir/Applications"
 cat > "$stage_dir/READ ME FIRST.txt" <<'NOTE'
 Drag OpenWave TV.app to Applications, then open it. It starts the local TV server
@@ -64,7 +65,7 @@ This preview is ad-hoc signed, not Apple Developer ID signed or notarized.
 macOS may ask you to use Control-click > Open the first time.
 NOTE
 
-hdiutil create -volname "OpenWave TV" -srcfolder "$stage_dir" -ov -format UDZO "$dmg_path" >/dev/null
+hdiutil create -volname "OpenWave TV" -srcfolder "$stage_dir" -ov -fs HFS+ -format UDZO "$dmg_path" >/dev/null
 hdiutil verify "$dmg_path" >/dev/null
 (cd "$output_dir" && shasum -a 256 "$(basename "$dmg_path")" > "$(basename "$dmg_path").sha256")
 printf 'Created %s\n' "$dmg_path"
