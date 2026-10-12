@@ -4,9 +4,12 @@ import { inferCategory, rankChannels, parseQuery } from './search.js';
 import { mountRadioMode } from './radio.js';
 import { createOnboarding } from './onboarding.js';
 import { parsePrivatePlaylist, PRIVATE_PLAYLIST_MAX_BYTES } from './private-playlist.js';
+import { registerPwa } from './pwa.js';
 import './style.css';
 
 const app = document.querySelector('#app');
+const WEB_MODE = import.meta.env.VITE_WEB_MODE === true;
+if (WEB_MODE) registerPwa();
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const categories = ['all', 'news', 'sports', 'movies', 'music', 'kids', 'documentary', 'entertainment', 'education', 'cooking', 'travel', 'religious', 'business', 'culture', 'general'];
 const quickCategories = categories.slice(0, 6);
@@ -45,6 +48,17 @@ const glyph = (name, size = 20) => {
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const titleCase = value => value === 'all' ? 'All' : value[0].toUpperCase() + value.slice(1);
 
+function webStreamURLs(channel) {
+  const candidates = [channel.url, ...(Array.isArray(channel.urls) ? channel.urls : []), ...(Array.isArray(channel.streams) ? channel.streams.map(stream => typeof stream === 'string' ? stream : stream?.url) : [])];
+  return [...new Set(candidates.filter(value => {
+    if (typeof value !== 'string') return false;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' && !url.username && !url.password;
+    } catch { return false; }
+  }))];
+}
+
 app.innerHTML = `
   <div class="app-shell">
     <header class="topbar">
@@ -52,6 +66,7 @@ app.innerHTML = `
       <nav class="top-nav" aria-label="Primary"><button id="nav-home" class="active">Home</button><button id="nav-guide">Channels</button><button id="nav-radio">Radio</button><button id="nav-favorites">Favorites</button></nav>
       <div class="topbar-actions"><a class="github-link" href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${glyph('arrow', 15)}</a><button id="mobile-radio" class="mobile-radio">Radio</button><button id="preferences-button" class="preferences-button" aria-label="Preferences" title="Preferences">${glyph('sliders', 18)}</button><button id="header-guide" class="topbar-guide">Watch now <span>↗</span></button></div>
     </header>
+    <div id="offline-banner" class="offline-banner" role="status" hidden>The guide is saved, but live channels need an internet connection.</div>
     <main class="layout" id="top" data-tv-layout>
       <div class="stage-column">
         <div class="stage-heading"><div><h1>THE WORLD IS LIVE.<br><span>JUST TUNE IN.</span></h1></div><span id="stage-count" class="stage-count">Connecting to the guide…</span></div>
@@ -92,7 +107,7 @@ app.innerHTML = `
           <button id="private-clear" class="private-clear" type="button" hidden>Remove</button>
           <input id="private-file" type="file" accept=".m3u,.m3u8,audio/x-mpegurl,application/vnd.apple.mpegurl" hidden aria-label="Choose private M3U playlist">
         </div>
-        <p id="private-status" class="private-status" role="status" aria-live="polite">Session only. Reloading clears it; import again next time.</p>
+        <p id="private-status" class="private-status" role="status" aria-live="polite">Your file stays in this tab.</p>
         <div class="list-heading"><span id="list-label">CHANNELS</span><span id="list-count">—</span></div>
         <div class="channel-list" id="channel-list"></div>
         <button id="show-more" class="show-more" hidden>Show more channels ${glyph('chevron', 16)}</button>
@@ -126,7 +141,22 @@ const privateEls = {
   smart: document.querySelector('#search-form button[type="submit"]')
 };
 const alternativeButton = document.querySelector('#alternative-button');
+if (WEB_MODE) {
+  const offlineBanner = document.querySelector('#offline-banner');
+  const updateOfflineBanner = () => { offlineBanner.hidden = navigator.onLine; };
+  window.addEventListener('online', updateOfflineBanner);
+  window.addEventListener('offline', updateOfflineBanner);
+  updateOfflineBanner();
+  privateEls.smart.hidden = true;
+  els.ai.textContent = 'Search channels by name, language, place, or category.';
+  document.querySelector('.stage-heading h1').innerHTML = 'LIVE TV.<br><span>MADE SIMPLE.</span>';
+  document.querySelector('.cover-content h2').innerHTML = 'INDIA LIVE.<br><em>ONE SCREEN.</em>';
+  document.querySelector('.cover-content p').textContent = 'A small India beta guide. Pick a channel to play its direct stream.';
+}
 const radioMode = mountRadioMode();
+function onboardingOptions() {
+  return WEB_MODE ? { availableInterests: [...new Set(state.channels.flatMap(channel => channel.categories || []))] } : {};
+}
 const onboarding = createOnboarding(preferences => {
   state.preferences = preferences;
   state.country = preferences.country || 'all';
@@ -178,7 +208,8 @@ function renderClock() {
 renderClock(); setInterval(renderClock, 60_000);
 
 function renderCategories() {
-  els.quick.innerHTML = quickCategories.map(c => `<button class="quick-chip ${state.category === c ? 'selected' : ''}" data-category="${c}" aria-pressed="${state.category === c}">${titleCase(c)}</button>`).join('');
+  const visibleCategories = WEB_MODE ? quickCategories.filter(c => c === 'all' || state.channels.some(ch => ch.categories.includes(c))) : quickCategories;
+  els.quick.innerHTML = visibleCategories.map(c => `<button class="quick-chip ${state.category === c ? 'selected' : ''}" data-category="${c}" aria-pressed="${state.category === c}">${titleCase(c)}</button>`).join('');
   els.countryTrigger.innerHTML = `${escapeHTML(state.country === 'all' ? 'Everywhere' : countryName(state.country))} ${glyph('chevron', 15)}`;
   els.languageTrigger.innerHTML = `${escapeHTML(state.language === 'all' ? 'Any language' : languageName(state.language))} ${glyph('chevron', 15)}`;
   els.categoryTrigger.innerHTML = `${escapeHTML(state.category === 'all' ? 'All categories' : titleCase(state.category))} ${glyph('chevron', 15)}`;
@@ -247,6 +278,10 @@ function filterChannels(withMotion = false) {
   if (state.category !== 'all') pool = pool.filter(ch => ch.categories.includes(state.category));
   state.results = rankChannels(pool, state.search, state.countries, state.languages, state.aiCategory);
   state.results.sort((a, b) => Number(isUnavailable(a)) - Number(isUnavailable(b)));
+  if (WEB_MODE && !state.favoritesOnly && !state.search.trim() && state.category === 'all' && state.preferences?.interests?.length) {
+    const preferred = new Set(state.preferences.interests);
+    state.results.sort((a, b) => Number(b.categories.some(category => preferred.has(category))) - Number(a.categories.some(category => preferred.has(category))));
+  }
   if (state.search && !state.results.length && state.aiCategory) {
     const parsed = parseQuery(state.search, state.countries, state.languages);
     state.results = pool.filter(ch => (!parsed.countryCode || ch.country === parsed.countryCode) && (!parsed.languageCode || ch.languages?.includes(parsed.languageCode)) && ch.categories.includes(state.aiCategory));
@@ -290,7 +325,7 @@ function startTune(ch, attempt) {
   clearTimeout(state.tuneTimer);
   const serial = state.playSerial;
   state.tuneTimer = setTimeout(() => {
-    if (state.playSerial === serial && !els.shell.classList.contains('is-playing')) showError(`No video arrived from ${ch.name}.`, ch);
+    if (state.playSerial === serial && !els.shell.classList.contains('is-playing')) showError(WEB_MODE ? `No video arrived from ${ch.name}. The stream may be offline or block direct browser playback.` : `No video arrived from ${ch.name}.`, ch);
   }, ch.private ? 25000 : 15000);
   state.tuneAnimation?.stop?.();
   els.tune.hidden = false;
@@ -341,11 +376,20 @@ async function playChannel(id, attempt = 0, preferredLanguage = null) {
   if (state.hls) { state.hls.destroy(); state.hls = null; }
   els.video.pause(); els.video.removeAttribute('src'); els.video.load();
   try {
-    const response = ch.private
-      ? await fetch('/api/private-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: ch.url }) })
-      : await fetch('/api/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, attempt, language: preferredLanguage }) });
-    if (!response.ok) throw new Error(response.status === 503 ? 'No working feed is available for this channel right now.' : ch.private ? 'This private stream could not be opened. Check its HLS URL.' : 'This channel could not be opened.');
-    const { url, sources, sourceIndex } = await response.json();
+    let url, sources, sourceIndex;
+    if (WEB_MODE) {
+      const directURLs = webStreamURLs(ch);
+      if (!directURLs.length) throw new Error('No HTTPS stream is available for direct browser playback.');
+      sources = directURLs.length;
+      sourceIndex = Math.min(attempt, sources - 1);
+      url = directURLs[sourceIndex];
+    } else {
+      const response = ch.private
+        ? await fetch('/api/private-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: ch.url }) })
+        : await fetch('/api/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, attempt, language: preferredLanguage }) });
+      if (!response.ok) throw new Error(response.status === 503 ? 'No working feed is available for this channel right now.' : ch.private ? 'This private stream could not be opened. Check its HLS URL.' : 'This channel could not be opened.');
+      ({ url, sources, sourceIndex } = await response.json());
+    }
     if (state.playSerial !== serial) return;
     state.sourceCount = sources;
     state.sourceAttempt = sourceIndex;
@@ -353,7 +397,7 @@ async function playChannel(id, attempt = 0, preferredLanguage = null) {
     const tryNext = () => {
       if (state.playSerial !== serial) return;
       if (sourceIndex + 1 < sources) playChannel(id, sourceIndex + 1, preferredLanguage);
-      else showError(`No working feed for ${ch.name} right now.`, ch);
+      else showError(WEB_MODE ? `${ch.name} is not playing in this browser. The stream may be offline or its host may block direct playback.` : `No working feed for ${ch.name} right now.`, ch);
     };
     if (Hls.isSupported()) {
       const hls = new Hls({ maxBufferLength: 15, liveSyncDurationCount: 3 });
@@ -371,7 +415,7 @@ async function playChannel(id, attempt = 0, preferredLanguage = null) {
       els.video.src = url;
       els.video.play().catch(error => { if (state.playSerial === serial) handlePlayRejection(error, ch); });
     } else showError('This browser cannot play HLS video. Try current Chrome, Edge, Firefox, or Safari.');
-  } catch (error) { if (state.playSerial === serial) showError(error.message || 'The channel could not be opened.', ch.private ? ch : responseFailureIsUnavailable(error) ? ch : null); }
+  } catch (error) { if (state.playSerial === serial) showError(error.message || 'The channel could not be opened.', ch.private ? ch : WEB_MODE || responseFailureIsUnavailable(error) ? ch : null); }
 }
 
 function responseFailureIsUnavailable(error) { return error?.message === 'No working feed is available for this channel right now.'; }
@@ -380,7 +424,7 @@ els.video.addEventListener('playing', () => { clearError(); finishTune(); els.sh
 els.video.addEventListener('error', () => {
   if (!state.selected || state.hls) return;
   if (state.sourceAttempt + 1 < state.sourceCount) playChannel(state.selected.id, state.sourceAttempt + 1);
-  else showError(`No working feed for ${state.selected.name} right now.`, state.selected);
+  else showError(WEB_MODE ? `${state.selected.name} cannot play here. Its host may block direct browser playback, or the stream may be offline.` : `No working feed for ${state.selected.name} right now.`, state.selected);
 });
 els.tap.addEventListener('click', () => els.video.play().catch(error => { if (state.selected) handlePlayRejection(error, state.selected); }));
 alternativeButton.addEventListener('click', () => { if (alternativeButton.dataset.id) playChannel(alternativeButton.dataset.id); });
@@ -399,7 +443,7 @@ function setPrivateView(on) {
   els.search.placeholder = state.privateOnly ? 'Find in your playlist' : 'Find a channel, mood, or place';
   els.quick.hidden = state.privateOnly;
   document.querySelector('.filter-area').hidden = state.privateOnly;
-  privateEls.smart.hidden = state.privateOnly;
+  privateEls.smart.hidden = WEB_MODE || state.privateOnly;
   els.ai.hidden = state.privateOnly;
   els.favoritesFilter.hidden = state.privateOnly;
   privateEls.title.textContent = state.privateOnly ? 'Your playlist' : 'Explore live';
@@ -445,9 +489,15 @@ privateEls.file.addEventListener('change', async () => {
   }
   try {
     const { channels, skipped } = parsePrivatePlaylist(await file.text());
+    const webChannels = WEB_MODE ? channels.filter(ch => webStreamURLs(ch).length) : channels;
+    if (WEB_MODE && !webChannels.length) {
+      privateEls.status.textContent = 'This web version needs HTTPS .m3u8 links. HTTP and other stream types cannot play here.';
+      return;
+    }
     stopPrivatePlayback();
-    state.privateChannels = channels.map(ch => ({ ...ch, private: true }));
-    privateEls.status.textContent = `${channels.length} channel${channels.length === 1 ? '' : 's'} loaded${skipped ? ` · ${skipped} unsupported stream${skipped === 1 ? '' : 's'} skipped` : ''}. Session only; reimport after reload.`;
+    state.privateChannels = webChannels.map(ch => ({ ...ch, private: true }));
+    const skippedTotal = skipped + channels.length - webChannels.length;
+    privateEls.status.textContent = `${webChannels.length} channel${webChannels.length === 1 ? '' : 's'} loaded${skippedTotal ? ` · ${skippedTotal} unsupported stream${skippedTotal === 1 ? '' : 's'} skipped` : ''}. ${WEB_MODE ? 'HTTPS HLS playback depends on the stream host allowing browser access. ' : ''}Session only; reimport after reload.`;
     setPrivateView(true);
     jumpToGuide();
   } catch (error) {
@@ -478,7 +528,7 @@ document.querySelector('#nav-favorites').addEventListener('click', () => { setPr
 function showRadio() { els.video.pause(); setNavActive('nav-radio'); radioMode.show(); }
 document.querySelector('#nav-radio').addEventListener('click', showRadio);
 document.querySelector('#mobile-radio').addEventListener('click', showRadio);
-document.querySelector('#preferences-button').addEventListener('click', () => { if (state.countries.length) onboarding.show(state.countries, state.languages, state.preferences); });
+document.querySelector('#preferences-button').addEventListener('click', () => { if (state.countries.length) onboarding.show(state.countries, state.languages, state.preferences, onboardingOptions()); });
 document.querySelector('.brand').addEventListener('click', event => { event.preventDefault(); radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
 els.list.addEventListener('click', event => {
   const save = event.target.closest('[data-save-id]');
@@ -519,7 +569,7 @@ function setPickerBackgroundInert(inert) {
 function pickerOptions() {
   if (activePicker === 'country') return [{ value: 'all', label: 'Everywhere' }, ...state.countries.map(c => ({ value: c.code, label: c.name }))];
   if (activePicker === 'language') return [{ value: 'all', label: 'Any language' }, ...state.languages.map(l => ({ value: l.code, label: l.name }))];
-  return categories.map(c => ({ value: c, label: c === 'all' ? 'All categories' : titleCase(c) }));
+  return (WEB_MODE ? categories.filter(c => c === 'all' || state.channels.some(ch => ch.categories.includes(c))) : categories).map(c => ({ value: c, label: c === 'all' ? 'All categories' : titleCase(c) }));
 }
 function renderPickerOptions() {
   const query = els.pickerSearch.value.trim().toLowerCase();
@@ -590,7 +640,7 @@ document.addEventListener('keydown', event => {
 els.more.addEventListener('click', () => { shown += 60; renderList(true); });
 els.search.addEventListener('input', event => {
   state.search = event.target.value; state.aiCategory = null; state.searchSerial++; shown = 60;
-  els.ai.textContent = 'Smart search uses MiniLM on this device. First use downloads the model.';
+  els.ai.textContent = WEB_MODE ? 'Search channels by name, language, place, or category.' : 'Smart search uses MiniLM on this device. First use downloads the model.';
   clearTimeout(state.filterTimer); state.filterTimer = setTimeout(() => filterChannels(true), 90);
 });
 document.querySelector('#search-form').addEventListener('submit', async event => {
@@ -598,6 +648,7 @@ document.querySelector('#search-form').addEventListener('submit', async event =>
   if (state.privateOnly) { filterChannels(true); return; }
   const query = state.search.trim(); if (!query) { els.search.focus(); return; }
   clearTimeout(state.filterTimer);
+  if (WEB_MODE) { state.aiCategory = null; filterChannels(true); return; }
   const serial = ++state.searchSerial;
   const parsed = parseQuery(query, state.countries, state.languages);
   if (parsed.category || ((parsed.countryCode || parsed.languageCode) && parsed.terms.length === 0) || query.split(/\s+/).length < 2) {
@@ -645,10 +696,10 @@ document.addEventListener('keydown', event => {
 
 async function loadGuide() {
   try {
-    const response = await fetch('/api/channels');
+    const response = await fetch(WEB_MODE ? '/catalog/india.v1.json' : '/api/channels');
     if (!response.ok) throw new Error(await response.text());
     const data = await response.json();
-    state.channels = data.channels;
+    state.channels = WEB_MODE ? data.channels.filter(ch => webStreamURLs(ch).length) : data.channels;
     state.countries = data.countries.sort((a, b) => a.name.localeCompare(b.name));
     state.languages = data.languages || [];
     state.preferences = readStore('openwave-preferences', null);
@@ -658,7 +709,7 @@ async function loadGuide() {
       radioMode.applyPreferences(state.preferences);
     }
     renderRail(); filterChannels(true);
-    if (!state.preferences?.completed) onboarding.show(state.countries, state.languages, null);
+    if (!state.preferences?.completed) onboarding.show(state.countries, state.languages, null, onboardingOptions());
   } catch {
     els.result.textContent = 'The guide could not load';
     els.stageCount.textContent = 'Guide unavailable';

@@ -1,0 +1,873 @@
+{
+  "version": 1,
+  "generated": "2026-10-12",
+  "sources": [
+    "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_india.m3u8",
+    "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+    "https://romaxa55.github.io/world_ip_tv/output/index.m3u"
+  ],
+  "countries": [
+    {
+      "code": "IN",
+      "name": "India"
+    }
+  ],
+  "languages": [
+    {
+      "code": "ben",
+      "name": "Bengali"
+    },
+    {
+      "code": "eng",
+      "name": "English"
+    },
+    {
+      "code": "hin",
+      "name": "Hindi"
+    },
+    {
+      "code": "kan",
+      "name": "Kannada"
+    },
+    {
+      "code": "mar",
+      "name": "Marathi"
+    },
+    {
+      "code": "tel",
+      "name": "Telugu"
+    },
+    {
+      "code": "asm",
+      "name": "Assamese"
+    },
+    {
+      "code": "guj",
+      "name": "Gujarati"
+    },
+    {
+      "code": "mal",
+      "name": "Malayalam"
+    },
+    {
+      "code": "ori",
+      "name": "Odia"
+    },
+    {
+      "code": "pan",
+      "name": "Punjabi"
+    },
+    {
+      "code": "tam",
+      "name": "Tamil"
+    },
+    {
+      "code": "urd",
+      "name": "Urdu"
+    }
+  ],
+  "channels": [
+    {
+      "id": "in-01",
+      "name": "NDTV India",
+      "url": "https://ndtvindiaelemarchana.akamaized.net/hls/live/2003679/ndtvindia/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": ""
+    },
+    {
+      "id": "in-02",
+      "name": "ABP News",
+      "url": "https://d2l4ar6y3mrs4k.cloudfront.net/live-streaming/abpnews-livetv/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": ""
+    },
+    {
+      "id": "in-03",
+      "name": "ABP Ananda",
+      "url": "https://d2l4ar6y3mrs4k.cloudfront.net/live-streaming/ananda-livetv/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "ben"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": ""
+    },
+    {
+      "id": "in-04",
+      "name": "TV9 Kannada",
+      "url": "https://dyjmyiv3bp2ez.cloudfront.net/pub-iotv9kanmo6oiq/liveabr/playlist.m3u8",
+      "country": "IN",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": ""
+    },
+    {
+      "id": "in-05",
+      "name": "TV9 Telugu",
+      "url": "https://dyjmyiv3bp2ez.cloudfront.net/pub-iotv9telcmjhcs/liveabr/playlist.m3u8",
+      "country": "IN",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": ""
+    },
+    {
+      "id": "in-06",
+      "name": "TV9 Marathi",
+      "url": "https://dyjmyiv3bp2ez.cloudfront.net/pub-iotv9marlygv8h/liveabr/playlist.m3u8",
+      "country": "IN",
+      "languages": [
+        "mar"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": ""
+    },
+    {
+      "id": "in-07",
+      "name": "NDTV Profit",
+      "url": "https://ndtvprofit.akamaized.net/hls/live/2107404/ndtvprofit/master_1.m3u8",
+      "country": "IN",
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": ""
+    },
+    {
+      "id": "in-08",
+      "name": "News18 India",
+      "url": "https://nw18live.cdn.jio.com/bpk-tv/News18_India_NW18_MOB/output01/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": ""
+    },
+    {
+      "id": "in-09",
+      "name": "CNN-News18",
+      "url": "https://nw18live.cdn.jio.com/bpk-tv/CNN_News18_NW18_MOB/output01/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": ""
+    },
+    {
+      "id": "in-10",
+      "name": "News18 Kannada",
+      "url": "https://nw18live.cdn.jio.com/bpk-tv/News18_Kannada_NW18_MOB/output01/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": ""
+    },
+    {
+      "id": "in-11",
+      "name": "10 TV",
+      "url": "https://cdn.pishow.tv/ott/live/391/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-12",
+      "name": "22Scope News",
+      "url": "https://thelegitpro.in/HDlive/22scope/index.fmp4.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-13",
+      "name": "24 News",
+      "url": "https://mumt07.tangotv.in/zHjX9OFlTWENTYFOURNEWS/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "mal"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-14",
+      "name": "4 SiDES TV",
+      "url": "https://stream.ottlive.co.in/4sidestv/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-15",
+      "name": "4TV News",
+      "url": "https://cdn.pishow.tv/ott/live/1007/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "urd"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-16",
+      "name": "99TV",
+      "url": "https://cdn.pishow.tv/ott/live/1211/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-17",
+      "name": "Aaj Ki Khabar",
+      "url": "https://stream.ottlive.co.in/aajkikhabar/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-18",
+      "name": "Aaj Tak HD",
+      "url": "https://feeds.intoday.in/aajtak/api/aajtakhd/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "news"
+      ],
+      "logo": "",
+      "source": "Romaxa55 world_ip_tv (India group)",
+      "source_url": "https://romaxa55.github.io/world_ip_tv/output/index.m3u",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-19",
+      "name": "Andy Haryana",
+      "url": "https://mumt03.tangotv.in/Dsly5z3HANDYHARYANA/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "music",
+        "culture"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-20",
+      "name": "7S Music",
+      "url": "https://cdn.pishow.tv/ott/live/1257/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "music"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-21",
+      "name": "9X Jhakaas",
+      "url": "https://wiselp.wiseplayout.com/9X_Jhakaas/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "mar"
+      ],
+      "categories": [
+        "music"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-22",
+      "name": "9XM",
+      "url": "https://wiselp.wiseplayout.com/9XM/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "music"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-23",
+      "name": "Aaryaa TV",
+      "url": "https://stream.ottlive.co.in/aryatvtamil/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "music"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-25",
+      "name": "Deewana HD",
+      "url": "https://live20.bozztv.com/giatvplayout7/giatv-209592/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "music"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-26",
+      "name": "Aadinath TV",
+      "url": "https://cdn.pishow.tv/ott/live/252/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "religious"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-27",
+      "name": "Aaseervatham TV",
+      "url": "https://mumt04.tangotv.in/m18aqlK4AASEERVATHAMTV/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "tam"
+      ],
+      "categories": [
+        "religious"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-28",
+      "name": "JTBS Classic",
+      "url": "https://jtbsclassic.dpdns.org/live.m3u8",
+      "country": "IN",
+      "languages": [
+        "ben",
+        "eng"
+      ],
+      "categories": [
+        "religious",
+        "culture"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-29",
+      "name": "Sanskar TV",
+      "url": "https://d26idhjf0y1p2g.cloudfront.net/out/v1/cd66dd25b9774cb29943bab54bbf3e2f/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "religious",
+        "culture"
+      ],
+      "logo": "",
+      "source": "Romaxa55 world_ip_tv (India group)",
+      "source_url": "https://romaxa55.github.io/world_ip_tv/output/index.m3u",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-30",
+      "name": "Aastha Bhajan",
+      "url": "https://mumt05.tangotv.in/87NeALx2AASTHABHAJAN/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "religious"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-31",
+      "name": "Aastha Gujarati",
+      "url": "https://mumt04.tangotv.in/m18aqlK4AASTHAGUJARATI/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "guj"
+      ],
+      "categories": [
+        "religious"
+      ],
+      "logo": "",
+      "source": "Romaxa55 world_ip_tv (India group)",
+      "source_url": "https://romaxa55.github.io/world_ip_tv/output/index.m3u",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-32",
+      "name": "Calvary TV",
+      "url": "https://cdn.pishow.tv/ott/live/963/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "tel"
+      ],
+      "categories": [
+        "religious"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-33",
+      "name": "Aastha Kannada",
+      "url": "https://cdn.pishow.tv/ott/live/234/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "religious"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-34",
+      "name": "DD Arun Prabha",
+      "url": "https://cdn.pishow.tv/ott/live/32/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "general"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-35",
+      "name": "DD Assam",
+      "url": "https://d2lk5u59tns74c.cloudfront.net/out/v1/d380bf5c167b4319a46cdd8204bc26b2/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "asm",
+        "eng"
+      ],
+      "categories": [
+        "general"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-36",
+      "name": "DD Bangla",
+      "url": "https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/7ff57cc9046b4c188b51a0d506f36e7f/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "ben"
+      ],
+      "categories": [
+        "general"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-37",
+      "name": "DD Bharati",
+      "url": "https://cdn.pishow.tv/ott/live/10/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "culture"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-38",
+      "name": "DD Chandana",
+      "url": "https://cdn.pishow.tv/ott/live/28/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "kan"
+      ],
+      "categories": [
+        "general"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-39",
+      "name": "DD Chhattisgarh",
+      "url": "https://cdn.pishow.tv/ott/live/15/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "general"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-40",
+      "name": "DD Girnar",
+      "url": "https://d2lk5u59tns74c.cloudfront.net/out/v1/558fdb9aebb54bb5bbbf0ced03686148/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "guj"
+      ],
+      "categories": [
+        "general"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-41",
+      "name": "CNBC Awaaz",
+      "url": "https://n18syndication.akamaized.net/bpk-tv/CNBC_Awaaz_NW18_MOB/output01/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "business"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-42",
+      "name": "CNBC Bajar",
+      "url": "https://n18syndication.akamaized.net/bpk-tv/CNBC_Bazaar_NW18_MOB/output01/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "guj"
+      ],
+      "categories": [
+        "business"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-43",
+      "name": "CNBC TV18",
+      "url": "https://n18syndication.akamaized.net/bpk-tv/CNBC_TV18_NW18_MOB/output01/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "business"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-44",
+      "name": "Zee Business",
+      "url": "https://dwby15d04agvq.cloudfront.net/index_5.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "business"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-45",
+      "name": "BVG",
+      "url": "https://mumt05.tangotv.in/87NeALx2BVG/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "education"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-46",
+      "name": "Gyandarshan",
+      "url": "https://cdn.pishow.tv/ott/live/14/master.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "education"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-47",
+      "name": "Odisha TV",
+      "url": "https://livetv.tarangplus.in/otv-origin/live/playlist.m3u8",
+      "country": "IN",
+      "languages": [
+        "ori"
+      ],
+      "categories": [
+        "culture"
+      ],
+      "logo": "",
+      "source": "Romaxa55 world_ip_tv (India group)",
+      "source_url": "https://romaxa55.github.io/world_ip_tv/output/index.m3u",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-48",
+      "name": "Aakaash Aath",
+      "url": "https://mumt03.tangotv.in/Dsly5z3HAAKASHAATH/index.m3u8",
+      "country": "IN",
+      "languages": [
+        "ben"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-49",
+      "name": "Dangal TV",
+      "url": "https://live-dangal.akamaized.net/liveabr/playlist.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "general"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    },
+    {
+      "id": "in-50",
+      "name": "Anjan TV",
+      "url": "https://anjan.vstream.online/anjanorg/ngrp:anjan_hdall/playlist.m3u8",
+      "country": "IN",
+      "languages": [
+        "hin"
+      ],
+      "categories": [
+        "entertainment"
+      ],
+      "logo": "",
+      "source": "IPTV Nexus online JSON",
+      "source_url": "https://dearbulut.github.io/iptv/api/v1/channels.online.json",
+      "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+      "validation_status": "candidate-beta"
+    }
+  ],
+  "schema_version": 1,
+  "status": "candidate-beta",
+  "probe_timestamp": "2026-10-12T07:02:03.237583+00:00",
+  "device_playback_verified": false
+}

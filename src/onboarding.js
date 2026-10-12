@@ -3,7 +3,8 @@ import { animate } from 'motion';
 const interests = [
   ['news', 'News'], ['sports', 'Sports'], ['movies', 'Movies'], ['music', 'Music'],
   ['kids', 'Kids'], ['documentary', 'Documentaries'], ['entertainment', 'Entertainment'],
-  ['education', 'Learning'], ['business', 'Business']
+  ['education', 'Learning'], ['business', 'Business'], ['culture', 'Culture'],
+  ['general', 'Local TV'], ['religious', 'Faith']
 ];
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
 
@@ -35,6 +36,8 @@ export function createOnboarding(onComplete) {
   };
   let countries = [], languages = [], draft = { country: null, language: null, interests: new Set() };
   let step = 1;
+  let skipInterests = false;
+  let interestOptions = interests;
   let returnFocus = null;
   let canClose = false;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -48,7 +51,7 @@ export function createOnboarding(onComplete) {
   }
   function updateContinue() {
     overlay.querySelector('#onboarding-next').disabled = !draft.country || !draft.language;
-    overlay.querySelector('#onboarding-help').textContent = draft.country && draft.language ? 'Your channels are ready to personalize.' : 'Choose both to continue.';
+    overlay.querySelector('#onboarding-help').textContent = draft.country && draft.language ? (skipInterests ? 'Your channels are ready.' : 'Your channels are ready to personalize.') : 'Choose both to continue.';
   }
   function renderOptions(kind) {
     const input = el[kind], list = el[`${kind}List`];
@@ -59,14 +62,14 @@ export function createOnboarding(onComplete) {
     list.hidden = false;
   }
   function renderChips() {
-    el.chips.innerHTML = interests.map(([id, label]) => `<button type="button" class="${draft.interests.has(id) ? 'selected' : ''}" data-onboarding-interest="${id}" aria-pressed="${draft.interests.has(id)}">${label}</button>`).join('');
+    el.chips.innerHTML = interestOptions.map(([id, label]) => `<button type="button" class="${draft.interests.has(id) ? 'selected' : ''}" data-onboarding-interest="${id}" aria-pressed="${draft.interests.has(id)}">${label}</button>`).join('');
   }
   function showStep(number) {
     step = number;
     overlay.querySelector('.onboarding-card').setAttribute('aria-labelledby', number === 1 ? 'onboarding-title' : 'onboarding-interests-title');
     el.place.hidden = number !== 1;
     el.interests.hidden = number !== 2;
-    el.stepLabel.textContent = number === 1 ? '01 / 02' : '02 / 02';
+    el.stepLabel.textContent = number === 1 ? (skipInterests ? '01 / 01' : '01 / 02') : '02 / 02';
     if (number === 2) renderChips();
     if (!reduceMotion.matches) animate(number === 1 ? el.place : el.interests, { opacity: [0.4, 1], transform: ['translateY(12px)', 'translateY(0)'] }, { duration: .3, ease: [.16, 1, .3, 1] });
   }
@@ -85,12 +88,15 @@ export function createOnboarding(onComplete) {
     onComplete(preferences);
     returnFocus?.focus();
   }
-  function show(countryOptions, languageOptions, current) {
+  function show(countryOptions, languageOptions, current, options = {}) {
     returnFocus = document.activeElement;
     canClose = Boolean(current?.completed);
+    interestOptions = Array.isArray(options.availableInterests) ? interests.filter(([id]) => options.availableInterests.includes(id)) : interests;
+    skipInterests = options.skipInterests ?? (interestOptions.length <= 1);
     countries = countryOptions;
     languages = languageOptions;
-    draft = { country: current?.country || null, language: current?.language || null, interests: new Set(current?.interests || []) };
+    draft = { country: current?.country || null, language: current?.language || null, interests: new Set(skipInterests ? [] : (current?.interests || []).filter(id => interestOptions.some(([option]) => option === id))) };
+    overlay.querySelector('#onboarding-next').innerHTML = `${skipInterests ? 'Start watching' : 'Continue'} <span>→</span>`;
     chooseList('country', draft.country);
     chooseList('language', draft.language);
     el.country.value = draft.country ? el.country.value : '';
@@ -112,7 +118,7 @@ export function createOnboarding(onComplete) {
     });
     el[`${kind}List`].addEventListener('click', event => { const button = event.target.closest(`[data-onboarding-${kind}]`); if (button) chooseList(kind, button.dataset[`onboarding${kind[0].toUpperCase()+kind.slice(1)}`]); });
   }
-  overlay.querySelector('#onboarding-next').addEventListener('click', () => { if (!draft.country || !draft.language) return; el.countryList.hidden = true; el.languageList.hidden = true; showStep(2); });
+  overlay.querySelector('#onboarding-next').addEventListener('click', () => { if (!draft.country || !draft.language) return; el.countryList.hidden = true; el.languageList.hidden = true; if (skipInterests) finish(); else showStep(2); });
   overlay.querySelector('#onboarding-back').addEventListener('click', () => showStep(1));
   overlay.querySelector('#onboarding-finish').addEventListener('click', () => finish());
   overlay.querySelector('#onboarding-close').addEventListener('click', close);

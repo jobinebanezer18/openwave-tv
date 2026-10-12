@@ -76,6 +76,7 @@ export function rankChannels(channels, query, countries, languages = [], aiCateg
 let extractorPromise;
 let categoryVectorsPromise;
 export async function inferCategory(query) {
+  if (import.meta.env.VITE_WEB_MODE === true) return null;
   if (!extractorPromise) {
     extractorPromise = import('@huggingface/transformers').then(({ pipeline }) =>
       pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { dtype: 'q8' }));

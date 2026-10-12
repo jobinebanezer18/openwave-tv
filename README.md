@@ -39,6 +39,10 @@ go run . -no-browser -addr 127.0.0.1:8765
 
 For interface development, run `go run . -no-browser -addr 127.0.0.1:8765` and `npm run dev` in separate terminals. Vite proxies `/api` to the Go server.
 
+## India web beta
+
+The separate `npm run build:web` output is a static India guide that plays a small set of direct HTTPS HLS feeds without the Go server. It is intended for a free-hosted Home Screen beta; it does not relay video or include the desktop AI runtime. See [India web beta](docs/web-beta.md) for build, import, installation, and testing limits.
+
 ## How playback works
 
 The Go process downloads channel metadata, serves the interface, and proxies HLS playlists and segments to the browser. This allows playback of feeds that require request headers or do not permit cross-origin browser requests. A media session is created only for an indexed channel; the proxy does not accept arbitrary URLs. The app does not record, store, or rebroadcast video.
