@@ -103,6 +103,26 @@ jobs:
           cache: true
       - run: npm ci
       - run: bash scripts/package-macos.sh "$GITHUB_WORKSPACE/release-mac"
+      - name: Sign Mac update feed
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$SPARKLE_PRIVATE_KEY"
+          tar -xf work/vendor-cache/Sparkle-2.10.0.tar.xz -C work/macos-package/sparkle ./bin/generate_appcast ./bin/sign_update
+          key_file="$(mktemp)"
+          trap 'rm -f "$key_file"' EXIT
+          chmod 600 "$key_file"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$key_file"
+          work/macos-package/sparkle/bin/generate_appcast \
+            --ed-key-file "$key_file" \
+            --download-url-prefix "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/" \
+            -o "$GITHUB_WORKSPACE/release-mac/macos.xml" "$GITHUB_WORKSPACE/release-mac"
+          python3 scripts/label-macos-appcast.py "$GITHUB_WORKSPACE/release-mac/macos.xml" "$GITHUB_REF_NAME"
+          work/macos-package/sparkle/bin/sign_update --ed-key-file "$key_file" "$GITHUB_WORKSPACE/release-mac/macos.xml"
+          work/macos-package/sparkle/bin/sign_update --ed-key-file "$key_file" --verify "$GITHUB_WORKSPACE/release-mac/macos.xml"
       - name: Check packaged app startup and quit
         shell: bash
         run: |
@@ -152,7 +172,7 @@ jobs:
           set -euo pipefail
           (cd release && sha256sum -c SHA256SUMS)
           (cd release && sha256sum -c *.dmg.sha256)
-          gh release create "$GITHUB_REF_NAME" release/*.tar.gz release/*.zip release/*.dmg release/*.dmg.sha256 release/SHA256SUMS release/UNSIGNED-PREVIEW.txt \
+          gh release create "$GITHUB_REF_NAME" release/*.tar.gz release/*.zip release/*.dmg release/*.dmg.sha256 release/macos.xml release/SHA256SUMS release/UNSIGNED-PREVIEW.txt \
             --repo "$GITHUB_REPOSITORY" \
             --title "$GITHUB_REF_NAME — unsigned preview" \
             --prerelease --generate-notes

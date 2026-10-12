@@ -5,7 +5,7 @@ repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
 output_dir="${1:-$(cd "$repo_dir/.." && pwd)}"
 version="$(cd "$repo_dir" && node -p "require('./package.json').version")"
 bundle_version="${version%%-*}"
-bundle_build="${version##*.}"
+bundle_build="$(node -e 'const v=process.argv[1].match(/^(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+))?$/);if(!v||Number(v[4]||0)>998)process.exit(1);console.log(Number(v[1])*1000000000+Number(v[2])*1000000+Number(v[3])*1000+(v[4]?Number(v[4]):999))' "$version")"
 build_dir="$repo_dir/work/macos-package"
 stage_dir="$build_dir/dmg-stage"
 app_dir="$stage_dir/OpenWave TV.app"
@@ -14,7 +14,19 @@ icon_source="$repo_dir/public/icons/icon-512.png"
 
 mkdir -p "$output_dir"
 rm -rf "$build_dir"
-mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources" "$stage_dir"
+mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources" "$app_dir/Contents/Frameworks" "$stage_dir"
+
+sparkle_version="2.10.0"
+sparkle_sha256="c2bf58aa8387266ac179357b1415d6f2635f044da8be41042af32425dae6da0c"
+sparkle_cache="$repo_dir/work/vendor-cache/Sparkle-$sparkle_version.tar.xz"
+mkdir -p "$(dirname "$sparkle_cache")" "$build_dir/sparkle"
+if [[ ! -f "$sparkle_cache" ]]; then
+  curl -fLsS --retry 3 "https://github.com/sparkle-project/Sparkle/releases/download/$sparkle_version/Sparkle-$sparkle_version.tar.xz" -o "$sparkle_cache"
+fi
+printf '%s  %s\n' "$sparkle_sha256" "$sparkle_cache" | shasum -a 256 -c -
+tar -xf "$sparkle_cache" -C "$build_dir/sparkle" ./Sparkle.framework ./LICENSE
+ditto "$build_dir/sparkle/Sparkle.framework" "$app_dir/Contents/Frameworks/Sparkle.framework"
+cp "$build_dir/sparkle/LICENSE" "$app_dir/Contents/Resources/Sparkle-LICENSE"
 
 cd "$repo_dir"
 npm run build
@@ -23,8 +35,8 @@ CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags="-s -w -X mai
 lipo -create "$build_dir/openwave-arm64" "$build_dir/openwave-amd64" -output "$app_dir/Contents/Resources/openwave-server"
 chmod 755 "$app_dir/Contents/Resources/openwave-server"
 sdk_path="$(xcrun --show-sdk-path)"
-swiftc -parse-as-library -swift-version 5 -O -sdk "$sdk_path" -target arm64-apple-macos11.0 -framework AppKit -framework WebKit "$repo_dir/scripts/OpenWaveApp.swift" -o "$build_dir/launcher-arm64"
-swiftc -parse-as-library -swift-version 5 -O -sdk "$sdk_path" -target x86_64-apple-macos11.0 -framework AppKit -framework WebKit "$repo_dir/scripts/OpenWaveApp.swift" -o "$build_dir/launcher-amd64"
+swiftc -parse-as-library -swift-version 5 -O -sdk "$sdk_path" -target arm64-apple-macos12.0 -F "$build_dir/sparkle" -framework AppKit -framework WebKit -framework Sparkle -Xlinker -rpath -Xlinker @executable_path/../Frameworks "$repo_dir/scripts/OpenWaveApp.swift" -o "$build_dir/launcher-arm64"
+swiftc -parse-as-library -swift-version 5 -O -sdk "$sdk_path" -target x86_64-apple-macos12.0 -F "$build_dir/sparkle" -framework AppKit -framework WebKit -framework Sparkle -Xlinker -rpath -Xlinker @executable_path/../Frameworks "$repo_dir/scripts/OpenWaveApp.swift" -o "$build_dir/launcher-amd64"
 lipo -create "$build_dir/launcher-arm64" "$build_dir/launcher-amd64" -output "$app_dir/Contents/MacOS/OpenWave TV"
 chmod 755 "$app_dir/Contents/MacOS/OpenWave TV"
 unlink "$build_dir/openwave-arm64"
@@ -45,7 +57,13 @@ cat > "$app_dir/Contents/Info.plist" <<PLIST
   <key>CFBundleShortVersionString</key><string>$bundle_version</string>
   <key>CFBundleVersion</key><string>$bundle_build</string>
   <key>OpenWaveBuildVersion</key><string>$version</string>
-  <key>LSMinimumSystemVersion</key><string>11.0</string>
+  <key>SUFeedURL</key><string>https://openwave-world-beta.pages.dev/updates/macos.xml</string>
+  <key>SUPublicEDKey</key><string>7/nbasA9NePe1/dgd+fn2EnNnnSTL3XyCm/Rq8Qtco8=</string>
+  <key>SUEnableAutomaticChecks</key><true/>
+  <key>SUAutomaticallyUpdate</key><true/>
+  <key>SURequireSignedFeed</key><true/>
+  <key>SUVerifyUpdateBeforeExtraction</key><true/>
+  <key>LSMinimumSystemVersion</key><string>12.0</string>
   <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
   <key>NSHighResolutionCapable</key><true/>
 </dict></plist>

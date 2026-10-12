@@ -1,56 +1,7 @@
 import AppKit
 import Foundation
+import Sparkle
 import WebKit
-
-private struct UpdateVersion: Comparable {
-    let numbers: [Int]
-    let beta: Int?
-
-    init?(_ tag: String) {
-        let value = tag.hasPrefix("v") ? String(tag.dropFirst()) : tag
-        let parts = value.components(separatedBy: "-beta.")
-        guard (parts.count == 1 || parts.count == 2),
-              parts[0].split(separator: ".").count == 3 else { return nil }
-        let numbers = parts[0].split(separator: ".").compactMap { Int($0) }
-        guard numbers.count == 3, numbers.allSatisfy({ $0 >= 0 }) else { return nil }
-        let beta: Int?
-        if parts.count == 2 {
-            guard let value = Int(parts[1]), value >= 0 else { return nil }
-            beta = value
-        } else {
-            beta = nil
-        }
-        self.numbers = numbers
-        self.beta = beta
-    }
-
-    static func < (lhs: Self, rhs: Self) -> Bool {
-        for index in 0..<3 where lhs.numbers[index] != rhs.numbers[index] {
-            return lhs.numbers[index] < rhs.numbers[index]
-        }
-        switch (lhs.beta, rhs.beta) {
-        case (nil, nil): return false
-        case (nil, _?): return false
-        case (_?, nil): return true
-        case (let left?, let right?): return left < right
-        }
-    }
-}
-
-private struct GitHubRelease: Decodable {
-    struct Asset: Decodable {
-        let name: String
-        let browser_download_url: String
-    }
-    let tag_name: String
-    let draft: Bool
-    let assets: [Asset]
-}
-
-private struct AvailableUpdate {
-    let version: String
-    let url: URL
-}
 
 final class OpenWaveAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
     private var window: NSWindow?
@@ -60,14 +11,11 @@ final class OpenWaveAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     private var quitting = false
     private var playerFullscreen = false
     private let buildVersion = Bundle.main.object(forInfoDictionaryKey: "OpenWaveBuildVersion") as? String ?? "dev"
-    private let automaticUpdatesKey = "OpenWaveAutomaticallyCheckForUpdates"
-    private let lastUpdateCheckKey = "OpenWaveLastUpdateCheck"
-    private var checkingUpdates = false
-    private var manualUpdateRequested = false
-    private var availableUpdate: AvailableUpdate?
+    private lazy var updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
+        _ = updaterController
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.startLocalServer()
         }
@@ -188,8 +136,8 @@ final class OpenWaveAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if message.name == "openwaveUpdates", message.body as? String == "check" {
-            checkForUpdates(manual: true)
+        if message.name == "openwaveUpdates", message.body as? String == "settings" {
+            showUpdateSettings()
             return
         }
         guard message.name == "openwaveFullscreen", message.body as? String == "toggle", let window else { return }
@@ -211,108 +159,34 @@ final class OpenWaveAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        syncUpdateButton()
-        checkForUpdates(manual: false)
+        webView.evaluateJavaScript("document.querySelector('#updates-button')?.setAttribute('title', 'Update settings and check now');", completionHandler: nil)
     }
 
-    private var automaticallyChecksForUpdates: Bool {
-        let defaults = UserDefaults.standard
-        return defaults.object(forKey: automaticUpdatesKey) == nil || defaults.bool(forKey: automaticUpdatesKey)
-    }
-
-    private func syncUpdateButton() {
-        let ready = availableUpdate != nil
-        webView?.evaluateJavaScript("{ const button = document.querySelector('#updates-button'); if (button) { button.classList.toggle('has-update', \(ready)); button.textContent = \(ready) ? 'Update ready' : 'Updates'; } }", completionHandler: nil)
-    }
-
-    private func checkForUpdates(manual: Bool) {
-        if manual, availableUpdate != nil {
-            showUpdateAlert(error: false)
-            return
-        }
-        if manual { manualUpdateRequested = true }
-        if !manual {
-            guard automaticallyChecksForUpdates else { return }
-            if let last = UserDefaults.standard.object(forKey: lastUpdateCheckKey) as? Date,
-               Date().timeIntervalSince(last) < 24 * 60 * 60 { return }
-        }
-        guard !checkingUpdates else { return }
-        guard let current = UpdateVersion(buildVersion),
-              let url = URL(string: "https://api.github.com/repos/jobinebanezer18/openwave-tv/releases?per_page=20") else {
-            manualUpdateRequested = false
-            if manual { showUpdateAlert(error: true) }
-            return
-        }
-        checkingUpdates = true
-        var request = URLRequest(url: url)
-        request.cachePolicy = .reloadIgnoringLocalCacheData
-        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        request.setValue("OpenWave-TV/\(buildVersion)", forHTTPHeaderField: "User-Agent")
-        request.timeoutInterval = 12
-        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            let result: Result<AvailableUpdate?, Error>
-            do {
-                if let error { throw error }
-                guard let response = response as? HTTPURLResponse, response.statusCode == 200,
-                      let data else { throw URLError(.badServerResponse) }
-                let releases = try JSONDecoder().decode([GitHubRelease].self, from: data)
-                let candidates = releases.compactMap { release -> (UpdateVersion, AvailableUpdate)? in
-                    let releaseNumber = release.tag_name.hasPrefix("v") ? String(release.tag_name.dropFirst()) : release.tag_name
-                    let assetName = "OpenWave-TV-\(releaseNumber)-macOS-universal-unsigned.dmg"
-                    guard !release.draft, let version = UpdateVersion(release.tag_name), version > current,
-                          let asset = release.assets.first(where: { $0.name == assetName }),
-                          let assetURL = URL(string: asset.browser_download_url),
-                          assetURL.scheme == "https", assetURL.host == "github.com",
-                          assetURL.path.hasPrefix("/jobinebanezer18/openwave-tv/releases/download/") else { return nil }
-                    return (version, AvailableUpdate(version: release.tag_name, url: assetURL))
-                }
-                result = .success(candidates.max(by: { $0.0 < $1.0 })?.1)
-            } catch {
-                result = .failure(error)
-            }
-            DispatchQueue.main.async {
-                guard let self else { return }
-                self.checkingUpdates = false
-                let showResult = self.manualUpdateRequested
-                self.manualUpdateRequested = false
-                switch result {
-                case .success(let update):
-                    UserDefaults.standard.set(Date(), forKey: self.lastUpdateCheckKey)
-                    self.availableUpdate = update
-                    self.syncUpdateButton()
-                    if showResult { self.showUpdateAlert(error: false) }
-                case .failure:
-                    if showResult { self.showUpdateAlert(error: true) }
-                }
-            }
-        }.resume()
-    }
-
-    private func showUpdateAlert(error: Bool) {
+    private func showUpdateSettings() {
         guard let window else { return }
         let alert = NSAlert()
         alert.alertStyle = .informational
-        if error {
-            alert.messageText = "Could not check for updates"
-            alert.informativeText = "Check your connection and try again."
-        } else if let update = availableUpdate {
-            alert.messageText = "OpenWave TV \(update.version) is ready"
-            alert.informativeText = "Download the Mac DMG from the OpenWave GitHub release, then drag the new app to Applications."
-            alert.addButton(withTitle: "Download DMG")
-        } else {
-            alert.messageText = "OpenWave TV is up to date"
-            alert.informativeText = "Version \(buildVersion) is installed."
-        }
-        alert.addButton(withTitle: error || availableUpdate == nil ? "Done" : "Later")
-        let automatic = NSButton(checkboxWithTitle: "Automatically check for updates", target: nil, action: nil)
-        automatic.state = automaticallyChecksForUpdates ? .on : .off
-        automatic.sizeToFit()
-        alert.accessoryView = automatic
+        alert.messageText = "OpenWave TV updates"
+        alert.informativeText = "Version \(buildVersion) is installed. Updates are downloaded and installed in the app."
+        alert.addButton(withTitle: "Check now")
+        alert.addButton(withTitle: "Done")
+        let automaticChecks = NSButton(checkboxWithTitle: "Check for updates automatically", target: nil, action: nil)
+        automaticChecks.state = updaterController.updater.automaticallyChecksForUpdates ? .on : .off
+        let automaticInstall = NSButton(checkboxWithTitle: "Download and install updates automatically", target: nil, action: nil)
+        automaticInstall.state = updaterController.updater.automaticallyDownloadsUpdates ? .on : .off
+        let options = NSStackView(views: [automaticChecks, automaticInstall])
+        options.orientation = .vertical
+        options.alignment = .leading
+        options.spacing = 8
+        options.frame = NSRect(x: 0, y: 0, width: 330, height: 50)
+        alert.accessoryView = options
         alert.beginSheetModal(for: window) { [weak self] response in
             guard let self else { return }
-            UserDefaults.standard.set(automatic.state == .on, forKey: self.automaticUpdatesKey)
-            if !error, response == .alertFirstButtonReturn, let update = self.availableUpdate {
-                NSWorkspace.shared.open(update.url)
+            let checksEnabled = automaticChecks.state == .on || automaticInstall.state == .on
+            self.updaterController.updater.automaticallyChecksForUpdates = checksEnabled
+            self.updaterController.updater.automaticallyDownloadsUpdates = automaticInstall.state == .on
+            if response == .alertFirstButtonReturn {
+                self.updaterController.checkForUpdates(nil)
             }
         }
     }

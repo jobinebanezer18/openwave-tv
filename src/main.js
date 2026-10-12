@@ -587,7 +587,7 @@ document.querySelector('#quit-button').addEventListener('click', async () => {
 });
 document.querySelector('#preferences-button').addEventListener('click', () => { if (state.countries.length) onboarding.show(state.countries, state.languages, state.preferences, onboardingOptions()); });
 document.querySelector('#updates-button').addEventListener('click', () => {
-  window.webkit?.messageHandlers?.openwaveUpdates?.postMessage('check');
+  window.webkit?.messageHandlers?.openwaveUpdates?.postMessage('settings');
 });
 document.querySelector('.brand').addEventListener('click', event => { event.preventDefault(); radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
 els.list.addEventListener('click', event => {
