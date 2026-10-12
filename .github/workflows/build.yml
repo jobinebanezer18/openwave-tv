@@ -212,6 +212,9 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Windows launcher build failed' }
           $bytes = [System.IO.File]::ReadAllBytes("$PWD/release-windows/$asset")
           if ($bytes.Length -lt 500000 -or $bytes[0] -ne 77 -or $bytes[1] -ne 90) { throw 'Launcher is not a Windows executable' }
+          $launcher = Start-Process -FilePath "$PWD/release-windows/$asset" -PassThru
+          if (-not $launcher.WaitForExit(15000)) { $launcher.Kill(); throw 'Windows launcher did not finish starting' }
+          if ($launcher.ExitCode -ne 0) { throw "Windows launcher exited with $($launcher.ExitCode)" }
           $hash = (Get-FileHash "release-windows/$asset" -Algorithm SHA256).Hash.ToLowerInvariant()
           [System.IO.File]::WriteAllText("$PWD/release-windows/$asset.sha256", "$hash  $asset`n", [System.Text.Encoding]::ASCII)
       - uses: actions/upload-artifact@v7
