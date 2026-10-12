@@ -40,6 +40,8 @@ const maxProbeCacheEntries = 2048
 const maxSessionURLs = 512
 const maxConcurrentProbes = 8
 
+var buildVersion = "dev"
+
 var specialUseIPRanges = [...]netip.Prefix{
 	netip.MustParsePrefix("0.0.0.0/8"),
 	netip.MustParsePrefix("100.64.0.0/10"),
@@ -160,7 +162,7 @@ func main() {
 	var appServer *http.Server
 	mux.HandleFunc("GET /api/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		_, _ = io.WriteString(w, "openwave-tv-local-v1")
+		_, _ = io.WriteString(w, "openwave-tv-local-v1:"+buildVersion)
 	})
 	mux.HandleFunc("GET /api/channels", s.channels)
 	mux.HandleFunc("POST /api/session", s.createSession)

@@ -6,6 +6,7 @@ const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':
 const readFavorites = () => { try { return new Set(JSON.parse(localStorage.getItem('openwave-radio-favorites') || '[]')); } catch { return new Set(); } };
 
 export function mountRadioMode() {
+  const nativeMode = () => document.documentElement.classList.contains('openwave-native');
   const screen = document.createElement('main');
   screen.id = 'radio-screen';
   screen.className = 'radio-screen';
@@ -23,7 +24,7 @@ export function mountRadioMode() {
         <label class="radio-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search stations</span><input id="radio-search-input" type="search" placeholder="Station, country, or genre" autocomplete="off"></label>
         <div id="radio-genres" class="radio-genres" role="group" aria-label="Radio genres"></div>
         <div class="radio-place"><div class="radio-place-row"><button id="radio-country" class="radio-place-choice" aria-haspopup="dialog" aria-controls="radio-picker" aria-expanded="false">Everywhere <span>⌄</span></button><button id="radio-city" class="radio-place-choice" aria-haspopup="dialog" aria-controls="radio-picker" aria-expanded="false">All cities <span>⌄</span></button></div><div class="radio-place-row"><button id="radio-near-me" class="radio-near-me">◎ Use my location</button><button id="radio-fm-only" class="radio-fm-only" aria-pressed="false">FM frequencies</button></div><p id="radio-location-note" class="radio-location-note">OpenWave matches locally; your browser or OS may use a location provider. City data: <a href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">GeoNames</a>.</p></div>
-        <div class="radio-list-heading"><span>STATIONS</span><span id="radio-list-count">—</span></div><div id="radio-list" class="radio-list"></div><button id="radio-more" class="radio-more" hidden>Show more stations ↓</button>
+        <div class="radio-list-heading"><span>STATIONS</span><span id="radio-list-count">—</span></div><div id="radio-list" class="radio-list"></div><div id="radio-pager" class="channel-pager" aria-label="Station pages" hidden><button id="radio-page-prev" type="button">← Previous</button><span id="radio-page-status" role="status" aria-live="polite"></span><button id="radio-page-next" type="button">Next →</button></div><button id="radio-more" class="radio-more" hidden>Show more stations ↓</button>
         <div id="radio-picker" class="radio-picker" role="dialog" aria-modal="true" aria-labelledby="radio-picker-title" hidden><div class="radio-picker-heading"><button id="radio-picker-back" aria-label="Back to radio guide">←</button><h3 id="radio-picker-title">Choose country</h3></div><label class="radio-picker-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search places</span><input id="radio-picker-search" type="search" placeholder="Search places" aria-controls="radio-picker-list"></label><div id="radio-picker-list" class="radio-picker-list" role="group" aria-label="Country options"></div></div>
       </aside>
     </div>`;
@@ -32,11 +33,12 @@ export function mountRadioMode() {
     count: screen.querySelector('#radio-count'), now: screen.querySelector('#radio-now'), meta: screen.querySelector('#radio-meta'), status: screen.querySelector('#radio-status'), initials: screen.querySelector('#radio-initials'),
     audio: screen.querySelector('#radio-audio'), play: screen.querySelector('#radio-play-toggle'), volume: screen.querySelector('#radio-volume'),
     summary: screen.querySelector('#radio-summary'), favorites: screen.querySelector('#radio-favorites-toggle'), search: screen.querySelector('#radio-search-input'), genres: screen.querySelector('#radio-genres'),
-    list: screen.querySelector('#radio-list'), listCount: screen.querySelector('#radio-list-count'), more: screen.querySelector('#radio-more'),
+    list: screen.querySelector('#radio-list'), listCount: screen.querySelector('#radio-list-count'), more: screen.querySelector('#radio-more'), pager: screen.querySelector('#radio-pager'), pagePrev: screen.querySelector('#radio-page-prev'), pageNext: screen.querySelector('#radio-page-next'), pageStatus: screen.querySelector('#radio-page-status'),
     country: screen.querySelector('#radio-country'), city: screen.querySelector('#radio-city'), nearMe: screen.querySelector('#radio-near-me'), fmOnly: screen.querySelector('#radio-fm-only'), locationNote: screen.querySelector('#radio-location-note'),
     picker: screen.querySelector('#radio-picker'), pickerTitle: screen.querySelector('#radio-picker-title'), pickerSearch: screen.querySelector('#radio-picker-search'), pickerList: screen.querySelector('#radio-picker-list')
   };
-  const state = { stations: [], results: [], selected: null, favorites: readFavorites(), favoritesOnly: false, genre: 'all', query: '', shown: 60, loading: false, loaded: false, catalogStale: false, country: 'all', city: 'all', fmOnly: false, pickerKind: null, pendingCountry: null };
+  const state = { stations: [], results: [], selected: null, favorites: readFavorites(), favoritesOnly: false, genre: 'all', query: '', shown: 60, page: 0, pageSize: 4, loading: false, loaded: false, catalogStale: false, country: 'all', city: 'all', fmOnly: false, pickerKind: null, pendingCountry: null };
+  let nativeFilterKey = '';
   let pickerInertNodes = [];
   const pickerTriggers = { country: el.country, city: el.city };
   function setPickerBackgroundInert(inert) {
@@ -106,13 +108,26 @@ export function mountRadioMode() {
     return `<div class="radio-row ${state.selected && stationId(state.selected) === id ? 'selected' : ''}"><button class="radio-row-main" data-radio-play="${escapeHTML(id)}" aria-label="Play ${escapeHTML(station.name)}"><span class="radio-row-mark">${escapeHTML(station.name.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 2).toUpperCase())}</span><span class="radio-row-text"><strong>${escapeHTML(station.name)}</strong><small>${escapeHTML(station.country)} · ${escapeHTML(station.codec.toUpperCase())}${station.fmMhz?.length ? ` · ${escapeHTML(station.fmMhz[0])} FM` : ''}</small></span><span class="radio-row-arrow">↗</span></button><button class="radio-row-favorite ${favorite ? 'saved' : ''}" data-radio-save="${escapeHTML(id)}" aria-label="${favorite ? 'Remove' : 'Save'} ${escapeHTML(station.name)} ${favorite ? 'from' : 'to'} My stations" aria-pressed="${favorite}">♡</button></div>`;
   }
   function renderList() {
-    const visible = state.results.slice(0, state.shown);
+    const pageCount = Math.max(1, Math.ceil(state.results.length / state.pageSize));
+    if (nativeMode()) state.page = Math.min(state.page, pageCount - 1);
+    const first = nativeMode() ? state.page * state.pageSize : 0;
+    const visible = state.results.slice(first, nativeMode() ? first + state.pageSize : state.shown);
     el.list.innerHTML = visible.length ? visible.map(stationMarkup).join('') : `<div class="radio-empty">${state.favoritesOnly ? 'Save a station with the heart beside its name.' : 'No stations match this search.'}</div>`;
     el.listCount.textContent = state.results.length.toLocaleString();
     el.summary.textContent = `${state.results.length.toLocaleString()} stations${state.catalogStale ? ' · saved guide may be out of date' : ''}`;
-    el.more.hidden = state.results.length <= state.shown;
+    el.more.hidden = nativeMode() || state.results.length <= state.shown;
+    el.pager.hidden = !nativeMode();
+    if (nativeMode()) {
+      el.pagePrev.disabled = state.page === 0;
+      el.pageNext.disabled = state.page >= pageCount - 1;
+      el.pageStatus.textContent = state.results.length ? `${first + 1}–${first + visible.length} of ${state.results.length.toLocaleString()}` : '0 stations';
+    }
   }
   function filter() {
+    if (nativeMode()) {
+      const key = [state.favoritesOnly, state.genre, state.query, state.country, state.city, state.fmOnly].join('|');
+      if (key !== nativeFilterKey) { state.page = 0; nativeFilterKey = key; }
+    }
     const query = state.query.trim().toLowerCase();
     state.results = state.stations.filter(station => {
       if (state.favoritesOnly && !state.favorites.has(stationId(station))) return false;
@@ -241,10 +256,18 @@ export function mountRadioMode() {
     if (play) { const station = state.stations.find(item => stationId(item) === play.dataset.radioPlay); if (station) playStation(station); }
   });
   el.more.addEventListener('click', () => { state.shown += 60; renderList(); });
+  el.pagePrev.addEventListener('click', () => { if (state.page > 0) { state.page--; renderList(); el.pagePrev.focus(); } });
+  el.pageNext.addEventListener('click', () => { if (!el.pageNext.disabled) { state.page++; renderList(); el.pageNext.focus(); } });
+  new ResizeObserver(() => {
+    if (!nativeMode()) return;
+    const size = Math.max(1, Math.floor(el.list.clientHeight / 50));
+    if (size !== state.pageSize) { state.pageSize = size; renderList(); }
+  }).observe(el.list);
   document.addEventListener('visibilitychange', () => screen.classList.toggle('radio-hidden', document.hidden));
   renderGenres();
 
   return {
+    refreshLayout() { state.page = 0; renderList(); },
     applyPreferences(preferences) {
       const code = preferences?.country === 'UK' ? 'GB' : preferences?.country;
       state.pendingCountry = code || null;

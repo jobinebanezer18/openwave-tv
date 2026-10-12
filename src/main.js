@@ -11,6 +11,10 @@ import './style.css';
 
 const app = document.querySelector('#app');
 const WEB_MODE = import.meta.env.VITE_WEB_MODE === true;
+const nativeShell = window.__OPENWAVE_NATIVE__ === true;
+const desktopViewport = window.matchMedia('(min-width: 1024px) and (min-height: 700px)');
+let NATIVE_MODE = !WEB_MODE && (nativeShell || desktopViewport.matches);
+if (NATIVE_MODE) document.documentElement.classList.add('openwave-native');
 const webCatalog = WEB_MODE ? createWebCatalog() : null;
 if (WEB_MODE) registerPwa();
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -78,6 +82,7 @@ app.innerHTML = `
         <div class="stage-heading"><div><h1>THE WORLD IS LIVE.<br><span>JUST TUNE IN.</span></h1></div><span id="stage-count" class="stage-count">Connecting to the guide…</span></div>
         <section class="player-shell" id="player-shell" aria-label="Live player" tabindex="-1">
           <video id="video" controls playsinline preload="none"></video>
+          <button id="exit-player-fullscreen" class="exit-player-fullscreen" type="button" hidden>Exit fullscreen ×</button>
           <div id="player-cover" class="player-cover">
             <svg class="signal-graphic" viewBox="0 0 1200 680" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="M-90 460C190 60 430 720 710 310S1120 10 1310 430"/><path d="M-90 510C190 110 430 770 710 360S1120 60 1310 480"/><path d="M-90 560C190 160 430 820 710 410S1120 110 1310 530"/><path d="M-90 610C190 210 430 870 710 460S1120 160 1310 580"/></svg>
             <div class="cover-content"><h2>ALL THE WORLD.<br><em>ONE SCREEN.</em></h2><p>Find a channel. The live feed starts here.</p><button id="cover-browse" class="cover-cta">Explore live TV ${glyph('arrow', 19)}</button></div>
@@ -117,6 +122,7 @@ app.innerHTML = `
         <p id="private-status" class="private-status" role="status" aria-live="polite">Your file stays in this tab.</p>
         <div class="list-heading"><span id="list-label">CHANNELS</span><span id="list-count">—</span></div>
         <div class="channel-list" id="channel-list"></div>
+        <div id="channel-pager" class="channel-pager" aria-label="Channel pages" hidden><button id="page-prev" type="button">← Previous</button><span id="page-status" role="status" aria-live="polite"></span><button id="page-next" type="button">Next →</button></div>
         <button id="show-more" class="show-more" hidden>Show more channels ${glyph('chevron', 16)}</button>
         <div id="filter-picker" class="filter-picker" role="dialog" aria-modal="true" aria-labelledby="picker-title" hidden><div class="picker-heading"><button id="picker-back" class="picker-back" aria-label="Back to filters">←</button><h3 id="picker-title">Choose</h3></div><label class="picker-search">${glyph('search', 19)}<span class="sr-only">Search options</span><input id="picker-search-input" type="search" placeholder="Search" autocomplete="off" aria-controls="picker-list"></label><div id="picker-list" class="picker-list" role="group" aria-label="Filter options"></div></div>
       </aside>
@@ -126,7 +132,7 @@ app.innerHTML = `
 const els = {
   video: document.querySelector('#video'), shell: document.querySelector('#player-shell'), cover: document.querySelector('#player-cover'), tune: document.querySelector('#tune-overlay'),
   tuneName: document.querySelector('#tune-name'), tuneStatus: document.querySelector('#tune-status'), tap: document.querySelector('#tap-to-play'),
-  list: document.querySelector('#channel-list'), rail: document.querySelector('#recent-rail'), railTitle: document.querySelector('#rail-title'), railSubtitle: document.querySelector('#rail-subtitle'),
+  list: document.querySelector('#channel-list'), pager: document.querySelector('#channel-pager'), pagePrev: document.querySelector('#page-prev'), pageNext: document.querySelector('#page-next'), pageStatus: document.querySelector('#page-status'), rail: document.querySelector('#recent-rail'), railTitle: document.querySelector('#rail-title'), railSubtitle: document.querySelector('#rail-subtitle'),
   result: document.querySelector('#result-summary'), count: document.querySelector('#list-count'), stageCount: document.querySelector('#stage-count'),
   search: document.querySelector('#search-input'), quick: document.querySelector('#quick-categories'),
   countryTrigger: document.querySelector('#country-trigger'), languageTrigger: document.querySelector('#language-trigger'), categoryTrigger: document.querySelector('#category-trigger'), more: document.querySelector('#show-more'),
@@ -247,15 +253,27 @@ function channelMarkup(ch, index) {
 }
 
 let shown = 60;
+let nativePage = 0;
+let nativePageSize = 4;
+let nativeFilterKey = '';
 function renderList(withMotion = false) {
-  const displayed = state.results.slice(0, shown);
+  const pageCount = Math.max(1, Math.ceil(state.results.length / nativePageSize));
+  if (NATIVE_MODE) nativePage = Math.min(nativePage, pageCount - 1);
+  const first = NATIVE_MODE ? nativePage * nativePageSize : 0;
+  const displayed = state.results.slice(first, NATIVE_MODE ? first + nativePageSize : shown);
   const directoryAvailable = WEB_MODE && !state.directoryView && !state.search && !state.favoritesOnly && state.channels.length === 0 && state.directory.length > 0;
-  els.list.innerHTML = displayed.length ? displayed.map(channelMarkup).join('') : `<div class="empty-list">${glyph(state.favoritesOnly ? 'heart' : 'search', 25)}<strong>${state.favoritesOnly ? 'Your shortlist starts here' : directoryAvailable ? 'No direct stream indexed' : 'No channels here yet'}</strong><p>${state.favoritesOnly ? 'Tap a heart beside any channel to save it here.' : directoryAvailable ? 'Open All channels to browse this country’s directory.' : 'Try a broader search or clear a filter.'}</p></div>`;
+  els.list.innerHTML = displayed.length ? displayed.map((channel, index) => channelMarkup(channel, first + index)).join('') : `<div class="empty-list">${glyph(state.favoritesOnly ? 'heart' : 'search', 25)}<strong>${state.favoritesOnly ? 'Your shortlist starts here' : directoryAvailable ? 'No direct stream indexed' : 'No channels here yet'}</strong><p>${state.favoritesOnly ? 'Tap a heart beside any channel to save it here.' : directoryAvailable ? 'Open All channels to browse this country’s directory.' : 'Try a broader search or clear a filter.'}</p></div>`;
   const count = state.results.length.toLocaleString();
   const channelWord = state.results.length === 1 ? 'channel' : 'channels';
   els.count.textContent = count;
   els.result.textContent = state.privateOnly ? `${count} ${channelWord} from your file` : WEB_MODE && state.favoritesOnly ? `${count} saved ${channelWord}` : WEB_MODE && state.directoryView ? `${count} indexed ${channelWord} · ${state.channels.length.toLocaleString()} have stream links` : WEB_MODE && !state.search && state.category === 'all' && state.language === 'all' ? `${count} to try · ${state.channels.length.toLocaleString()} stream links indexed in ${countryName(state.country)}` : WEB_MODE ? `${count} matching streams · playback varies` : `${count} ${channelWord} ready to explore`;
-  els.more.hidden = state.results.length <= shown;
+  els.more.hidden = NATIVE_MODE || state.results.length <= shown;
+  els.pager.hidden = !NATIVE_MODE;
+  if (NATIVE_MODE) {
+    els.pagePrev.disabled = nativePage === 0;
+    els.pageNext.disabled = nativePage >= pageCount - 1;
+    els.pageStatus.textContent = state.results.length ? `${first + 1}–${first + displayed.length} of ${count}` : '0 channels';
+  }
   document.querySelector('.favorite-count').textContent = state.favorites.size || '';
   if (withMotion && !reduceMotion.matches) {
     const rows = [...els.list.querySelectorAll('.channel-row')].slice(0, 9);
@@ -284,6 +302,10 @@ function renderRail() {
 }
 
 function filterChannels(withMotion = false) {
+  if (NATIVE_MODE) {
+    const filterKey = [state.privateOnly, state.privateChannels.length, state.favoritesOnly, state.country, state.language, state.category, state.search, state.aiCategory].join('|');
+    if (filterKey !== nativeFilterKey) { nativePage = 0; nativeFilterKey = filterKey; }
+  }
   if (WEB_MODE) {
     els.quick.hidden = state.privateOnly || state.favoritesOnly;
     document.querySelector('.filter-area').hidden = state.privateOnly || state.favoritesOnly;
@@ -575,6 +597,12 @@ els.list.addEventListener('keydown', event => {
   if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
   const rows = [...els.list.querySelectorAll('.row-main')];
   const index = rows.indexOf(document.activeElement);
+  if (NATIVE_MODE && event.key === 'ArrowDown' && index === rows.length - 1 && !els.pageNext.disabled) {
+    nativePage++; renderList(); els.list.querySelector('.row-main')?.focus(); event.preventDefault(); return;
+  }
+  if (NATIVE_MODE && event.key === 'ArrowUp' && index === 0 && !els.pagePrev.disabled) {
+    nativePage--; renderList(); [...els.list.querySelectorAll('.row-main')].at(-1)?.focus(); event.preventDefault(); return;
+  }
   rows[Math.max(0, Math.min(rows.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))]?.focus();
   event.preventDefault();
 });
@@ -702,6 +730,21 @@ document.addEventListener('keydown', event => {
   else if (!els.advanced.hidden) { setFiltersOpen(false); els.filterToggle.focus(); }
 });
 els.more.addEventListener('click', () => { shown += 60; renderList(true); });
+els.pagePrev.addEventListener('click', () => { if (nativePage > 0) { nativePage--; renderList(); els.pagePrev.focus(); } });
+els.pageNext.addEventListener('click', () => { if (!els.pageNext.disabled) { nativePage++; renderList(); els.pageNext.focus(); } });
+if (!WEB_MODE) new ResizeObserver(() => {
+  if (!NATIVE_MODE) return;
+  const size = Math.max(1, Math.floor(els.list.clientHeight / 56));
+  if (size !== nativePageSize) { nativePageSize = size; renderList(); }
+}).observe(els.list);
+desktopViewport.addEventListener('change', () => {
+  if (WEB_MODE || nativeShell) return;
+  NATIVE_MODE = desktopViewport.matches;
+  document.documentElement.classList.toggle('openwave-native', NATIVE_MODE);
+  nativePage = 0;
+  renderList();
+  radioMode.refreshLayout();
+});
 els.search.addEventListener('input', event => {
   state.search = event.target.value; state.aiCategory = null; state.searchSerial++; shown = 60;
   els.ai.textContent = WEB_MODE ? 'Search channels by name, language, place, or category.' : 'Smart search uses MiniLM on this device. First use downloads the model.';
@@ -773,9 +816,38 @@ function toggleFavorite(id, sourceButton = null) {
   renderRail();
 }
 els.favorite.addEventListener('click', () => { if (state.selected) toggleFavorite(state.selected.id, els.favorite); });
-els.fullscreen.addEventListener('click', () => els.shell.requestFullscreen?.());
+const exitFullscreenButton = document.querySelector('#exit-player-fullscreen');
+function syncFullscreenButton(active) {
+  exitFullscreenButton.hidden = !active;
+  els.fullscreen.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Enter fullscreen');
+  els.fullscreen.title = active ? 'Exit fullscreen' : 'Enter fullscreen';
+}
+async function togglePlayerFullscreen() {
+  if (NATIVE_MODE && window.webkit?.messageHandlers?.openwaveFullscreen) {
+    window.webkit.messageHandlers.openwaveFullscreen.postMessage('toggle');
+    return;
+  }
+  if (document.fullscreenElement) { await document.exitFullscreen(); return; }
+  if (document.documentElement.classList.contains('browser-theater')) {
+    document.documentElement.classList.remove('browser-theater'); syncFullscreenButton(false); return;
+  }
+  try {
+    if (!els.shell.requestFullscreen) throw new Error('Fullscreen unavailable');
+    await els.shell.requestFullscreen();
+  } catch {
+    document.documentElement.classList.add('browser-theater');
+    syncFullscreenButton(true);
+  }
+}
+els.fullscreen.addEventListener('click', togglePlayerFullscreen);
+exitFullscreenButton.addEventListener('click', togglePlayerFullscreen);
+document.addEventListener('fullscreenchange', () => syncFullscreenButton(Boolean(document.fullscreenElement)));
+window.addEventListener('openwave-native-fullscreenchange', () => syncFullscreenButton(document.documentElement.classList.contains('native-theater')));
 document.querySelector('#retry-button').addEventListener('click', () => { if (state.selected) playChannel(state.selected.id); });
 document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && document.documentElement.classList.contains('browser-theater')) {
+    document.documentElement.classList.remove('browser-theater'); syncFullscreenButton(false); event.preventDefault(); return;
+  }
   if (event.target.closest('input, select, button, textarea')) return;
   if (event.key === '/') { event.preventDefault(); jumpToGuide(); }
 });

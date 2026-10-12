@@ -2,12 +2,14 @@ import AppKit
 import Foundation
 import WebKit
 
-final class OpenWaveAppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, WKUIDelegate {
+final class OpenWaveAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
     private var window: NSWindow?
     private var webView: WKWebView?
     private var server: Process?
     private var localURL: URL?
     private var quitting = false
+    private var playerFullscreen = false
+    private let buildVersion = Bundle.main.object(forInfoDictionaryKey: "OpenWaveBuildVersion") as? String ?? "dev"
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
@@ -38,11 +40,12 @@ final class OpenWaveAppDelegate: NSObject, NSApplicationDelegate, WKNavigationDe
         let session = URLSession(configuration: config)
         let semaphore = DispatchSemaphore(value: 0)
         let lock = NSLock()
+        let expectedMarker = "openwave-tv-local-v1:\(buildVersion)"
         var available = false
         let task = session.dataTask(with: url) { data, response, _ in
             lock.lock()
             available = (response as? HTTPURLResponse)?.statusCode == 200 &&
-                data.flatMap { String(data: $0, encoding: .utf8) } == "openwave-tv-local-v1"
+                data.flatMap { String(data: $0, encoding: .utf8) } == expectedMarker
             lock.unlock()
             semaphore.signal()
         }
@@ -100,6 +103,12 @@ final class OpenWaveAppDelegate: NSObject, NSApplicationDelegate, WKNavigationDe
             self.localURL = url
             let configuration = WKWebViewConfiguration()
             configuration.mediaTypesRequiringUserActionForPlayback = []
+            configuration.userContentController.addUserScript(WKUserScript(
+                source: "window.__OPENWAVE_NATIVE__ = true;",
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: true
+            ))
+            configuration.userContentController.add(self, name: "openwaveFullscreen")
             let view = WKWebView(frame: .zero, configuration: configuration)
             view.navigationDelegate = self
             view.uiDelegate = self
@@ -110,15 +119,35 @@ final class OpenWaveAppDelegate: NSObject, NSApplicationDelegate, WKNavigationDe
                 defer: false
             )
             window.title = "OpenWave TV"
-            window.minSize = NSSize(width: 760, height: 540)
+            window.minSize = NSSize(width: 1024, height: 700)
             window.center()
             window.contentView = view
+            window.delegate = self
             self.webView = view
             self.window = window
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             view.load(URLRequest(url: url))
         }
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.name == "openwaveFullscreen", message.body as? String == "toggle", let window else { return }
+        playerFullscreen = !window.styleMask.contains(.fullScreen)
+        window.toggleFullScreen(nil)
+    }
+
+    func windowDidEnterFullScreen(_ notification: Notification) {
+        syncPlayerFullscreen(playerFullscreen)
+    }
+
+    func windowDidExitFullScreen(_ notification: Notification) {
+        playerFullscreen = false
+        syncPlayerFullscreen(false)
+    }
+
+    private func syncPlayerFullscreen(_ enabled: Bool) {
+        webView?.evaluateJavaScript("document.documentElement.classList.toggle('native-theater', \(enabled)); window.dispatchEvent(new Event('openwave-native-fullscreenchange'));", completionHandler: nil)
     }
 
     private func showStartupError() {

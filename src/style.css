@@ -65,3 +65,92 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid #0e4
 /* Picker controls keep a comfortable hit area on touch screens. */
 .filter-toggle,.filter-choice,.radio-place-choice,.radio-near-me,.radio-fm-only{height:44px;min-height:44px}
 .picker-back,.radio-picker-heading button{width:44px;height:44px;flex:none}
+
+/* The installed Mac app keeps TV and radio in one window-sized composition. */
+html.openwave-native,html.openwave-native body,html.openwave-native #app{height:100%;overflow:hidden}
+.openwave-native .app-shell{width:100%;max-width:none;height:100dvh;min-height:0;margin:0;display:flex;flex-direction:column;overflow:hidden}
+.openwave-native .topbar{height:66px;min-height:66px;flex:none;gap:12px;padding:0 20px}
+.openwave-native .brand{min-width:0;font-size:21px}
+.openwave-native .top-nav button{min-width:70px;height:38px;padding:0 11px}
+.openwave-native .topbar-actions{gap:10px}
+.openwave-native .github-link,.openwave-native .topbar-guide{display:none}
+.openwave-native .layout{width:100%;max-width:none;flex:1;min-height:0;margin:0;padding:12px 20px;grid-template-columns:minmax(0,1fr) minmax(310px,350px);gap:16px;align-items:stretch;overflow:hidden}
+.openwave-native .stage-column{position:relative;height:100%;min-height:0;display:flex;flex-direction:column}
+.openwave-native .stage-heading{min-height:0;flex:0 0 82px;padding:0 0 8px}
+.openwave-native .stage-heading h1{font-size:clamp(34px,3vw,44px);line-height:.94}
+.openwave-native .stage-count{width:104px;min-height:66px;padding:9px 12px;border-radius:14px 14px 14px 5px}
+.openwave-native .stage-count strong{font-size:31px}
+.openwave-native .stage-count small{margin-top:3px;font-size:7px;letter-spacing:.06em}
+.openwave-native .player-shell{flex:1;min-height:0;aspect-ratio:auto;border-radius:14px}
+.openwave-native .cover-content{left:28px}
+.openwave-native .cover-content h2{font-size:clamp(37px,4vw,56px)}
+.openwave-native .cover-content p{margin-bottom:14px;font-size:11px}
+.openwave-native .cover-cta{height:44px;min-width:155px}
+.openwave-native .cover-footer{left:28px;right:28px;bottom:12px;font-size:8px}
+.openwave-native .now-panel{min-height:0;flex:0 0 72px;margin-top:9px;padding:10px 15px;border-radius:12px}
+.openwave-native .now-identity h2{font-size:21px}
+.openwave-native .now-identity p{font-size:11px}
+.openwave-native .rail-section,.openwave-native .source-note{display:none}
+.openwave-native .player-error{position:absolute;z-index:6;left:8px;right:8px;bottom:81px;margin:0;padding:9px 12px}
+.openwave-native .guide{position:relative;top:auto;height:100%;min-height:0;margin:0;padding:14px;border-radius:16px}
+.openwave-native .guide-heading{margin-bottom:9px}
+.openwave-native .guide-heading h2{font-size:27px}
+.openwave-native .guide-heading p{font-size:10px}
+.openwave-native .search-box{height:44px}
+.openwave-native .ai-hint{display:none}
+.openwave-native .quick-categories{height:44px;min-height:44px;margin:8px 0;overflow:hidden;padding:0}
+.openwave-native .quick-chip{height:44px;min-height:44px;padding:0 9px}
+.openwave-native .filter-toggle{height:44px}
+.openwave-native .private-tools{margin-top:6px}
+.openwave-native .private-status{min-height:0;margin:4px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+.openwave-native .list-heading{margin:8px 1px 5px}
+.openwave-native .channel-list{min-height:0;flex:1;overflow:hidden}
+.openwave-native .channel-row{height:56px;min-height:56px;padding:5px 4px}
+.openwave-native .channel-logo{width:34px;height:34px}
+.openwave-native .empty-list{min-height:0;height:100%}
+.openwave-native .show-more{display:none!important}
+.channel-pager{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:6px;flex:none;margin-top:5px;font-size:10px;font-weight:800;color:#4b6481;font-variant-numeric:tabular-nums}
+.channel-pager[hidden]{display:none}
+.channel-pager button{min-height:44px;padding:0 9px;border:1px solid #bfd0e7;border-radius:8px;background:#edf4fd;color:#20508c;font-size:10px;font-weight:850}
+.channel-pager button:disabled{opacity:.4;cursor:default}
+.channel-pager button:hover:not(:disabled){background:#dceaff}
+.openwave-native .picker-list{overflow:hidden}
+
+.openwave-native .radio-screen{width:100%;max-width:none;flex:1;min-height:0;margin:0;padding:12px 20px;display:flex;flex-direction:column;overflow:hidden}
+.openwave-native .radio-heading{min-height:0;flex:0 0 72px;align-items:center}
+.openwave-native .radio-heading h1{font-size:clamp(34px,3vw,44px)}
+.openwave-native .radio-heading p{display:none}
+.openwave-native .radio-count{min-width:110px;min-height:62px;padding:9px 12px;border-radius:14px 14px 14px 5px}
+.openwave-native .radio-count strong{font-size:30px}
+.openwave-native .radio-grid{flex:1;min-height:0;margin-top:8px;grid-template-columns:minmax(0,1fr) minmax(310px,350px);gap:16px;align-items:stretch}
+.openwave-native .radio-console{height:100%;min-height:0;border-radius:14px}
+.openwave-native .radio-orbit{top:18px;width:260px;height:260px}
+.openwave-native .radio-orbit-ring-a{width:255px;height:255px}
+.openwave-native .radio-orbit-ring-b{width:195px;height:195px}
+.openwave-native .radio-orbit-core{width:145px;height:145px}
+.openwave-native .radio-orbit-core span{font-size:69px}
+.openwave-native .radio-signal-bars{top:239px}
+.openwave-native .radio-player-content{left:25px;right:25px;bottom:22px}
+.openwave-native .radio-player-content h2{font-size:clamp(32px,3vw,43px)}
+.openwave-native .radio-guide{height:100%;min-height:0;margin:0;padding:14px;border-radius:16px}
+.openwave-native .radio-guide-heading{margin-bottom:9px}
+.openwave-native .radio-guide-heading h2{font-size:27px}
+.openwave-native .radio-search{height:44px}
+.openwave-native .radio-genres{height:44px;margin:8px 0 4px;overflow:hidden;padding:0}
+.openwave-native .radio-genre{height:44px}
+.openwave-native .radio-place{margin-top:3px}
+.openwave-native .radio-place-row{margin-top:4px}
+.openwave-native .radio-location-note{min-height:0;margin:5px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.openwave-native .radio-list-heading{margin:8px 0 5px}
+.openwave-native .radio-list{min-height:0;flex:1;overflow:hidden}
+.openwave-native .radio-row{height:50px;min-height:50px}
+.openwave-native .radio-more{display:none!important}
+.openwave-native .radio-picker-list{overflow:hidden}
+
+.exit-player-fullscreen{position:absolute;z-index:12;top:16px;right:16px;min-height:44px;padding:0 14px;border:1px solid #ffffffb5;border-radius:8px;background:#061b4bbb;color:#fff;font-size:12px;font-weight:850}
+.browser-theater body{overflow:hidden}
+.browser-theater .player-shell,.player-shell:fullscreen{position:fixed;z-index:1000;inset:0;width:100vw;height:100dvh;min-height:0;aspect-ratio:auto;border:0;border-radius:0}
+.openwave-native.native-theater .topbar,.openwave-native.native-theater .stage-heading,.openwave-native.native-theater .now-panel,.openwave-native.native-theater .guide,.openwave-native.native-theater .rail-section{display:none}
+.openwave-native.native-theater .layout{display:block;height:100%;min-height:0;padding:0}
+.openwave-native.native-theater .stage-column{height:100%}
+.openwave-native.native-theater .player-shell{width:100%;height:100%;flex:1;border:0;border-radius:0}

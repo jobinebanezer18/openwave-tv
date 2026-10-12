@@ -18,8 +18,8 @@ mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources" "$stage_dir"
 
 cd "$repo_dir"
 npm run build
-CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags='-s -w' -o "$build_dir/openwave-arm64" .
-CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags='-s -w' -o "$build_dir/openwave-amd64" .
+CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="-s -w -X main.buildVersion=$version" -o "$build_dir/openwave-arm64" .
+CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.buildVersion=$version" -o "$build_dir/openwave-amd64" .
 lipo -create "$build_dir/openwave-arm64" "$build_dir/openwave-amd64" -output "$app_dir/Contents/Resources/openwave-server"
 chmod 755 "$app_dir/Contents/Resources/openwave-server"
 sdk_path="$(xcrun --show-sdk-path)"
@@ -44,6 +44,7 @@ cat > "$app_dir/Contents/Info.plist" <<PLIST
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>$bundle_version</string>
   <key>CFBundleVersion</key><string>$bundle_build</string>
+  <key>OpenWaveBuildVersion</key><string>$version</string>
   <key>LSMinimumSystemVersion</key><string>11.0</string>
   <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
   <key>NSHighResolutionCapable</key><true/>
