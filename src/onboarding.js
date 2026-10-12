@@ -40,11 +40,20 @@ export function createOnboarding(onComplete) {
   let interestOptions = interests;
   let returnFocus = null;
   let canClose = false;
+  let includeEverywhere = true;
+  let countryLanguages = null;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   function chooseList(kind, value) {
     draft[kind] = value;
-    const option = (kind === 'country' ? [{code:'all',name:'Everywhere'}, ...countries] : [{code:'all',name:'Any language'}, ...languages]).find(item => item.code === value);
+    if (kind === 'country' && value && countryLanguages) {
+      languages = countryLanguages(value);
+      if (draft.language && draft.language !== 'all' && !languages.some(item => item.code === draft.language)) {
+        draft.language = null;
+        el.language.value = '';
+      }
+    }
+    const option = (kind === 'country' ? [...(includeEverywhere ? [{code:'all',name:'Everywhere'}] : []), ...countries] : [{code:'all',name:'Any language'}, ...languages]).find(item => item.code === value);
     el[kind].value = option?.name || '';
     el[`${kind}List`].hidden = true;
     updateContinue();
@@ -55,7 +64,7 @@ export function createOnboarding(onComplete) {
   }
   function renderOptions(kind) {
     const input = el[kind], list = el[`${kind}List`];
-    const source = kind === 'country' ? [{code:'all',name:'Everywhere'}, ...countries] : [{code:'all',name:'Any language'}, ...languages];
+    const source = kind === 'country' ? [...(includeEverywhere ? [{code:'all',name:'Everywhere'}] : []), ...countries] : [{code:'all',name:'Any language'}, ...languages];
     const query = input.value.trim().toLowerCase();
     const matches = source.filter(item => item.name.toLowerCase().includes(query)).slice(0, 9);
     list.innerHTML = matches.map(item => `<button type="button" data-onboarding-${kind}="${escapeHTML(item.code)}">${escapeHTML(item.name)}</button>`).join('') || '<span class="onboarding-no-options">No match</span>';
@@ -91,6 +100,8 @@ export function createOnboarding(onComplete) {
   function show(countryOptions, languageOptions, current, options = {}) {
     returnFocus = document.activeElement;
     canClose = Boolean(current?.completed);
+    includeEverywhere = options.includeEverywhere !== false;
+    countryLanguages = typeof options.countryLanguages === 'function' ? options.countryLanguages : null;
     interestOptions = Array.isArray(options.availableInterests) ? interests.filter(([id]) => options.availableInterests.includes(id)) : interests;
     skipInterests = options.skipInterests ?? (interestOptions.length <= 1);
     countries = countryOptions;

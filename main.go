@@ -157,10 +157,23 @@ func main() {
 	}
 	s := &server{sessions: map[string]*session{}, probeCache: map[string]probeResult{}, probeSlots: make(chan struct{}, maxConcurrentProbes), dead: map[string]time.Time{}, client: safeClient()}
 	mux := http.NewServeMux()
+	var appServer *http.Server
 	mux.HandleFunc("GET /api/channels", s.channels)
 	mux.HandleFunc("POST /api/session", s.createSession)
 	mux.HandleFunc("POST /api/private-session", s.createPrivateSession)
 	mux.HandleFunc("GET /api/media/{session}/{resource}", s.media)
+	mux.HandleFunc("POST /api/quit", func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-OpenWave-Action") != "quit" {
+			http.Error(w, "Invalid app action", http.StatusForbidden)
+			return
+		}
+		w.WriteHeader(http.StatusAccepted)
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			_ = appServer.Shutdown(ctx)
+		}()
+	})
 	mux.HandleFunc("GET /", s.static)
 	listener, err := net.Listen("tcp", *addr)
 	if err != nil {
@@ -171,12 +184,15 @@ func main() {
 	if !*noBrowser {
 		go openBrowser(localURL)
 	}
-	log.Fatal((&http.Server{
+	appServer = &http.Server{
 		Handler:           localOnly(mux),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		IdleTimeout:       60 * time.Second,
-	}).Serve(listener))
+	}
+	if err := appServer.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatal(err)
+	}
 }
 
 // A loopback listener alone is not enough: a hostile website can submit blind

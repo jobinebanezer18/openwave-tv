@@ -18,3 +18,14 @@ test('language terms select the actual feed language', () => {
   assert.deepEqual(rankChannels(channels, 'English news', countries, languages).map(c => c.id), ['b']);
   assert.equal(parseQuery('British English news', countries, languages).countryCode, 'UK');
 });
+
+test('a language in the channel name remains searchable when source language metadata is missing', () => {
+  const entries = [{ id: 'sports', name: 'Star Sports 2 Telugu', country: 'IN', categories: ['sports'], languages: [] }];
+  assert.deepEqual(rankChannels(entries, 'Star Sports 2 Telugu', countries, [...languages, { code: 'tel', name: 'Telugu' }]).map(c => c.id), ['sports']);
+});
+
+test('British and UK searches use the worldwide catalog country code', () => {
+  const worldCountries = [{ code: 'GB', name: 'United Kingdom' }];
+  assert.equal(parseQuery('British news', worldCountries, languages).countryCode, 'GB');
+  assert.equal(parseQuery('UK news', worldCountries, languages).countryCode, 'GB');
+});

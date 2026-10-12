@@ -5,23 +5,28 @@ import { mountRadioMode } from './radio.js';
 import { createOnboarding } from './onboarding.js';
 import { parsePrivatePlaylist, PRIVATE_PLAYLIST_MAX_BYTES } from './private-playlist.js';
 import { registerPwa } from './pwa.js';
+import { createWebCatalog } from './web-catalog.js';
 import './style.css';
 
 const app = document.querySelector('#app');
 const WEB_MODE = import.meta.env.VITE_WEB_MODE === true;
+const webCatalog = WEB_MODE ? createWebCatalog() : null;
 if (WEB_MODE) registerPwa();
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const categories = ['all', 'news', 'sports', 'movies', 'music', 'kids', 'documentary', 'entertainment', 'education', 'cooking', 'travel', 'religious', 'business', 'culture', 'general'];
+const categories = ['all', 'news', 'sports', 'movies', 'music', 'kids', 'documentary', 'entertainment', 'education', 'cooking', 'travel', 'religious', 'business', 'culture', 'general', 'classic', 'comedy', 'legislative', 'lifestyle', 'outdoor', 'science', 'weather'];
 const quickCategories = categories.slice(0, 6);
 const state = {
   channels: [], countries: [], languages: [], results: [], selected: null, hls: null,
   privateChannels: [], privateOnly: false,
   search: '', category: 'all', country: 'all', language: 'all', favoritesOnly: false,
   favorites: new Set(readStore('openwave-favorites', [])),
+  favoriteCountries: readStore('openwave-favorite-countries', {}), favoriteChannels: [],
   recent: readStore('openwave-recent', []),
   aiCategory: null, searchSerial: 0, playSerial: 0, sourceCount: 0, sourceAttempt: 0,
-  filterTimer: null, tuneAnimation: null, tuneTimer: null, unavailable: readStore('openwave-unavailable', {})
+  filterTimer: null, tuneAnimation: null, tuneTimer: null, unavailable: readStore('openwave-unavailable', {}), recovered: new Set()
 };
+let webCatalogIndex = null;
+let webCountryLoad = 0;
 
 function readStore(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key) || 'null') || fallback; }
@@ -64,7 +69,7 @@ app.innerHTML = `
     <header class="topbar">
       <a class="brand" href="#top" aria-label="OpenWave TV home"><span class="brand-emblem">${glyph('signal', 23)}</span><span>OPENWAVE</span></a>
       <nav class="top-nav" aria-label="Primary"><button id="nav-home" class="active">Home</button><button id="nav-guide">Channels</button><button id="nav-radio">Radio</button><button id="nav-favorites">Favorites</button></nav>
-      <div class="topbar-actions"><a class="github-link" href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${glyph('arrow', 15)}</a><button id="mobile-radio" class="mobile-radio">Radio</button><button id="preferences-button" class="preferences-button" aria-label="Preferences" title="Preferences">${glyph('sliders', 18)}</button><button id="header-guide" class="topbar-guide">Watch now <span>↗</span></button></div>
+      <div class="topbar-actions"><a class="github-link" href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${glyph('arrow', 15)}</a><button id="quit-button" class="quit-button" type="button" ${WEB_MODE ? 'hidden' : ''}>Quit app</button><button id="mobile-radio" class="mobile-radio">Radio</button><button id="preferences-button" class="preferences-button" aria-label="Preferences" title="Preferences">${glyph('sliders', 18)}</button><button id="header-guide" class="topbar-guide">Watch now <span>↗</span></button></div>
     </header>
     <div id="offline-banner" class="offline-banner" role="status" hidden>The guide is saved, but live channels need an internet connection.</div>
     <main class="layout" id="top" data-tv-layout>
@@ -149,17 +154,23 @@ if (WEB_MODE) {
   updateOfflineBanner();
   privateEls.smart.hidden = true;
   els.ai.textContent = 'Search channels by name, language, place, or category.';
-  document.querySelector('.stage-heading h1').innerHTML = 'LIVE TV.<br><span>MADE SIMPLE.</span>';
-  document.querySelector('.cover-content h2').innerHTML = 'INDIA LIVE.<br><em>ONE SCREEN.</em>';
-  document.querySelector('.cover-content p').textContent = 'A small India beta guide. Pick a channel to play its direct stream.';
+  document.querySelector('.stage-heading h1').innerHTML = 'THE WORLD IS LIVE.<br><span>JUST TUNE IN.</span>';
+  document.querySelector('.cover-content h2').innerHTML = 'ONE WORLD.<br><em>ONE SCREEN.</em>';
+  document.querySelector('.cover-content p').textContent = 'Choose a country, then pick a channel to try its direct stream.';
 }
 const radioMode = mountRadioMode();
 function onboardingOptions() {
-  return WEB_MODE ? { availableInterests: [...new Set(state.channels.flatMap(channel => channel.categories || []))] } : {};
+  return WEB_MODE ? {
+    includeEverywhere: false,
+    countryLanguages: code => {
+      const codes = new Set(webCatalogIndex?.countries.find(country => country.code === code)?.languages || []);
+      return (webCatalogIndex?.languages || []).filter(language => codes.has(language.code));
+    }
+  } : {};
 }
 const onboarding = createOnboarding(preferences => {
   state.preferences = preferences;
-  state.country = preferences.country || 'all';
+  if (!WEB_MODE) state.country = preferences.country || 'all';
   state.language = preferences.language || 'all';
   state.category = 'all';
   state.search = '';
@@ -173,16 +184,17 @@ const onboarding = createOnboarding(preferences => {
   radioMode.hide();
   setNavActive('nav-home');
   radioMode.applyPreferences(preferences);
-  filterChannels(true);
-  renderRail();
+  if (WEB_MODE) activateWebCountry(preferences.country || 'IN');
+  else { filterChannels(true); renderRail(); }
   if (window.matchMedia('(max-width: 860px)').matches) document.querySelector('#guide').scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'start' });
 });
 
 function countryName(code) { return state.countries.find(c => c.code === code)?.name || code || 'Worldwide'; }
 function languageName(code) { return state.languages.find(l => l.code === code)?.name || code; }
-function channelMeta(ch) { return ch.private ? 'Private playlist · This tab only' : `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0, 2).join(', ') || ch.categories[0] || 'TV'}`; }
-function findChannel(id) { return id.startsWith('private:') ? state.privateChannels.find(ch => ch.id === id) : state.channels.find(ch => ch.id === id); }
+function channelMeta(ch) { return ch.private ? 'Private playlist · This tab only' : `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0, 2).join(', ') || titleCase(ch.categories[0] || 'TV')}`; }
+function findChannel(id) { return id.startsWith('private:') ? state.privateChannels.find(ch => ch.id === id) : state.channels.find(ch => ch.id === id) || state.favoriteChannels.find(ch => ch.id === id); }
 function isUnavailable(ch) { return Date.now() - (state.unavailable[ch.id] || 0) < 30 * 60 * 1000; }
+function failedBrowserCheck(ch) { return WEB_MODE && ch.browser_check === 'failed' && !state.recovered.has(ch.id); }
 function rememberUnavailable(ch) {
   if (ch.private) return;
   state.unavailable[ch.id] = Date.now();
@@ -191,6 +203,7 @@ function rememberUnavailable(ch) {
 }
 function clearUnavailable(ch) {
   if (ch.private) return;
+  if (failedBrowserCheck(ch)) { state.recovered.add(ch.id); filterChannels(); renderRail(); }
   if (!state.unavailable[ch.id]) return;
   delete state.unavailable[ch.id];
   localStorage.setItem('openwave-unavailable', JSON.stringify(state.unavailable));
@@ -198,7 +211,7 @@ function clearUnavailable(ch) {
 }
 function suggestAlternative(ch) {
   if (ch.private) return state.privateChannels.find(candidate => candidate.id !== ch.id);
-  return state.channels.filter(candidate => candidate.id !== ch.id && !isUnavailable(candidate) && candidate.country === ch.country && candidate.categories.some(category => ch.categories.includes(category)))
+  return state.channels.filter(candidate => candidate.id !== ch.id && !isUnavailable(candidate) && !failedBrowserCheck(candidate) && candidate.country === ch.country && candidate.categories.some(category => ch.categories.includes(category)))
     .sort((a, b) => (Number(b.languages?.some(language => ch.languages?.includes(language))) - Number(a.languages?.some(language => ch.languages?.includes(language)))) || (b.health_score || 0) - (a.health_score || 0))[0];
 }
 
@@ -219,11 +232,11 @@ function channelMarkup(ch, index) {
   const selected = state.selected?.id === ch.id;
   if (ch.private) return `<div class="channel-row ${selected ? 'playing' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="Play ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}><span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo private-logo">${glyph('tv', 20)}</span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>Private playlist · This tab only</small></span><span class="row-arrow">${glyph('arrow', 17)}</span></button></div>`;
   const favorite = state.favorites.has(ch.id);
-  const unavailable = isUnavailable(ch);
+  const unavailable = isUnavailable(ch) || failedBrowserCheck(ch);
   return `<div class="channel-row ${selected ? 'playing' : ''} ${unavailable ? 'unavailable' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="${unavailable ? 'Retry' : 'Play'} ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}>
     <span class="row-index">${String(index + 1).padStart(2, '0')}</span>
     <span class="channel-logo">${ch.logo ? `<img src="${escapeHTML(ch.logo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : `<span>${escapeHTML(ch.name.slice(0, 2).toUpperCase())}</span>`}</span>
-    <span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>${escapeHTML(unavailable ? 'Unavailable just now · Tap to retry' : channelMeta(ch))}</small></span><span class="row-arrow">${glyph('arrow', 17)}</span>
+    <span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>${escapeHTML(failedBrowserCheck(ch) ? 'Recent signal check failed · Tap to retry' : unavailable ? 'Unavailable just now · Tap to retry' : channelMeta(ch))}</small></span><span class="row-arrow">${glyph('arrow', 17)}</span>
   </button><button class="row-save ${favorite ? 'saved' : ''}" data-save-id="${escapeHTML(ch.id)}" aria-label="${favorite ? 'Remove' : 'Save'} ${escapeHTML(ch.name)} ${favorite ? 'from' : 'to'} My channels" aria-pressed="${favorite}" title="${favorite ? 'Remove from' : 'Save to'} My channels">${glyph('heart', 17)}</button></div>`;
 }
 
@@ -233,7 +246,7 @@ function renderList(withMotion = false) {
   els.list.innerHTML = displayed.length ? displayed.map(channelMarkup).join('') : `<div class="empty-list">${glyph(state.favoritesOnly ? 'heart' : 'search', 25)}<strong>${state.favoritesOnly ? 'Your shortlist starts here' : 'No channels here yet'}</strong><p>${state.favoritesOnly ? 'Tap a heart beside any channel to save it here.' : 'Try a broader search or clear a filter.'}</p></div>`;
   const count = state.results.length.toLocaleString();
   els.count.textContent = count;
-  els.result.textContent = state.privateOnly ? `${count} channel${state.results.length === 1 ? '' : 's'} from your file` : `${count} channels ready to explore`;
+  els.result.textContent = state.privateOnly ? `${count} channel${state.results.length === 1 ? '' : 's'} from your file` : WEB_MODE && state.favoritesOnly ? `${count} saved channels` : WEB_MODE && !state.search && state.category === 'all' && state.language === 'all' ? `${count} to try · ${state.channels.length.toLocaleString()} indexed in ${countryName(state.country)}` : WEB_MODE ? `${count} matching channels · playback varies` : `${count} channels ready to explore`;
   els.more.hidden = state.results.length <= shown;
   document.querySelector('.favorite-count').textContent = state.favorites.size || '';
   if (withMotion && !reduceMotion.matches) {
@@ -243,17 +256,17 @@ function renderList(withMotion = false) {
 }
 
 function renderRail() {
-  const favorites = [...state.favorites].map(id => state.channels.find(ch => ch.id === id)).filter(Boolean);
+  const favorites = [...state.favorites].map(id => findChannel(id)).filter(Boolean);
   const recent = state.recent.map(id => state.channels.find(ch => ch.id === id)).filter(Boolean).slice(0, 5);
   const picks = ['BBC News', 'France 24', 'ABC News Live', 'Euronews English', 'Bloomberg TV']
     .map(name => state.channels.find(ch => ch.name === name)).filter(Boolean);
   const preferences = state.preferences;
-  const tailored = preferences?.completed ? state.channels.filter(ch => !isUnavailable(ch) &&
+  const tailored = preferences?.completed ? state.channels.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch) &&
     (preferences.country === 'all' || ch.country === preferences.country) &&
     (preferences.language === 'all' || ch.languages?.includes(preferences.language)) &&
     (!preferences.interests?.length || ch.categories.some(category => preferences.interests.includes(category)))
   ).sort((a, b) => (b.health_score || 0) - (a.health_score || 0)).slice(0, 5) : [];
-  const channels = favorites.length ? [...favorites.filter(ch => !isUnavailable(ch)), ...tailored.filter(ch => !favorites.some(f => f.id === ch.id))].slice(0, 5) : tailored.length ? tailored : recent.length ? [...recent.filter(ch => !isUnavailable(ch)), ...picks.filter(ch => !recent.some(r => r.id === ch.id) && !isUnavailable(ch))].slice(0, 5) : (picks.filter(ch => !isUnavailable(ch)).length ? picks.filter(ch => !isUnavailable(ch)) : state.channels.filter(ch => !isUnavailable(ch)).slice(0, 5));
+  const channels = favorites.length ? [...favorites.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch)), ...tailored.filter(ch => !favorites.some(f => f.id === ch.id))].slice(0, 5) : tailored.length ? tailored : recent.length ? [...recent.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch)), ...picks.filter(ch => !recent.some(r => r.id === ch.id) && !isUnavailable(ch) && !failedBrowserCheck(ch))].slice(0, 5) : (picks.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch)).length ? picks.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch)) : state.channels.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch)).slice(0, 5));
   els.railTitle.textContent = favorites.length ? 'My channels' : tailored.length ? 'For you' : recent.length ? 'Recently tuned' : 'Start watching';
   els.railSubtitle.textContent = favorites.length ? 'The stations you keep close.' : tailored.length ? `Live picks for ${countryName(preferences.country)}.` : recent.length ? 'Jump back in or switch stations.' : 'Good places to begin.';
   els.rail.innerHTML = channels.map((ch, i) => `<button class="rail-card ${state.selected?.id === ch.id ? 'active' : ''}" data-id="${escapeHTML(ch.id)}" aria-label="Play ${escapeHTML(ch.name)}">
@@ -263,6 +276,10 @@ function renderRail() {
 }
 
 function filterChannels(withMotion = false) {
+  if (WEB_MODE) {
+    els.quick.hidden = state.privateOnly || state.favoritesOnly;
+    document.querySelector('.filter-area').hidden = state.privateOnly || state.favoritesOnly;
+  }
   if (state.privateOnly) {
     const query = state.search.trim().toLocaleLowerCase();
     state.results = state.privateChannels.filter(ch => !query || ch.name.toLocaleLowerCase().includes(query));
@@ -270,14 +287,14 @@ function filterChannels(withMotion = false) {
     els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>PRIVATE CHANNELS</small>`;
     return;
   }
-  let pool = state.channels;
+  let pool = WEB_MODE && state.favoritesOnly ? state.favoriteChannels : state.channels;
   if (state.favoritesOnly) pool = pool.filter(ch => state.favorites.has(ch.id));
-  else if (!state.search.trim()) pool = pool.filter(ch => !isUnavailable(ch));
-  if (state.country !== 'all') pool = pool.filter(ch => ch.country === state.country);
-  if (state.language !== 'all') pool = pool.filter(ch => ch.languages?.includes(state.language));
+  else if (!state.search.trim()) pool = pool.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch));
+  if (!(WEB_MODE && state.favoritesOnly) && state.country !== 'all') pool = pool.filter(ch => ch.country === state.country);
+  if (!(WEB_MODE && state.favoritesOnly) && state.language !== 'all') pool = pool.filter(ch => ch.languages?.includes(state.language));
   if (state.category !== 'all') pool = pool.filter(ch => ch.categories.includes(state.category));
   state.results = rankChannels(pool, state.search, state.countries, state.languages, state.aiCategory);
-  state.results.sort((a, b) => Number(isUnavailable(a)) - Number(isUnavailable(b)));
+  state.results.sort((a, b) => Number(isUnavailable(a) || failedBrowserCheck(a)) - Number(isUnavailable(b) || failedBrowserCheck(b)));
   if (WEB_MODE && !state.favoritesOnly && !state.search.trim() && state.category === 'all' && state.preferences?.interests?.length) {
     const preferred = new Set(state.preferences.interests);
     state.results.sort((a, b) => Number(b.categories.some(category => preferred.has(category))) - Number(a.categories.some(category => preferred.has(category))));
@@ -287,7 +304,7 @@ function filterChannels(withMotion = false) {
     state.results = pool.filter(ch => (!parsed.countryCode || ch.country === parsed.countryCode) && (!parsed.languageCode || ch.languages?.includes(parsed.languageCode)) && ch.categories.includes(state.aiCategory));
   }
   renderCategories(); renderList(withMotion);
-  els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>CHANNELS TO EXPLORE</small>`;
+  els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>${WEB_MODE && state.favoritesOnly ? 'SAVED CHANNELS' : WEB_MODE ? 'CHANNELS TO TRY' : 'CHANNELS TO EXPLORE'}</small>`;
   const activeFilters = [state.country !== 'all', state.language !== 'all', state.category !== 'all'].filter(Boolean).length;
   els.filterCount.textContent = activeFilters ? String(activeFilters) : '';
 }
@@ -524,10 +541,18 @@ document.querySelector('#header-guide').addEventListener('click', jumpToGuide);
 function setNavActive(id) { document.querySelectorAll('.top-nav button').forEach(button => button.classList.toggle('active', button.id === id)); }
 document.querySelector('#nav-home').addEventListener('click', () => { radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
 document.querySelector('#nav-guide').addEventListener('click', () => { setPrivateView(false); setNavActive('nav-guide'); jumpToGuide(); });
-document.querySelector('#nav-favorites').addEventListener('click', () => { setPrivateView(false); state.favoritesOnly = true; els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); jumpToGuide(); });
+document.querySelector('#nav-favorites').addEventListener('click', () => { setPrivateView(false); state.favoritesOnly = true; if (WEB_MODE) { state.search = ''; els.search.value = ''; state.category = 'all'; } els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); if (WEB_MODE) loadFavoriteChannels(); jumpToGuide(); });
 function showRadio() { els.video.pause(); setNavActive('nav-radio'); radioMode.show(); }
 document.querySelector('#nav-radio').addEventListener('click', showRadio);
 document.querySelector('#mobile-radio').addEventListener('click', showRadio);
+document.querySelector('#quit-button').addEventListener('click', async () => {
+  try {
+    const response = await fetch('/api/quit', { method: 'POST', headers: { 'X-OpenWave-Action': 'quit' } });
+    if (!response.ok) throw new Error('Quit request failed');
+    els.video.pause();
+    els.result.textContent = 'OpenWave TV has closed. You can close this browser tab.';
+  } catch { els.result.textContent = 'Could not close OpenWave TV. Try again.'; }
+});
 document.querySelector('#preferences-button').addEventListener('click', () => { if (state.countries.length) onboarding.show(state.countries, state.languages, state.preferences, onboardingOptions()); });
 document.querySelector('.brand').addEventListener('click', event => { event.preventDefault(); radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
 els.list.addEventListener('click', event => {
@@ -567,7 +592,7 @@ function setPickerBackgroundInert(inert) {
   }
 }
 function pickerOptions() {
-  if (activePicker === 'country') return [{ value: 'all', label: 'Everywhere' }, ...state.countries.map(c => ({ value: c.code, label: c.name }))];
+  if (activePicker === 'country') return [...(WEB_MODE ? [] : [{ value: 'all', label: 'Everywhere' }]), ...state.countries.map(c => ({ value: c.code, label: `${c.name}${WEB_MODE ? ` · ${c.count.toLocaleString()}` : ''}` }))];
   if (activePicker === 'language') return [{ value: 'all', label: 'Any language' }, ...state.languages.map(l => ({ value: l.code, label: l.name }))];
   return (WEB_MODE ? categories.filter(c => c === 'all' || state.channels.some(ch => ch.categories.includes(c))) : categories).map(c => ({ value: c, label: c === 'all' ? 'All categories' : titleCase(c) }));
 }
@@ -625,12 +650,15 @@ els.pickerList.addEventListener('keydown', event => {
 });
 els.pickerList.addEventListener('click', event => {
   const option = event.target.closest('[data-pick-value]'); if (!option || !activePicker) return;
-  state[activePicker] = option.dataset.pickValue;
-  shown = 60;
-  filterChannels(true);
+  const kind = activePicker;
+  const value = option.dataset.pickValue;
   closePicker(false);
   setFiltersOpen(false);
   els.filterToggle.focus();
+  if (WEB_MODE && kind === 'country') { activateWebCountry(value); return; }
+  state[kind] = value;
+  shown = 60;
+  filterChannels(true);
 });
 document.addEventListener('keydown', event => {
   if (event.key !== 'Escape') return;
@@ -667,15 +695,37 @@ document.querySelector('#search-form').addEventListener('submit', async event =>
 els.favoritesFilter.addEventListener('click', () => {
   if (state.privateOnly) setPrivateView(false);
   state.favoritesOnly = !state.favoritesOnly;
+  if (WEB_MODE && state.favoritesOnly) { state.search = ''; els.search.value = ''; state.category = 'all'; }
   els.favoritesFilter.classList.toggle('active', state.favoritesOnly);
   els.favoritesFilter.setAttribute('aria-pressed', String(state.favoritesOnly));
   setNavActive(state.favoritesOnly ? 'nav-favorites' : 'nav-guide');
   filterChannels(true);
+  if (WEB_MODE && state.favoritesOnly) loadFavoriteChannels();
 });
+async function loadFavoriteChannels() {
+  const ids = [...state.favorites];
+  const codes = [...new Set(ids.map(id => state.favoriteCountries[id] || (id.startsWith('in-') ? 'IN' : state.country)))]
+    .filter(code => webCatalogIndex?.countries.some(country => country.code === code));
+  const results = await Promise.allSettled(codes.map(code => webCatalog.country(code)));
+  const channels = results.flatMap(result => result.status === 'fulfilled' ? result.value : []);
+  state.favoriteChannels = channels.filter(channel => state.favorites.has(channel.id));
+  if (state.favoritesOnly) filterChannels(true);
+  renderRail();
+}
 function toggleFavorite(id, sourceButton = null) {
   if (id.startsWith('private:')) return;
-  if (state.favorites.has(id)) state.favorites.delete(id); else state.favorites.add(id);
+  if (state.favorites.has(id)) {
+    state.favorites.delete(id);
+    delete state.favoriteCountries[id];
+    state.favoriteChannels = state.favoriteChannels.filter(channel => channel.id !== id);
+  } else {
+    state.favorites.add(id);
+    const channel = findChannel(id);
+    state.favoriteCountries[id] = channel?.country || state.country;
+    if (channel && !state.favoriteChannels.some(item => item.id === id)) state.favoriteChannels.push(channel);
+  }
   localStorage.setItem('openwave-favorites', JSON.stringify([...state.favorites]));
+  if (WEB_MODE) localStorage.setItem('openwave-favorite-countries', JSON.stringify(state.favoriteCountries));
   if (state.selected?.id === id) {
     els.favorite.classList.toggle('is-favorite', state.favorites.has(id));
     els.favorite.setAttribute('aria-label', state.favorites.has(id) ? 'Remove from favorites' : 'Add to favorites');
@@ -694,12 +744,61 @@ document.addEventListener('keydown', event => {
   if (event.key === '/') { event.preventDefault(); jumpToGuide(); }
 });
 
+async function activateWebCountry(code, { loading = true } = {}) {
+  const ticket = ++webCountryLoad;
+  const country = webCatalogIndex?.countries.find(item => item.code === code);
+  if (!country) return;
+  if (loading) {
+    els.result.textContent = `Loading ${country.name} channels…`;
+    els.list.innerHTML = `<div class="empty-list"><strong>Finding ${escapeHTML(country.name)} channels</strong><p>Loading this country's guide.</p></div>`;
+    els.more.hidden = true;
+  }
+  try {
+    const channels = await webCatalog.country(code);
+    if (ticket !== webCountryLoad) return;
+    state.channels = channels.filter(channel => webStreamURLs(channel).length);
+    state.country = code;
+    const countryLanguages = new Set(country.languages || []);
+    state.languages = (webCatalogIndex.languages || []).filter(language => countryLanguages.has(language.code));
+    if (state.language !== 'all' && !countryLanguages.has(state.language)) state.language = 'all';
+    state.category = 'all';
+    state.search = '';
+    els.search.value = '';
+    state.aiCategory = null;
+    state.favoritesOnly = false;
+    els.favoritesFilter.classList.remove('active');
+    els.favoritesFilter.setAttribute('aria-pressed', 'false');
+    shown = 60;
+    document.querySelector('.cover-content p').textContent = `${country.name} channels are indexed here. Pick one to try its direct stream.`;
+    if (state.preferences?.completed && state.preferences.country !== code) {
+      state.preferences = { ...state.preferences, country: code, language: state.language };
+      localStorage.setItem('openwave-preferences', JSON.stringify(state.preferences));
+      radioMode.applyPreferences(state.preferences);
+    }
+    renderRail(); filterChannels(true);
+  } catch {
+    if (ticket !== webCountryLoad) return;
+    els.result.textContent = `${country.name} guide could not load`;
+    els.list.innerHTML = `<div class="empty-list">${glyph('refresh', 24)}<strong>Guide unavailable</strong><p>Check your connection, then choose ${escapeHTML(country.name)} again.</p></div>`;
+  }
+}
+
 async function loadGuide() {
   try {
-    const response = await fetch(WEB_MODE ? '/catalog/india.v1.json' : '/api/channels');
+    if (WEB_MODE) {
+      webCatalogIndex = await webCatalog.index();
+      state.countries = webCatalogIndex.countries;
+      state.preferences = readStore('openwave-preferences', null);
+      const wanted = state.preferences?.completed && state.countries.some(country => country.code === state.preferences.country) ? state.preferences.country : 'IN';
+      state.language = state.preferences?.completed ? state.preferences.language || 'all' : 'all';
+      await activateWebCountry(wanted, { loading: false });
+      if (!state.preferences?.completed) onboarding.show(state.countries, state.languages, null, onboardingOptions());
+      return;
+    }
+    const response = await fetch('/api/channels');
     if (!response.ok) throw new Error(await response.text());
     const data = await response.json();
-    state.channels = WEB_MODE ? data.channels.filter(ch => webStreamURLs(ch).length) : data.channels;
+    state.channels = data.channels;
     state.countries = data.countries.sort((a, b) => a.name.localeCompare(b.name));
     state.languages = data.languages || [];
     state.preferences = readStore('openwave-preferences', null);

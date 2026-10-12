@@ -6,7 +6,7 @@ A local, open-source TV and radio guide that plays public live streams in your b
 
 ## Download and watch
 
-Download the executable for your computer from [Releases](https://github.com/jobinebanezer18/openwave-tv/releases), unzip it, and run it. OpenWave starts a local server and opens your browser. The server binds to `127.0.0.1`; it does not expose the player to your network. Keep the program running while you watch.
+Download the executable for your computer from [Releases](https://github.com/jobinebanezer18/openwave-tv/releases), unzip it, and run it. On macOS, the universal preview DMG contains an app you can drag to Applications; it is ad-hoc signed and not notarized, so macOS may require Control-click → Open on first launch. OpenWave starts a local server and opens your browser. The server binds to `127.0.0.1`; it does not expose the player to your network. Use **Quit app** in the desktop guide when finished.
 
 An internet connection is needed for the guide and streams. The optional AI model downloads on first use and is cached by the browser. The model runs on your computer; search text is not sent to an AI service.
 
@@ -39,9 +39,9 @@ go run . -no-browser -addr 127.0.0.1:8765
 
 For interface development, run `go run . -no-browser -addr 127.0.0.1:8765` and `npm run dev` in separate terminals. Vite proxies `/api` to the Go server.
 
-## India web beta
+## Worldwide web beta, India first
 
-The [India web beta](https://openwave-india-beta.pages.dev/) is live with 49 candidate channels. The separate `npm run build:web` output plays direct HTTPS HLS feeds without the Go server; it does not relay video or include the desktop AI runtime. See [India web beta notes](docs/web-beta.md) for build, import, installation, and testing limits.
+The [worldwide web beta](https://openwave-world-beta.pages.dev/) indexes 6,891 stream-linked channels in 174 countries, starting with India. India has 620 indexed channels; 587 passed a limited browser-origin stream check and appear in the default guide. These are candidate links, not guaranteed live channels. The separate `npm run build:web` output plays direct HTTPS HLS without the Go server; it does not relay video or include the desktop AI runtime. See [web beta notes](docs/web-beta.md) for installation, build, and testing limits.
 
 ## How playback works
 

@@ -1,31 +1,34 @@
-# India web beta
+# Worldwide web beta, India first
 
-**Live beta:** https://openwave-india-beta.pages.dev/
+**Live beta:** https://openwave-world-beta.pages.dev/
 
-This is a small, browser-only OpenWave build for direct playback on ordinary phones and computers. It does not run the desktop Go server or relay video through our hosting account. The first India guide currently contains **49 candidate channels** across news, music, local TV, culture, education, business, entertainment, and faith. Sources can change or block a viewer's region or browser; the guide count is not a promise that every feed is live.
+OpenWave's browser build starts with India and lets viewers switch to other countries in Preferences or Refine channels. The current static snapshot indexes **6,891 stream-linked channel identities in 174 countries**. India has **620 indexed channels**. On 12 October 2026, a bounded manifest and first-child CORS check found 587 India entries with a candidate direct browser feed; 33 failed that check or a follow-up Chromium playback check. The default India guide starts with those 587, while search still exposes failed entries for retry. These checks are point-in-time signals, not proof of continuous playback or media rights.
 
-## How it differs from the desktop preview
+## Catalog and playback
 
-- TV uses direct HTTPS HLS from each stream host. The host sees the viewer's IP address and may enforce its own access rules. Browser CORS and codec support determine whether a feed plays.
-- Radio still uses direct station audio and the bundled station guide.
-- A personal `.m3u` file can be imported in the browser, but the web build plays only HTTPS HLS links that allow direct browser playback. The imported list stays in the tab and disappears on reload. It is not added to the public guide or uploaded to OpenWave.
-- Search by channel, place, language, and category remains. The optional MiniLM model is excluded from this web build to keep every Cloudflare Pages asset under 25 MiB; the web UI does not claim AI search. The desktop preview retains it.
-- The Home Screen web app can reopen its cached shell and guide offline. Watching TV or listening to radio still needs a connection; live video/audio is never cached.
+- The [iptv-org channel, stream, and feed APIs](https://github.com/iptv-org/api) supply worldwide identities, direct HLS URLs, and available language metadata. The original 49 curated India entries retain their stable IDs and preferred sources. Country catalogs are separate files, so the app loads the selected country instead of downloading the whole world at startup.
+- The web player requests HTTPS HLS directly from the stream host. A host can change or block a URL by region, browser, codec, time, or access policy. A basic network probe can pass while video fails; Star Sports 2 Telugu did exactly that when current media segments returned 404 during Chromium playback.
+- Radio uses direct station audio and the bundled station guide. A personal `.m3u` file stays in the browser tab and can play only direct HTTPS HLS sources that allow browser access. Private imports are not added to the public guide or uploaded to OpenWave.
+- Search by channel, country, language, and category remains. The optional MiniLM model is excluded from the web build to keep assets small; the web UI does not claim AI search. The desktop preview retains the optional local model.
+- The Home Screen app can reopen its cached shell and selected country guide offline. Watching TV or listening to radio still needs a connection; live media is never cached.
 
-## Phone installation and testing
+## Install on a phone
 
-On an iPhone in India, open the HTTPS beta URL in Safari and choose **Share → Add to Home Screen**. This creates a Home Screen web app; it is not a native IPA download. On Android, open the HTTPS URL in Chrome and choose **Add to Home screen** or **Install app** when offered. Test a channel using both Wi-Fi and mobile data, then switch channels and return after closing the Home Screen app. If a feed fails, report the channel, phone model, browser/OS version, network type, and time through [GitHub Issues](https://github.com/jobinebanezer18/openwave-tv/issues). Do not post playlist URLs containing personal access tokens.
+On iPhone, open the HTTPS beta URL in Safari and choose **Share → Add to Home Screen**. On Android, open it in Chrome and choose **Add to Home screen** or **Install app** when offered. Report a failed channel with its name, country, phone model, browser/OS version, network type, and time in [GitHub Issues](https://github.com/jobinebanezer18/openwave-tv/issues). Do not post private playlist URLs containing access tokens.
 
-## Build locally
+## Build and update the snapshot
 
 ```sh
 npm ci
+curl -fsSL https://iptv-org.github.io/api/channels.json -o work/catalog/iptv-org-channels.json
+curl -fsSL https://iptv-org.github.io/api/streams.json -o work/catalog/iptv-org-streams.json
+curl -fsSL https://iptv-org.github.io/api/feeds.json -o work/catalog/iptv-org-feeds.json
+node scripts/generate-world-catalog.mjs
 npm run build:web
-npx vite preview --host 127.0.0.1 --port 4174 --outDir dist-web
 ```
 
-The build outputs `dist-web/` and checks every asset against Cloudflare Pages' 25 MiB per-file limit. For the desktop Go build, use `npm run build` instead; its `dist/` contains the separate local-server UI and optional AI runtime. Do not upload that desktop `dist/` as a static TV website, because its `/api/*` calls need Go.
+The generator keeps the saved India browser-check snapshot in `catalog/india-browser-checks.v1.json`; fetching new upstream APIs does not make that check fresh. Before a later release, rerun real browser playback samples and replace stale check results. `npm run build:web` validates country files and the hosting asset-size limit. The desktop Go build uses `npm run build` instead.
 
-## Beta gates still open
+## Verification still needed
 
-Root Chromium checks confirmed direct playback reaching readyState 4 for NDTV India, 9XM, DD Bharati, CNBC TV18, Aakaash Aath, and Gyandarshan. B4U Music was removed after it failed browser CORS despite passing a network-header probe. The hosted beta also played 9XM over HTTPS, and its cached shell and guide reopened offline with a connection notice. Physical iPhone Safari and Android Chrome playback, background audio, and Home Screen installation still need tests. This beta should be expanded or narrowed from those results, not from playlist size alone.
+Chromium on macOS played NDTV India, 9XM, DD Bharati, CNBC TV18, Aakaash Aath, Gyandarshan, and DD National in local or hosted checks. The first hosted India beta also reopened its cached shell offline. The expanded worldwide guide still needs representative first-frame tests by country, physical iPhone Safari and Android Chrome playback, Home Screen install, background audio, and longer stream reliability runs. The index count must never be presented as a count of guaranteed live channels.

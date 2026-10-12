@@ -12,7 +12,14 @@ const CATEGORY_PHRASES = {
   religious: 'religious faith worship spiritual',
   business: 'business finance markets economy',
   culture: 'culture arts theater literature',
-  general: 'general television local programming mixed shows'
+  general: 'general television local programming mixed shows',
+  classic: 'classic television vintage shows',
+  comedy: 'comedy jokes standup humorous shows',
+  legislative: 'legislative parliament government public affairs',
+  lifestyle: 'lifestyle home wellness fashion',
+  outdoor: 'outdoor adventure recreation',
+  science: 'science technology research',
+  weather: 'weather forecasts climate'
 };
 
 const STOP = new Set(['show','shows','me','find','some','something','a','an','the','tv','channel','channels','from','in','for','with','about','watch','live','please','i','want','to','relaxing','calming','interesting','informative']);
@@ -29,7 +36,8 @@ export function parseQuery(query, countries, languages = []) {
   const lower = query.toLowerCase().trim();
   const words = lower.match(/[\p{L}\p{N}]+/gu) || [];
   const country = countries.find(c => c.name && new RegExp(`\\b${escapeRegExp(c.name.toLowerCase())}\\b`, 'u').test(lower));
-  const countryCode = country?.code || words.map(w => COUNTRY_ALIASES[w]).find(Boolean) || (words.includes('usa') ? 'US' : words.includes('uk') ? 'UK' : null);
+  const aliasCode = words.map(w => COUNTRY_ALIASES[w]).find(Boolean) || (words.includes('usa') ? 'US' : words.includes('uk') ? 'UK' : null);
+  const countryCode = country?.code || (aliasCode === 'UK' && countries.some(item => item.code === 'GB') ? 'GB' : aliasCode);
   const language = languages.find(l => l.name && new RegExp(`\\b${escapeRegExp(l.name.toLowerCase())}\\b`, 'u').test(lower));
   const languageCode = language?.code || null;
   const category = words.find(w => CATEGORY_PHRASES[w]) || words.map(w => SYNONYMS[w]).find(Boolean) || null;
@@ -43,6 +51,7 @@ function escapeRegExp(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&
 export function rankChannels(channels, query, countries, languages = [], aiCategory = null) {
   const parsed = parseQuery(query, countries, languages);
   const category = parsed.category || aiCategory;
+  const requestedLanguageName = parsed.languageCode ? languages.find(language => language.code === parsed.languageCode)?.name.toLowerCase() : null;
   const result = channels.map(ch => {
     const name = ch.name.toLowerCase();
     const title = (ch.title || '').toLowerCase();
@@ -52,7 +61,7 @@ export function rankChannels(channels, query, countries, languages = [], aiCateg
       score += 3;
     }
     if (parsed.languageCode) {
-      if (!ch.languages?.includes(parsed.languageCode)) return null;
+      if (!ch.languages?.includes(parsed.languageCode) && !(requestedLanguageName && name.includes(requestedLanguageName))) return null;
       score += 3;
     }
     if (category) {
@@ -65,7 +74,7 @@ export function rankChannels(channels, query, countries, languages = [], aiCateg
       else if (title.includes(term)) score += 3;
       else return null;
     }
-    if (!query.trim()) score += ch.featured ? 5 : 0;
+    if (!query.trim()) score += (ch.featured ? 5 : 0) + (ch.health_score || 0);
     if (ch.quality?.includes('1080')) score += 0.2;
     return { ...ch, score };
   }).filter(Boolean);

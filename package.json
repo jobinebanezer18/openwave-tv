@@ -1,12 +1,12 @@
 {
   "name": "openwave-tv",
-  "version": "0.3.0-alpha.1",
+  "version": "0.4.0-beta.1",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "build:web": "VITE_WEB_MODE=true vite build --outDir dist-web && node scripts/check-web-assets.mjs",
+    "build:web": "node scripts/validate-world-catalog.mjs && VITE_WEB_MODE=true vite build --outDir dist-web && node scripts/check-web-assets.mjs",
     "check:web-assets": "node scripts/check-web-assets.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test src/*.test.js"
