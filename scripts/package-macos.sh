@@ -57,7 +57,7 @@ cat > "$app_dir/Contents/Info.plist" <<PLIST
   <key>CFBundleShortVersionString</key><string>$bundle_version</string>
   <key>CFBundleVersion</key><string>$bundle_build</string>
   <key>OpenWaveBuildVersion</key><string>$version</string>
-  <key>SUFeedURL</key><string>https://openwave-world-beta.pages.dev/updates/macos.xml</string>
+  <key>SUFeedURL</key><string>https://tv.vibeworks.in/updates/macos.xml</string>
   <key>SUPublicEDKey</key><string>7/nbasA9NePe1/dgd+fn2EnNnnSTL3XyCm/Rq8Qtco8=</string>
   <key>SUEnableAutomaticChecks</key><true/>
   <key>SUAutomaticallyUpdate</key><true/>
