@@ -352,6 +352,10 @@ function filterChannels(withMotion = false) {
     els.quick.hidden = state.privateOnly || state.favoritesOnly;
     document.querySelector('.filter-area').hidden = state.privateOnly || state.favoritesOnly;
     document.querySelector('#guide-modes').hidden = state.privateOnly || state.favoritesOnly;
+    document.querySelector('.cover-content p').textContent = state.sportsWorldwide
+      ? 'Sports from around the world. Pick a channel to try its direct stream.'
+      : `${countryName(state.country)} channels are indexed here. Pick one to try its direct stream.`;
+    updateGuideMode();
   }
   if (state.privateOnly) {
     const query = state.search.trim().toLocaleLowerCase();
@@ -697,12 +701,14 @@ els.quick.addEventListener('click', event => {
 });
 function updateGuideMode() {
   if (!WEB_MODE) return;
+  document.querySelector('#watch-mode').textContent = state.sportsWorldwide ? 'World sports' : 'Watch';
+  document.querySelector('#directory-mode').firstChild.textContent = state.sportsWorldwide ? `${countryName(state.country)} guide ` : 'All channels ';
   for (const [id, selected] of [['watch-mode', !state.directoryView], ['directory-mode', state.directoryView]]) {
     const button = document.querySelector(`#${id}`);
     button.classList.toggle('selected', selected);
     button.setAttribute('aria-pressed', String(selected));
   }
-  document.querySelector('#directory-total').textContent = webCatalogIndex?.countries.find(country => country.code === state.country)?.directory_count?.toLocaleString() || '';
+  document.querySelector('#directory-total').textContent = state.sportsWorldwide ? '' : webCatalogIndex?.countries.find(country => country.code === state.country)?.directory_count?.toLocaleString() || '';
 }
 function setDirectoryView(on) {
   if (!WEB_MODE || (state.directoryView === on && !state.sportsWorldwide)) return;
