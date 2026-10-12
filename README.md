@@ -8,6 +8,10 @@ A local, open-source TV and radio guide that plays public live streams in your b
 
 Download the executable for your computer from [Releases](https://github.com/jobinebanezer18/openwave-tv/releases), unzip it, and run it. On macOS 12+, the universal preview DMG contains an app you can drag to Applications. It opens its own TV window and starts a loopback-only local server; if the usual port is occupied, it tries another local port. The DMG is ad-hoc signed and not notarized, so macOS may require Control-click → Open on first launch. After installing an updater-enabled build once, the Mac app checks a signed update feed at `tv.vibeworks.in` and can install later releases in the app. Click **Updates** to check now or change automatic check and install settings. Use **Quit app** in the guide when finished. The standalone command-line builds open your default browser.
 
+For Android, download the signed APK from [Get apps](https://tv.vibeworks.in/downloads/) and allow your browser to install it when Android asks. The Android app loads the hosted guide, so web UI and station catalog changes arrive when it reopens. A change to the Android shell itself needs a new APK signed by the same key and Android will ask you to approve that installation.
+
+For Windows, the portable web-app EXE from [Get apps](https://tv.vibeworks.in/downloads/) opens the hosted guide in an Edge app window, with a default-browser fallback. Website changes arrive on refresh or relaunch. The separate Windows ZIP in Releases contains the local playback engine and opens your browser; changes to that engine require a new EXE.
+
 An internet connection is needed for live streams. The Mac app can download an optional AI model on first use and run it locally; the web version searches names, places, languages, and categories without that model.
 
 ## Install on iPhone

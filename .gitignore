@@ -7,3 +7,10 @@ openwave-tv
 openwave-tv.exe
 work/
 .playwright-cli/
+android/.gradle/
+android/**/build/
+android/local.properties
+android/.idea/
+*.jks
+*.keystore
+cmd/windows-web/*.syso

@@ -148,10 +148,83 @@ jobs:
           path: release-mac/
           if-no-files-found: error
 
+  android-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
+      - run: chmod +x android/gradlew
+      - run: ./android/gradlew -p android :app:assembleDebug --no-daemon
+      - name: Sign release APK
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          OPENWAVE_ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          OPENWAVE_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          mkdir -p work/android-signing release-android
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > work/android-signing/openwave-release.jks
+          chmod 600 work/android-signing/openwave-release.jks
+          export OPENWAVE_ANDROID_KEYSTORE="$GITHUB_WORKSPACE/work/android-signing/openwave-release.jks"
+          ./android/gradlew -p android :app:assembleRelease --no-daemon
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs android/app/build/outputs/apk/release/app-release.apk | tee work/android-signing/verification.txt
+          grep -F 'e3c1c508ed5a178c82a23151a551cb2d547e94e4c5c24b46889ce00bfe17b803' work/android-signing/verification.txt
+          version="${GITHUB_REF_NAME#v}"
+          asset="OpenWave-TV-${version}-Android.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "release-android/$asset"
+          (cd release-android && sha256sum "$asset" > "$asset.sha256")
+      - uses: actions/upload-artifact@v7
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          name: openwave-tv-android-apk
+          path: release-android/
+          if-no-files-found: error
+
+  windows-web:
+    name: Build Windows web-app EXE
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.2'
+          cache: true
+      - name: Build portable GUI launcher
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $asset = "OpenWave-TV-$version-Windows-Web.exe"
+          $windowsVersion = $version -replace '-beta\.', '.'
+          New-Item -ItemType Directory -Force release-windows | Out-Null
+          go run github.com/tc-hib/go-winres@v0.3.3 simply --arch amd64 --out cmd/windows-web/rsrc --manifest gui --icon public/icons/icon-512.png --file-description 'OpenWave TV web app' --product-name 'OpenWave TV' --product-version $windowsVersion --file-version $windowsVersion --original-filename $asset
+          if ($LASTEXITCODE -ne 0) { throw 'Windows resources failed to build' }
+          go build -trimpath -ldflags '-H=windowsgui -s -w' -o "release-windows/$asset" ./cmd/windows-web
+          if ($LASTEXITCODE -ne 0) { throw 'Windows launcher build failed' }
+          $bytes = [System.IO.File]::ReadAllBytes("$PWD/release-windows/$asset")
+          if ($bytes.Length -lt 500000 -or $bytes[0] -ne 77 -or $bytes[1] -ne 90) { throw 'Launcher is not a Windows executable' }
+          $hash = (Get-FileHash "release-windows/$asset" -Algorithm SHA256).Hash.ToLowerInvariant()
+          [System.IO.File]::WriteAllText("$PWD/release-windows/$asset.sha256", "$hash  $asset`n", [System.Text.Encoding]::ASCII)
+      - uses: actions/upload-artifact@v7
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          name: openwave-tv-windows-web
+          path: release-windows/
+          if-no-files-found: error
+
   release:
     name: Publish tested unsigned preview
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build, smoke, macos-dmg]
+    needs: [build, smoke, macos-dmg, android-apk, windows-web]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -164,6 +237,14 @@ jobs:
         with:
           name: openwave-tv-macos-dmg
           path: release
+      - uses: actions/download-artifact@v8
+        with:
+          name: openwave-tv-android-apk
+          path: release
+      - uses: actions/download-artifact@v8
+        with:
+          name: openwave-tv-windows-web
+          path: release
       - name: Verify all archives and publish exactly those files
         shell: bash
         env:
@@ -172,7 +253,9 @@ jobs:
           set -euo pipefail
           (cd release && sha256sum -c SHA256SUMS)
           (cd release && sha256sum -c *.dmg.sha256)
-          gh release create "$GITHUB_REF_NAME" release/*.tar.gz release/*.zip release/*.dmg release/*.dmg.sha256 release/macos.xml release/SHA256SUMS release/UNSIGNED-PREVIEW.txt \
+          (cd release && sha256sum -c *.apk.sha256)
+          (cd release && sha256sum -c *Windows-Web.exe.sha256)
+          gh release create "$GITHUB_REF_NAME" release/*.tar.gz release/*.zip release/*.dmg release/*.dmg.sha256 release/*.apk release/*.apk.sha256 release/*Windows-Web.exe release/*Windows-Web.exe.sha256 release/macos.xml release/SHA256SUMS release/UNSIGNED-PREVIEW.txt \
             --repo "$GITHUB_REPOSITORY" \
             --title "$GITHUB_REF_NAME — unsigned preview" \
             --prerelease --generate-notes

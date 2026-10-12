@@ -1,4 +1,4 @@
-const CACHE_NAME = 'openwave-web-shell-v4';
+const CACHE_NAME = 'openwave-web-shell-v5';
 const APP_SHELL = ['/', '/favicon.svg', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/catalog/world/index.v1.json', '/catalog/world/IN.v1.json', '/radio/stations.v1.json'];
 
 async function precacheAppShell(cache) {
@@ -42,12 +42,13 @@ self.addEventListener('fetch', event => {
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
+      const appHome = url.pathname === '/' || url.pathname === '/index.html';
       try {
         const response = await fetch(request);
-        if (response.ok) await cache.put('/index.html', response.clone());
+        if (response.ok) await cache.put(appHome ? '/index.html' : request, response.clone());
         return response;
       } catch {
-        return (await cache.match('/index.html')) || Response.error();
+        return (await cache.match(appHome ? '/index.html' : request)) || Response.error();
       }
     })());
     return;

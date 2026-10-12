@@ -13,6 +13,18 @@ rg -q '<!-- sparkle-signatures:' "$feed_dir/macos.xml"
 rg -q "releases/download/$tag/" "$feed_dir/macos.xml"
 
 npm run build:web
+if [[ -f dist-web/downloads/index.html ]]; then
+  python3 - dist-web/downloads/index.html "$tag" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+tag = sys.argv[2]
+content = path.read_text()
+assert '__RELEASE_TAG__' in content and '__RELEASE_VERSION__' in content
+content = content.replace('__RELEASE_TAG__', tag).replace('__RELEASE_VERSION__', tag.removeprefix('v'))
+path.write_text(content)
+PY
+fi
 mkdir -p dist-web/updates
 cp "$feed_dir/macos.xml" dist-web/updates/macos.xml
 npx --yes wrangler whoami >/dev/null

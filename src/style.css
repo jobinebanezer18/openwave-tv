@@ -158,6 +158,8 @@ html.openwave-native,html.openwave-native body,html.openwave-native #app{height:
 
 /* iPhone Home Screen and browser navigation share the same compact TV layout. */
 .mobile-tabs,.ios-install-button{display:none}
+.app-download-link{min-height:40px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ffffffb6;border-radius:9px;background:#ffffff24;color:#fff;text-decoration:none;font-size:11px;font-weight:850;white-space:nowrap}.app-download-link:hover{background:#ffffff43}.app-download-link[hidden]{display:none}
+@media(max-width:1160px){.openwave-web .github-link{display:none}}
 .ios-install-card{position:fixed;z-index:80;left:50%;bottom:24px;width:min(390px,calc(100vw - 24px));transform:translateX(-50%);padding:19px 20px 17px;border:1px solid #c7dcff;border-radius:18px;background:#f8fbff;color:#14294d;box-shadow:0 22px 55px #031d5980}
 .ios-install-kicker{display:block;margin-bottom:6px;color:#1660ca;font-size:10px;font-weight:900;letter-spacing:.15em}
 .ios-install-card strong{display:block;font:400 29px/1 Anton,sans-serif}
@@ -173,6 +175,8 @@ html.openwave-native,html.openwave-native body,html.openwave-native #app{height:
   .openwave-web .app-shell{min-height:100dvh;padding-bottom:calc(72px + env(safe-area-inset-bottom));margin:0}
   .openwave-web .topbar{height:calc(64px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 13px 0}
   .openwave-web .mobile-radio,.openwave-web .topbar-guide{display:none}
+  .openwave-web .app-download-link:not([hidden]){min-height:40px;padding:0 10px}
+  .openwave-web.ios-device .app-download-link{display:none}
   .openwave-web .brand{font-size:21px}
   .openwave-web .ios-install-button:not([hidden]){display:block}
   .openwave-web .layout{gap:13px;padding:0 11px 18px}

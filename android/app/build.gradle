@@ -1,0 +1,49 @@
+plugins {
+    id 'com.android.application'
+}
+
+def releaseName = new groovy.json.JsonSlurper().parse(file('../../package.json')).version as String
+def releaseParts = (releaseName =~ /^(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+))?$/)
+if (!releaseParts.matches()) throw new GradleException("Unsupported release version: ${releaseName}")
+def releaseCode = releaseParts[0][1].toInteger() * 1000000000 +
+    releaseParts[0][2].toInteger() * 1000000 +
+    releaseParts[0][3].toInteger() * 1000 +
+    (releaseParts[0][4] ? releaseParts[0][4].toInteger() : 999)
+if (releaseCode > 2100000000) throw new GradleException('Android version code exceeds the platform limit')
+
+android {
+    namespace 'io.github.jobinebanezer18.openwavetv'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'io.github.jobinebanezer18.openwavetv'
+        minSdk 26
+        targetSdk 36
+        versionCode releaseCode
+        versionName releaseName
+    }
+
+    signingConfigs {
+        release {
+            def keystorePath = System.getenv('OPENWAVE_ANDROID_KEYSTORE')
+            if (keystorePath) {
+                storeFile file(keystorePath)
+                storePassword System.getenv('OPENWAVE_ANDROID_STORE_PASSWORD')
+                keyAlias 'openwave'
+                keyPassword System.getenv('OPENWAVE_ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv('OPENWAVE_ANDROID_KEYSTORE')) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
