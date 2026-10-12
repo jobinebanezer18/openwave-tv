@@ -11,12 +11,16 @@ import './style.css';
 
 const app = document.querySelector('#app');
 const WEB_MODE = import.meta.env.VITE_WEB_MODE === true;
+const IOS_DEVICE = WEB_MODE && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+const WEB_STANDALONE = WEB_MODE && (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true);
 const nativeShell = window.__OPENWAVE_NATIVE__ === true;
 const desktopViewport = window.matchMedia('(min-width: 1024px) and (min-height: 700px)');
 let NATIVE_MODE = !WEB_MODE && (nativeShell || desktopViewport.matches);
 if (NATIVE_MODE) document.documentElement.classList.add('openwave-native');
+if (WEB_MODE) document.documentElement.classList.add('openwave-web');
+if (IOS_DEVICE) document.documentElement.classList.add('ios-device');
+if (WEB_STANDALONE) document.documentElement.classList.add('ios-standalone');
 const webCatalog = WEB_MODE ? createWebCatalog() : null;
-if (WEB_MODE) registerPwa();
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const categories = CATEGORIES;
 const quickCategories = categories.slice(0, 6);
@@ -74,9 +78,11 @@ app.innerHTML = `
     <header class="topbar">
       <a class="brand" href="#top" aria-label="OpenWave TV home"><span class="brand-emblem">${glyph('signal', 23)}</span><span>OPENWAVE</span></a>
       <nav class="top-nav" aria-label="Primary"><button id="nav-home" class="active">Home</button><button id="nav-guide">Channels</button><button id="nav-radio">Radio</button><button id="nav-favorites">Favorites</button></nav>
-      <div class="topbar-actions"><a class="github-link" href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${glyph('arrow', 15)}</a><button id="updates-button" class="updates-button" type="button" ${nativeShell ? '' : 'hidden'}>Updates</button><button id="quit-button" class="quit-button" type="button" ${WEB_MODE ? 'hidden' : ''}>Quit app</button><button id="mobile-radio" class="mobile-radio">Radio</button><button id="preferences-button" class="preferences-button" aria-label="Preferences" title="Preferences">${glyph('sliders', 18)}</button><button id="header-guide" class="topbar-guide">Watch now <span>↗</span></button></div>
+      <div class="topbar-actions"><a class="github-link" href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${glyph('arrow', 15)}</a><button id="updates-button" class="updates-button" type="button" ${nativeShell ? '' : 'hidden'}>Updates</button><button id="quit-button" class="quit-button" type="button" ${WEB_MODE ? 'hidden' : ''}>Quit app</button><button id="mobile-radio" class="mobile-radio">Radio</button><button id="ios-install-button" class="ios-install-button" type="button" hidden>Install</button><button id="preferences-button" class="preferences-button" aria-label="Preferences" title="Preferences">${glyph('sliders', 18)}</button><button id="header-guide" class="topbar-guide">Watch now <span>↗</span></button></div>
     </header>
     <div id="offline-banner" class="offline-banner" role="status" hidden>The guide is saved, but live channels need an internet connection.</div>
+    <aside id="ios-install-card" class="ios-install-card" aria-label="Install OpenWave on iPhone" hidden><button id="ios-install-close" class="ios-install-close" type="button" aria-label="Dismiss install instructions">×</button><span class="ios-install-kicker">ON YOUR HOME SCREEN</span><strong>One tap to live TV.</strong><p id="ios-install-instructions">In Safari, tap Share, then Add to Home Screen. Turn on Open as Web App if shown.</p><button id="ios-install-done" class="ios-install-done" type="button">Got it</button></aside>
+    <div id="web-update-banner" class="web-update-banner" role="status" aria-live="polite" hidden><span>New OpenWave version ready</span><button id="web-update-now" type="button">Refresh</button><button id="web-update-later" type="button" aria-label="Dismiss update reminder">×</button></div>
     <main class="layout" id="top" data-tv-layout>
       <div class="stage-column">
         <div class="stage-heading"><div><h1>THE WORLD IS LIVE.<br><span>JUST TUNE IN.</span></h1></div><span id="stage-count" class="stage-count">Connecting to the guide…</span></div>
@@ -127,6 +133,7 @@ app.innerHTML = `
         <div id="filter-picker" class="filter-picker" role="dialog" aria-modal="true" aria-labelledby="picker-title" hidden><div class="picker-heading"><button id="picker-back" class="picker-back" aria-label="Back to filters">←</button><h3 id="picker-title">Choose</h3></div><label class="picker-search">${glyph('search', 19)}<span class="sr-only">Search options</span><input id="picker-search-input" type="search" placeholder="Search" autocomplete="off" aria-controls="picker-list"></label><div id="picker-list" class="picker-list" role="group" aria-label="Filter options"></div></div>
       </aside>
     </main>
+    <nav class="mobile-tabs" aria-label="App navigation"><button type="button" data-nav-target="nav-home" aria-pressed="true">${glyph('tv', 19)}<span>Live</span></button><button type="button" data-nav-target="nav-guide" aria-pressed="false">${glyph('search', 19)}<span>Channels</span></button><button type="button" data-nav-target="nav-radio" aria-pressed="false">${glyph('signal', 19)}<span>Radio</span></button><button type="button" data-nav-target="nav-favorites" aria-pressed="false">${glyph('heart', 19)}<span>Saved</span></button></nav>
   </div>`;
 
 const els = {
@@ -160,6 +167,27 @@ if (WEB_MODE) {
   window.addEventListener('online', updateOfflineBanner);
   window.addEventListener('offline', updateOfflineBanner);
   updateOfflineBanner();
+  const updateBanner = document.querySelector('#web-update-banner');
+  registerPwa({ onUpdate: () => { updateBanner.hidden = false; } });
+  document.querySelector('#web-update-now').addEventListener('click', () => window.location.reload());
+  document.querySelector('#web-update-later').addEventListener('click', () => { updateBanner.hidden = true; });
+  if (IOS_DEVICE && !WEB_STANDALONE) {
+    const installButton = document.querySelector('#ios-install-button');
+    const installCard = document.querySelector('#ios-install-card');
+    const installInstructions = document.querySelector('#ios-install-instructions');
+    const safari = /Safari/.test(navigator.userAgent) && !/CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
+    if (!safari) installInstructions.textContent = 'Open tv.vibeworks.in in Safari. Tap Share, then Add to Home Screen.';
+    installButton.hidden = false;
+    installButton.addEventListener('click', () => { installCard.hidden = false; });
+    const dismissInstall = () => {
+      installCard.hidden = true;
+      try { localStorage.setItem('openwave-ios-install-dismissed', '1'); } catch {}
+    };
+    document.querySelector('#ios-install-close').addEventListener('click', dismissInstall);
+    document.querySelector('#ios-install-done').addEventListener('click', dismissInstall);
+    try { installCard.hidden = localStorage.getItem('openwave-ios-install-dismissed') === '1'; }
+    catch { installCard.hidden = false; }
+  }
   privateEls.smart.hidden = true;
   els.ai.textContent = 'Search channels by name, language, place, or category.';
   document.querySelector('.stage-heading h1').innerHTML = 'THE WORLD IS LIVE.<br><span>JUST TUNE IN.</span>';
@@ -565,12 +593,20 @@ privateEls.clear.addEventListener('click', () => {
   privateEls.import.focus();
 });
 function jumpToPlayer() {
+  if (WEB_MODE) setNavActive('nav-home');
   els.shell.scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'center' });
   els.shell.focus({ preventScroll: true });
 }
-document.querySelector('#cover-browse').addEventListener('click', jumpToGuide);
-document.querySelector('#header-guide').addEventListener('click', jumpToGuide);
-function setNavActive(id) { document.querySelectorAll('.top-nav button').forEach(button => button.classList.toggle('active', button.id === id)); }
+document.querySelector('#cover-browse').addEventListener('click', () => { setNavActive('nav-guide'); jumpToGuide(); });
+document.querySelector('#header-guide').addEventListener('click', () => { setNavActive('nav-guide'); jumpToGuide(); });
+function setNavActive(id) {
+  document.querySelectorAll('.top-nav button').forEach(button => button.classList.toggle('active', button.id === id));
+  document.querySelectorAll('.mobile-tabs button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.navTarget === id)));
+}
+document.querySelector('.mobile-tabs').addEventListener('click', event => {
+  const button = event.target.closest('[data-nav-target]');
+  if (button) document.getElementById(button.dataset.navTarget)?.click();
+});
 document.querySelector('#nav-home').addEventListener('click', () => { radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
 document.querySelector('#nav-guide').addEventListener('click', () => { setPrivateView(false); setNavActive('nav-guide'); jumpToGuide(); });
 document.querySelector('#nav-favorites').addEventListener('click', () => { setPrivateView(false); state.favoritesOnly = true; if (WEB_MODE) { state.search = ''; els.search.value = ''; state.category = 'all'; state.directoryView = false; updateGuideMode(); } els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); if (WEB_MODE) loadFavoriteChannels(); jumpToGuide(); });

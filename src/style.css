@@ -155,3 +155,42 @@ html.openwave-native,html.openwave-native body,html.openwave-native #app{height:
 .openwave-native.native-theater .layout{display:block;height:100%;min-height:0;padding:0}
 .openwave-native.native-theater .stage-column{height:100%}
 .openwave-native.native-theater .player-shell{width:100%;height:100%;flex:1;border:0;border-radius:0}
+
+/* iPhone Home Screen and browser navigation share the same compact TV layout. */
+.mobile-tabs,.ios-install-button{display:none}
+.ios-install-card{position:fixed;z-index:80;left:50%;bottom:24px;width:min(390px,calc(100vw - 24px));transform:translateX(-50%);padding:19px 20px 17px;border:1px solid #c7dcff;border-radius:18px;background:#f8fbff;color:#14294d;box-shadow:0 22px 55px #031d5980}
+.ios-install-kicker{display:block;margin-bottom:6px;color:#1660ca;font-size:10px;font-weight:900;letter-spacing:.15em}
+.ios-install-card strong{display:block;font:400 29px/1 Anton,sans-serif}
+.ios-install-card p{margin:9px 0 14px;color:#3d5575;font-size:12px;line-height:1.5}
+.ios-install-close{position:absolute;top:9px;right:10px;width:36px;height:36px;border:0;border-radius:9px;background:transparent;color:#425c81;font-size:25px}
+.ios-install-done{min-height:42px;padding:0 17px;border:0;border-radius:9px;background:#155fcf;color:#fff;font-size:12px;font-weight:850}
+.ios-install-button{min-height:40px;padding:0 11px;border:1px solid #ffffff9c;border-radius:9px;background:#fff;color:#1050a9;font-size:11px;font-weight:850}
+.web-update-banner{position:fixed;z-index:90;left:50%;bottom:24px;width:min(410px,calc(100vw - 24px));transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:11px 12px 11px 15px;border:1px solid #bad6ff;border-radius:12px;background:#f8fbff;color:#183659;box-shadow:0 16px 42px #031d5970;font-size:12px;font-weight:800}
+.web-update-banner span{min-width:0;flex:1}
+.web-update-banner button{min-height:39px;padding:0 11px;border:0;border-radius:8px;background:#145fce;color:#fff;font-size:11px;font-weight:850}
+.web-update-banner button:last-child{width:39px;padding:0;background:#e9f1fb;color:#416084;font-size:22px}
+@media(max-width:560px){
+  .openwave-web .app-shell{min-height:100dvh;padding-bottom:calc(72px + env(safe-area-inset-bottom));margin:0}
+  .openwave-web .topbar{height:calc(64px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 13px 0}
+  .openwave-web .mobile-radio,.openwave-web .topbar-guide{display:none}
+  .openwave-web .brand{font-size:21px}
+  .openwave-web .ios-install-button:not([hidden]){display:block}
+  .openwave-web .layout{gap:13px;padding:0 11px 18px}
+  .openwave-web .stage-heading{min-height:100px;padding:15px 1px 9px}
+  .openwave-web .stage-heading h1{max-width:275px;font-size:clamp(34px,8.8vw,43px);line-height:.94}
+  .openwave-web .stage-count{right:0;bottom:10px;width:77px;min-height:52px;padding:7px}
+  .openwave-web .stage-count strong{font-size:24px}
+  .openwave-web .stage-count small{font-size:6px}
+  .openwave-web .player-shell{aspect-ratio:16/10;min-height:218px}
+  .openwave-web .cover-content h2{font-size:clamp(32px,8.4vw,40px)}
+  .openwave-web .cover-content p{margin-bottom:10px}
+  .openwave-web .cover-cta{min-height:41px}
+  .openwave-web .now-panel{min-height:70px;margin-top:9px;padding:10px 13px}
+  .openwave-web .now-identity h2{font-size:19px}
+  .openwave-web .rail-section{display:none}
+  .openwave-web .guide{padding:18px 15px}
+  .openwave-web .mobile-tabs{position:fixed;z-index:60;inset:auto 0 0;height:calc(66px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:6px 9px calc(5px + env(safe-area-inset-bottom));border-top:1px solid #ffffffb8;background:#f8fbfff2;box-shadow:0 -12px 35px #0a37734a;backdrop-filter:blur(18px)}
+  .openwave-web .mobile-tabs button{min-width:0;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;border-radius:9px;background:transparent;color:#45658c;font-size:10px;font-weight:850}
+  .openwave-web .mobile-tabs button[aria-pressed="true"]{background:#145fcf;color:#fff;box-shadow:0 5px 11px #1457ae42}
+  .openwave-web .ios-install-card,.openwave-web .web-update-banner{bottom:calc(76px + env(safe-area-inset-bottom))}
+}

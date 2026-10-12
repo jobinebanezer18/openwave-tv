@@ -8,7 +8,11 @@ A local, open-source TV and radio guide that plays public live streams in your b
 
 Download the executable for your computer from [Releases](https://github.com/jobinebanezer18/openwave-tv/releases), unzip it, and run it. On macOS 12+, the universal preview DMG contains an app you can drag to Applications. It opens its own TV window and starts a loopback-only local server; if the usual port is occupied, it tries another local port. The DMG is ad-hoc signed and not notarized, so macOS may require Control-click → Open on first launch. After installing an updater-enabled build once, the Mac app checks a signed update feed at `tv.vibeworks.in` and can install later releases in the app. Click **Updates** to check now or change automatic check and install settings. Use **Quit app** in the guide when finished. The standalone command-line builds open your default browser.
 
-An internet connection is needed for the guide and streams. The optional AI model downloads on first use and is cached by the browser. The model runs on your computer; search text is not sent to an AI service.
+An internet connection is needed for live streams. The Mac app can download an optional AI model on first use and run it locally; the web version searches names, places, languages, and categories without that model.
+
+## Install on iPhone
+
+Open [tv.vibeworks.in](https://tv.vibeworks.in/) in Safari, tap **Share → Add to Home Screen**, enable **Open as Web App** if shown, and tap **Add**. This installs the Home Screen web app without an App Store account. Future web releases arrive through the site and service worker; when a new version takes control, the app offers a **Refresh** button so playback is not interrupted. The iPhone version plays direct HTTPS streams supported by Safari, so some channels that use the Mac app's local playback helper may be unavailable.
 
 ## What it does
 

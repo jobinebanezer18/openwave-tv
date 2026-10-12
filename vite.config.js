@@ -9,7 +9,7 @@ export default defineConfig({
     name: 'web-beta-pwa-links',
     transformIndexHtml(html) {
       if (!webMode) return html;
-      return html.replace('</head>', '    <link rel="manifest" href="/manifest.webmanifest" />\n    <link rel="apple-touch-icon" href="/icons/icon-192.png" />\n  </head>');
+      return html.replace('</head>', '    <link rel="manifest" href="/manifest.webmanifest" />\n    <link rel="apple-touch-icon" href="/icons/icon-192.png" />\n    <meta name="apple-mobile-web-app-capable" content="yes" />\n    <meta name="apple-mobile-web-app-title" content="OpenWave TV" />\n    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />\n  </head>');
     }
   }],
   define: { 'import.meta.env.VITE_WEB_MODE': JSON.stringify(webMode) },
