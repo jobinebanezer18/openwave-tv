@@ -158,6 +158,10 @@ func main() {
 	s := &server{sessions: map[string]*session{}, probeCache: map[string]probeResult{}, probeSlots: make(chan struct{}, maxConcurrentProbes), dead: map[string]time.Time{}, client: safeClient()}
 	mux := http.NewServeMux()
 	var appServer *http.Server
+	mux.HandleFunc("GET /api/status", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		_, _ = io.WriteString(w, "openwave-tv-local-v1")
+	})
 	mux.HandleFunc("GET /api/channels", s.channels)
 	mux.HandleFunc("POST /api/session", s.createSession)
 	mux.HandleFunc("POST /api/private-session", s.createPrivateSession)

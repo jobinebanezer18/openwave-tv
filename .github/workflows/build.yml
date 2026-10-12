@@ -107,7 +107,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          app_binary="work/macos-package/dmg-stage/OpenWave TV.app/Contents/MacOS/OpenWave TV"
+          app_binary="work/macos-package/dmg-stage/OpenWave TV.app/Contents/Resources/openwave-server"
           "$app_binary" -no-browser -addr 127.0.0.1:8769 > work/macos-package/smoke.log 2>&1 &
           app_pid=$!
           trap 'kill "$app_pid" 2>/dev/null || true' EXIT
@@ -118,6 +118,7 @@ jobs:
           curl -fsS http://127.0.0.1:8769/ -o /dev/null
           curl -fsS -X POST -H 'X-OpenWave-Action: quit' http://127.0.0.1:8769/api/quit -o /dev/null
           wait "$app_pid"
+          lipo -verify_arch arm64 x86_64 "work/macos-package/dmg-stage/OpenWave TV.app/Contents/MacOS/OpenWave TV"
           (cd release-mac && shasum -a 256 -c *.dmg.sha256)
       - uses: actions/upload-artifact@v7
         with:
