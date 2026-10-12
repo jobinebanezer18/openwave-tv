@@ -28,6 +28,7 @@ function escapeRegExp(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&
 
 export function rankChannels(channels, query, countries, languages = [], aiCategory = null) {
   const parsed = parseQuery(query, countries, languages);
+  const exactQuery = query.trim().toLowerCase();
   const category = parsed.category || aiCategory;
   const requestedLanguageName = parsed.languageCode ? languages.find(language => language.code === parsed.languageCode)?.name.toLowerCase() : null;
   const result = channels.map(ch => {
@@ -52,6 +53,8 @@ export function rankChannels(channels, query, countries, languages = [], aiCateg
       else if (title.includes(term)) score += 3;
       else return null;
     }
+    if (exactQuery && name === exactQuery) score += 30;
+    else if (exactQuery && name.startsWith(`${exactQuery} `)) score += 8;
     if (!query.trim()) score += (ch.featured ? 5 : 0) + (ch.health_score || 0);
     if (ch.quality?.includes('1080')) score += 0.2;
     return { ...ch, score };

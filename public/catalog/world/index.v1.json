@@ -4,6 +4,8 @@
     "https://iptv-org.github.io/api/channels.json",
     "https://iptv-org.github.io/api/streams.json",
     "https://iptv-org.github.io/api/feeds.json",
+    "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+    "https://raw.githubusercontent.com/Romaxa55/world_ip_tv/master/output/in.m3u",
     "public/catalog/india.v1.json",
     "catalog/india-browser-checks.v1.json"
   ],
@@ -11,7 +13,7 @@
     {
       "code": "IN",
       "name": "India",
-      "count": 620,
+      "count": 619,
       "directory_count": 1447,
       "languages": [
         "asm",
@@ -2599,8 +2601,8 @@
     {
       "code": "IT",
       "name": "Italy",
-      "count": 198,
-      "directory_count": 613,
+      "count": 199,
+      "directory_count": 614,
       "languages": [
         "deu",
         "eng",
@@ -3388,7 +3390,7 @@
     {
       "code": "MN",
       "name": "Mongolia",
-      "count": 5,
+      "count": 6,
       "directory_count": 130,
       "languages": [
         "eng",
@@ -7159,6 +7161,8 @@
       "name": "Zaza"
     }
   ],
-  "total": 6891,
-  "directory_total": 29742
+  "total": 6892,
+  "directory_total": 29743,
+  "sports_stream_count": 213,
+  "sports_directory_count": 2303
 }

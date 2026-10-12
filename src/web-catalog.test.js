@@ -26,3 +26,14 @@ test('failed country downloads can be retried', async () => {
   assert.deepEqual(await catalog.country('GB'), { version: 1, country: { code: 'GB' }, channels: [], directory: [] });
   assert.equal(attempts, 2);
 });
+
+test('world sports guide loads on demand and is cached', async () => {
+  const requests = [];
+  const catalog = createWebCatalog(async url => {
+    requests.push(url);
+    return { ok: true, json: async () => ({ version: 1, channels: [{ id: 'sport' }], directory: [{ id: 'other' }] }) };
+  });
+  const [first, second] = await Promise.all([catalog.sports(), catalog.sports()]);
+  assert.strictEqual(first, second);
+  assert.deepEqual(requests, ['/catalog/world/sports.v1.json']);
+});

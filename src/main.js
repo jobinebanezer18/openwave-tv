@@ -20,12 +20,12 @@ if (NATIVE_MODE) document.documentElement.classList.add('openwave-native');
 if (WEB_MODE) document.documentElement.classList.add('openwave-web');
 if (IOS_DEVICE) document.documentElement.classList.add('ios-device');
 if (WEB_STANDALONE) document.documentElement.classList.add('ios-standalone');
-const webCatalog = WEB_MODE ? createWebCatalog() : null;
+const webCatalog = createWebCatalog();
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const categories = CATEGORIES;
 const quickCategories = categories.slice(0, 6);
 const state = {
-  channels: [], directory: [], directoryView: false, countries: [], languages: [], results: [], selected: null, hls: null,
+  channels: [], directory: [], directoryView: false, sportsCatalog: null, sportsWorldwide: false, sportsCountry: 'all', nativeSportsReturn: null, countries: [], languages: [], results: [], selected: null, hls: null,
   privateChannels: [], privateOnly: false,
   search: '', category: 'all', country: 'all', language: 'all', favoritesOnly: false,
   favorites: new Set(readStore('openwave-favorites', [])),
@@ -59,6 +59,15 @@ const glyph = (name, size = 20) => {
   };
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
 };
+const platformGlyph = name => {
+  const paths = {
+    mac: '<rect x="4" y="4" width="16" height="12" rx="1.5"/><path d="M2 19h20l-2-3H4l-2 3Z"/>',
+    windows: '<path d="M3 5.5 11 4v8H3V5.5Zm10-1.8 8-1.2V12h-8V3.7ZM3 13h8v8l-8-1.3V13Zm10 0h8v8.5l-8-1.2V13Z"/>',
+    android: '<path d="m6 7-2-3m14 3 2-3M5 11a7 7 0 0 1 14 0v6H5v-6Zm-2 2v5m18-5v5M8 17v3m8-3v3"/><path d="M9 11h.01M15 11h.01" stroke-width="2.4"/>',
+    ios: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M10 5h4m-2 13.5h.01"/>',
+  };
+  return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
+};
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const titleCase = value => value === 'all' ? 'All' : value[0].toUpperCase() + value.slice(1);
 
@@ -78,7 +87,7 @@ app.innerHTML = `
     <header class="topbar">
       <a class="brand" href="#top" aria-label="OpenWave TV home"><span class="brand-emblem">${glyph('signal', 23)}</span><span>OPENWAVE</span></a>
       <nav class="top-nav" aria-label="Primary"><button id="nav-home" class="active">Home</button><button id="nav-guide">Channels</button><button id="nav-radio">Radio</button><button id="nav-favorites">Favorites</button></nav>
-      <div class="topbar-actions"><a class="github-link" href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${glyph('arrow', 15)}</a><a class="app-download-link" href="/downloads/" ${WEB_MODE ? '' : 'hidden'}>Get apps ↗</a><button id="updates-button" class="updates-button" type="button" ${nativeShell ? '' : 'hidden'}>Updates</button><button id="quit-button" class="quit-button" type="button" ${WEB_MODE ? 'hidden' : ''}>Quit app</button><button id="mobile-radio" class="mobile-radio">Radio</button><button id="ios-install-button" class="ios-install-button" type="button" hidden>Install</button><button id="preferences-button" class="preferences-button" aria-label="Preferences" title="Preferences">${glyph('sliders', 18)}</button><button id="header-guide" class="topbar-guide">Watch now <span>↗</span></button></div>
+      <div class="topbar-actions"><a class="github-link" href="https://github.com/jobinebanezer18/openwave-tv" target="_blank" rel="noopener noreferrer">GitHub ${glyph('arrow', 15)}</a><nav class="platform-downloads" aria-label="Get OpenWave for your device" ${WEB_MODE ? '' : 'hidden'}><a href="/downloads/#mac" aria-label="Download for Mac" title="Mac">${platformGlyph('mac')}</a><a href="/downloads/#windows" aria-label="Download for Windows" title="Windows">${platformGlyph('windows')}</a><a href="/downloads/#android" aria-label="Download for Android" title="Android">${platformGlyph('android')}</a><a href="/downloads/#ios" aria-label="Install on iPhone" title="iPhone">${platformGlyph('ios')}</a></nav><button id="updates-button" class="updates-button" type="button" ${nativeShell ? '' : 'hidden'}>Updates</button><button id="quit-button" class="quit-button" type="button" ${WEB_MODE ? 'hidden' : ''}>Quit app</button><button id="mobile-radio" class="mobile-radio">Radio</button><button id="ios-install-button" class="ios-install-button" type="button" hidden>Install</button><button id="preferences-button" class="preferences-button" aria-label="Preferences" title="Preferences">${glyph('sliders', 18)}</button><button id="header-guide" class="topbar-guide">Watch now <span>↗</span></button></div>
     </header>
     <div id="offline-banner" class="offline-banner" role="status" hidden>The guide is saved, but live channels need an internet connection.</div>
     <aside id="ios-install-card" class="ios-install-card" aria-label="Install OpenWave on iPhone" hidden><button id="ios-install-close" class="ios-install-close" type="button" aria-label="Dismiss install instructions">×</button><span class="ios-install-kicker">ON YOUR HOME SCREEN</span><strong>One tap to live TV.</strong><p id="ios-install-instructions">In Safari, tap Share, then Add to Home Screen. Turn on Open as Web App if shown.</p><button id="ios-install-done" class="ios-install-done" type="button">Got it</button></aside>
@@ -228,9 +237,9 @@ const onboarding = createOnboarding(preferences => {
 });
 
 function countryName(code) { return state.countries.find(c => c.code === code)?.name || code || 'Worldwide'; }
-function languageName(code) { return state.languages.find(l => l.code === code)?.name || code; }
+function languageName(code) { return state.languages.find(l => l.code === code)?.name || webCatalogIndex?.languages?.find(l => l.code === code)?.name || code; }
 function channelMeta(ch) { return ch.private ? 'Private playlist · This tab only' : `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0, 2).join(', ') || titleCase(ch.categories[0] || 'TV')}`; }
-function findChannel(id) { return id.startsWith('private:') ? state.privateChannels.find(ch => ch.id === id) : state.channels.find(ch => ch.id === id) || state.favoriteChannels.find(ch => ch.id === id); }
+function findChannel(id) { return id.startsWith('private:') ? state.privateChannels.find(ch => ch.id === id) : state.channels.find(ch => ch.id === id) || state.directory.find(ch => ch.id === id) || state.sportsCatalog?.channels.find(ch => ch.id === id) || state.favoriteChannels.find(ch => ch.id === id); }
 function isUnavailable(ch) { return Date.now() - (state.unavailable[ch.id] || 0) < 30 * 60 * 1000; }
 function failedBrowserCheck(ch) { return WEB_MODE && ch.browser_check === 'failed' && !state.recovered.has(ch.id); }
 function rememberUnavailable(ch) {
@@ -262,7 +271,7 @@ function renderCategories() {
   const categoryPool = WEB_MODE && state.directoryView ? [...state.channels, ...state.directory] : state.channels;
   const visibleCategories = WEB_MODE ? quickCategories.filter(c => c === 'all' || categoryPool.some(ch => ch.categories.includes(c))) : quickCategories;
   els.quick.innerHTML = visibleCategories.map(c => `<button class="quick-chip ${state.category === c ? 'selected' : ''}" data-category="${c}" aria-pressed="${state.category === c}">${titleCase(c)}</button>`).join('');
-  els.countryTrigger.innerHTML = `${escapeHTML(state.country === 'all' ? 'Everywhere' : countryName(state.country))} ${glyph('chevron', 15)}`;
+  els.countryTrigger.innerHTML = `${escapeHTML(state.sportsWorldwide ? state.sportsCountry === 'all' ? 'Worldwide' : countryName(state.sportsCountry) : state.country === 'all' ? 'Everywhere' : countryName(state.country))} ${glyph('chevron', 15)}`;
   els.languageTrigger.innerHTML = `${escapeHTML(state.language === 'all' ? 'Any language' : languageName(state.language))} ${glyph('chevron', 15)}`;
   els.categoryTrigger.innerHTML = `${escapeHTML(state.category === 'all' ? 'All categories' : titleCase(state.category))} ${glyph('chevron', 15)}`;
 }
@@ -270,7 +279,10 @@ function renderCategories() {
 function channelMarkup(ch, index) {
   const selected = state.selected?.id === ch.id;
   if (ch.private) return `<div class="channel-row ${selected ? 'playing' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="Play ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}><span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo private-logo">${glyph('tv', 20)}</span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>Private playlist · This tab only</small></span><span class="row-arrow">${glyph('arrow', 17)}</span></button></div>`;
-  if (WEB_MODE && !ch.url) return `<div class="channel-row directory-only"><span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo"><span>${escapeHTML(ch.name.slice(0, 2).toUpperCase())}</span></span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>${escapeHTML(channelMeta(ch))} · No direct stream</small></span>${ch.website ? `<a class="official-link" href="${escapeHTML(ch.website)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${escapeHTML(ch.name)} official site">Official site ↗</a>` : ''}</div>`;
+  if (ch.directoryOnly || (WEB_MODE && !ch.url)) {
+    const saved = state.favorites.has(ch.id);
+    return `<div class="channel-row directory-only"><span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo"><span>${escapeHTML(ch.name.slice(0, 2).toUpperCase())}</span></span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>${escapeHTML(channelMeta(ch))} · ${ch.provider ? `${ch.provider} viewing page` : 'No direct stream'}</small></span>${ch.website ? `<a class="official-link" href="${escapeHTML(ch.website)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${escapeHTML(ch.name)} ${ch.provider ? 'on Sun NXT' : 'official site'}">${ch.provider ? 'Sun NXT' : 'Official site'} ↗</a>` : ''}<button class="row-save ${saved ? 'saved' : ''}" data-save-id="${escapeHTML(ch.id)}" aria-label="${saved ? 'Remove' : 'Save'} ${escapeHTML(ch.name)} ${saved ? 'from' : 'to'} My channels" aria-pressed="${saved}" title="${saved ? 'Remove from' : 'Save to'} My channels">${glyph('heart', 17)}</button></div>`;
+  }
   const favorite = state.favorites.has(ch.id);
   const unavailable = isUnavailable(ch) || failedBrowserCheck(ch);
   return `<div class="channel-row ${selected ? 'playing' : ''} ${unavailable ? 'unavailable' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="${unavailable ? 'Retry' : 'Play'} ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}>
@@ -294,7 +306,9 @@ function renderList(withMotion = false) {
   const count = state.results.length.toLocaleString();
   const channelWord = state.results.length === 1 ? 'channel' : 'channels';
   els.count.textContent = count;
-  els.result.textContent = state.privateOnly ? `${count} ${channelWord} from your file` : WEB_MODE && state.favoritesOnly ? `${count} saved ${channelWord}` : WEB_MODE && state.directoryView ? `${count} indexed ${channelWord} · ${state.channels.length.toLocaleString()} have stream links` : WEB_MODE && !state.search && state.category === 'all' && state.language === 'all' ? `${count} to try · ${state.channels.length.toLocaleString()} stream links indexed in ${countryName(state.country)}` : WEB_MODE ? `${count} matching streams · playback varies` : `${count} ${channelWord} ready to explore`;
+  const directCount = state.results.filter(channel => Boolean(channel.url)).length;
+  const includesDirectory = WEB_MODE && !state.favoritesOnly && (state.directoryView || Boolean(state.search.trim()) || state.language !== 'all' || state.category === 'sports');
+  els.result.textContent = state.privateOnly ? `${count} ${channelWord} from your file` : state.favoritesOnly ? `${count} saved ${channelWord}` : state.sportsWorldwide ? `${count} sports channels worldwide · ${directCount.toLocaleString()} with stream links` : includesDirectory ? `${count} ${channelWord} found · ${directCount.toLocaleString()} with stream links` : WEB_MODE && !state.search && state.category === 'all' && state.language === 'all' ? `${count} to try · ${state.channels.length.toLocaleString()} stream links indexed in ${countryName(state.country)}` : WEB_MODE ? `${count} matching streams · playback varies` : state.results.some(channel => channel.directoryOnly) ? `${count} ${channelWord} found · ${state.results.filter(channel => !channel.directoryOnly).length.toLocaleString()} to try here` : `${count} ${channelWord} ready to explore`;
   els.more.hidden = NATIVE_MODE || state.results.length <= shown;
   els.pager.hidden = !NATIVE_MODE;
   if (NATIVE_MODE) {
@@ -310,7 +324,7 @@ function renderList(withMotion = false) {
 }
 
 function renderRail() {
-  const favorites = [...state.favorites].map(id => findChannel(id)).filter(Boolean);
+  const favorites = [...state.favorites].map(id => findChannel(id)).filter(channel => channel && !channel.directoryOnly && (channel.url || !WEB_MODE));
   const recent = state.recent.map(id => state.channels.find(ch => ch.id === id)).filter(Boolean).slice(0, 5);
   const picks = ['BBC News', 'France 24', 'ABC News Live', 'Euronews English', 'Bloomberg TV']
     .map(name => state.channels.find(ch => ch.name === name)).filter(Boolean);
@@ -346,26 +360,35 @@ function filterChannels(withMotion = false) {
     els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>PRIVATE CHANNELS</small>`;
     return;
   }
-  let pool = WEB_MODE && state.favoritesOnly ? state.favoriteChannels : WEB_MODE && state.directoryView ? [...state.channels, ...state.directory] : state.channels;
+  const discoverDirectory = !state.favoritesOnly && state.directory.length > 0 && (WEB_MODE && state.directoryView || Boolean(state.search.trim()) || state.language !== 'all' || state.category === 'sports');
+  let pool = WEB_MODE && state.favoritesOnly ? state.favoriteChannels : state.favoritesOnly ? [...state.channels, ...state.directory] : state.sportsWorldwide ? [...state.sportsCatalog.channels, ...state.sportsCatalog.directory] : discoverDirectory ? [...state.channels, ...state.directory] : state.channels;
   if (state.favoritesOnly) pool = pool.filter(ch => state.favorites.has(ch.id));
   else if (!state.search.trim() && !state.directoryView) pool = pool.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch));
-  if (!(WEB_MODE && state.favoritesOnly) && state.country !== 'all') pool = pool.filter(ch => ch.country === state.country);
+  if (state.sportsWorldwide && state.sportsCountry !== 'all') pool = pool.filter(ch => ch.country === state.sportsCountry);
+  else if (!state.sportsWorldwide && !(WEB_MODE && state.favoritesOnly) && state.country !== 'all') pool = pool.filter(ch => ch.country === state.country);
   if (!(WEB_MODE && state.favoritesOnly) && state.language !== 'all') pool = pool.filter(ch => ch.languages?.includes(state.language));
   if (state.category !== 'all') pool = pool.filter(ch => ch.categories.includes(state.category));
-  state.results = rankChannels(pool, state.search, state.countries, state.languages, state.aiCategory);
+  state.results = rankChannels(pool, state.search, state.countries, state.sportsWorldwide ? webCatalogIndex.languages : state.languages, state.aiCategory);
   state.results.sort((a, b) => Number(isUnavailable(a) || failedBrowserCheck(a)) - Number(isUnavailable(b) || failedBrowserCheck(b)));
   if (WEB_MODE && state.directoryView && !state.search.trim()) state.results.sort((a, b) => a.name.localeCompare(b.name));
   if (WEB_MODE && !state.favoritesOnly && !state.search.trim() && state.category === 'all' && state.preferences?.interests?.length) {
     const preferred = new Set(state.preferences.interests);
     state.results.sort((a, b) => Number(b.categories.some(category => preferred.has(category))) - Number(a.categories.some(category => preferred.has(category))));
   }
+  if (state.sportsWorldwide && !state.search.trim()) {
+    const priorityLanguages = new Set(['tam', 'hin', 'mal', 'kan', 'eng']);
+    state.results.sort((a, b) => Number(Boolean(b.url)) - Number(Boolean(a.url)) || Number(b.country === 'IN') - Number(a.country === 'IN') || Number(b.languages?.some(code => priorityLanguages.has(code))) - Number(a.languages?.some(code => priorityLanguages.has(code))) || a.name.localeCompare(b.name));
+  }
+  if (state.country === 'IN' && state.language === 'tam' && !state.search.trim() && state.category === 'all' && !state.sportsWorldwide) {
+    state.results.sort((a, b) => Number(b.id === 'SunTV.in') - Number(a.id === 'SunTV.in'));
+  }
   if (state.search && !state.results.length && state.aiCategory) {
     const parsed = parseQuery(state.search, state.countries, state.languages);
     state.results = pool.filter(ch => (!parsed.countryCode || ch.country === parsed.countryCode) && (!parsed.languageCode || ch.languages?.includes(parsed.languageCode)) && ch.categories.includes(state.aiCategory));
   }
   renderCategories(); renderList(withMotion);
-  els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>${WEB_MODE && state.favoritesOnly ? 'SAVED CHANNELS' : WEB_MODE && state.directoryView ? 'CHANNELS INDEXED' : WEB_MODE ? 'CHANNELS TO TRY' : 'CHANNELS TO EXPLORE'}</small>`;
-  const activeFilters = [state.country !== 'all', state.language !== 'all', state.category !== 'all'].filter(Boolean).length;
+  els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>${state.sportsWorldwide ? 'WORLD SPORTS' : state.favoritesOnly ? 'SAVED CHANNELS' : WEB_MODE && (state.directoryView || discoverDirectory) ? 'CHANNELS FOUND' : WEB_MODE ? 'CHANNELS TO TRY' : 'CHANNELS TO EXPLORE'}</small>`;
+  const activeFilters = [state.sportsWorldwide ? state.sportsCountry !== 'all' : state.country !== 'all', state.language !== 'all', state.category !== 'all'].filter(Boolean).length;
   els.filterCount.textContent = activeFilters ? String(activeFilters) : '';
 }
 
@@ -609,7 +632,7 @@ document.querySelector('.mobile-tabs').addEventListener('click', event => {
 });
 document.querySelector('#nav-home').addEventListener('click', () => { radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
 document.querySelector('#nav-guide').addEventListener('click', () => { setPrivateView(false); setNavActive('nav-guide'); jumpToGuide(); });
-document.querySelector('#nav-favorites').addEventListener('click', () => { setPrivateView(false); state.favoritesOnly = true; if (WEB_MODE) { state.search = ''; els.search.value = ''; state.category = 'all'; state.directoryView = false; updateGuideMode(); } els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); if (WEB_MODE) loadFavoriteChannels(); jumpToGuide(); });
+document.querySelector('#nav-favorites').addEventListener('click', () => { setPrivateView(false); state.favoritesOnly = true; if (WEB_MODE) { state.search = ''; els.search.value = ''; state.category = 'all'; state.directoryView = false; state.sportsWorldwide = false; updateGuideMode(); } els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); if (WEB_MODE) loadFavoriteChannels(); jumpToGuide(); });
 function showRadio() { els.video.pause(); setNavActive('nav-radio'); radioMode.show(); }
 document.querySelector('#nav-radio').addEventListener('click', showRadio);
 document.querySelector('#mobile-radio').addEventListener('click', showRadio);
@@ -645,7 +668,33 @@ els.list.addEventListener('keydown', event => {
   rows[Math.max(0, Math.min(rows.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))]?.focus();
   event.preventDefault();
 });
-els.quick.addEventListener('click', event => { const button = event.target.closest('[data-category]'); if (!button) return; state.category = button.dataset.category; shown = 60; filterChannels(true); });
+async function activateWorldSports() {
+  state.category = 'sports'; state.language = 'all'; state.sportsCountry = 'all'; state.directoryView = false;
+  state.search = ''; state.aiCategory = null; els.search.value = ''; shown = 60;
+  updateGuideMode();
+  filterChannels(true);
+  try {
+    const sports = await webCatalog.sports();
+    if (state.category !== 'sports' || state.privateOnly || state.favoritesOnly) return;
+    state.sportsCatalog = sports;
+    state.sportsWorldwide = true;
+    filterChannels(true);
+  } catch { els.result.textContent = 'Worldwide sports could not load. Showing India sports.'; }
+}
+els.quick.addEventListener('click', event => {
+  const button = event.target.closest('[data-category]'); if (!button) return;
+  if (WEB_MODE && button.dataset.category === 'sports') { activateWorldSports(); return; }
+  if (!WEB_MODE && button.dataset.category === 'sports') {
+    state.nativeSportsReturn ||= { country: state.country, language: state.language };
+    state.country = 'all'; state.language = 'all';
+  } else if (!WEB_MODE && state.nativeSportsReturn) {
+    ({ country: state.country, language: state.language } = state.nativeSportsReturn);
+    state.nativeSportsReturn = null;
+  }
+  state.sportsWorldwide = false;
+  state.category = button.dataset.category;
+  shown = 60; filterChannels(true);
+});
 function updateGuideMode() {
   if (!WEB_MODE) return;
   for (const [id, selected] of [['watch-mode', !state.directoryView], ['directory-mode', state.directoryView]]) {
@@ -656,8 +705,9 @@ function updateGuideMode() {
   document.querySelector('#directory-total').textContent = webCatalogIndex?.countries.find(country => country.code === state.country)?.directory_count?.toLocaleString() || '';
 }
 function setDirectoryView(on) {
-  if (!WEB_MODE || state.directoryView === on) return;
+  if (!WEB_MODE || (state.directoryView === on && !state.sportsWorldwide)) return;
   state.directoryView = on;
+  state.sportsWorldwide = false;
   state.favoritesOnly = false;
   state.search = '';
   state.category = 'all';
@@ -694,15 +744,16 @@ function setPickerBackgroundInert(inert) {
   }
 }
 function pickerOptions() {
-  if (activePicker === 'country') return [...(WEB_MODE ? [] : [{ value: 'all', label: 'Everywhere' }]), ...state.countries.map(c => ({ value: c.code, label: WEB_MODE ? `${c.name} · ${c.count ? `${c.count.toLocaleString()} stream links` : `${c.directory_count.toLocaleString()} in directory`}` : c.name }))];
-  if (activePicker === 'language') return [{ value: 'all', label: 'Any language' }, ...state.languages.map(l => ({ value: l.code, label: l.name }))];
+  if (activePicker === 'country') return [...(state.sportsWorldwide || !WEB_MODE ? [{ value: 'all', label: state.sportsWorldwide ? 'Worldwide sports' : 'Everywhere' }] : []), ...state.countries.map(c => ({ value: c.code, label: WEB_MODE && !state.sportsWorldwide ? `${c.name} · ${c.count ? `${c.count.toLocaleString()} stream links` : `${c.directory_count.toLocaleString()} in directory`}` : c.name }))];
+  if (activePicker === 'language') return [{ value: 'all', label: 'Any language' }, ...(state.sportsWorldwide ? webCatalogIndex.languages : state.languages).map(l => ({ value: l.code, label: l.name }))];
   const categoryPool = WEB_MODE && state.directoryView ? [...state.channels, ...state.directory] : state.channels;
   return (WEB_MODE ? categories.filter(c => c === 'all' || categoryPool.some(ch => ch.categories.includes(c))) : categories).map(c => ({ value: c, label: c === 'all' ? 'All categories' : titleCase(c) }));
 }
 function renderPickerOptions() {
   const query = els.pickerSearch.value.trim().toLowerCase();
   const items = pickerOptions().filter(item => item.label.toLowerCase().includes(query));
-  els.pickerList.innerHTML = items.length ? items.map((item, index) => `<button class="picker-option ${state[activePicker] === item.value ? 'selected' : ''}" aria-pressed="${state[activePicker] === item.value}" tabindex="${index === 0 ? 0 : -1}" data-pick-value="${escapeHTML(item.value)}"><span>${escapeHTML(item.label)}</span><span class="picker-check" aria-hidden="true">${state[activePicker] === item.value ? '✓' : ''}</span></button>`).join('') : '<p class="picker-empty">No matching options</p>';
+  const selectedValue = state.sportsWorldwide && activePicker === 'country' ? state.sportsCountry : state[activePicker];
+  els.pickerList.innerHTML = items.length ? items.map((item, index) => `<button class="picker-option ${selectedValue === item.value ? 'selected' : ''}" aria-pressed="${selectedValue === item.value}" tabindex="${index === 0 ? 0 : -1}" data-pick-value="${escapeHTML(item.value)}"><span>${escapeHTML(item.label)}</span><span class="picker-check" aria-hidden="true">${selectedValue === item.value ? '✓' : ''}</span></button>`).join('') : '<p class="picker-empty">No matching options</p>';
   els.pickerList.scrollTop = 0;
 }
 function openPicker(kind) {
@@ -758,7 +809,17 @@ els.pickerList.addEventListener('click', event => {
   closePicker(false);
   setFiltersOpen(false);
   els.filterToggle.focus();
+  if (WEB_MODE && kind === 'country' && state.sportsWorldwide) { state.sportsCountry = value; shown = 60; filterChannels(true); return; }
   if (WEB_MODE && kind === 'country') { activateWebCountry(value); return; }
+  if (WEB_MODE && kind === 'category' && value === 'sports') { activateWorldSports(); return; }
+  if (WEB_MODE && kind === 'category') state.sportsWorldwide = false;
+  if (!WEB_MODE && kind === 'category' && value === 'sports') {
+    state.nativeSportsReturn ||= { country: state.country, language: state.language };
+    state.country = 'all'; state.language = 'all';
+  } else if (!WEB_MODE && kind === 'category' && state.nativeSportsReturn) {
+    ({ country: state.country, language: state.language } = state.nativeSportsReturn);
+    state.nativeSportsReturn = null;
+  } else if (!WEB_MODE && (kind === 'country' || kind === 'language')) state.nativeSportsReturn = null;
   state[kind] = value;
   shown = 60;
   filterChannels(true);
@@ -813,7 +874,7 @@ document.querySelector('#search-form').addEventListener('submit', async event =>
 els.favoritesFilter.addEventListener('click', () => {
   if (state.privateOnly) setPrivateView(false);
   state.favoritesOnly = !state.favoritesOnly;
-  if (WEB_MODE && state.favoritesOnly) { state.search = ''; els.search.value = ''; state.category = 'all'; state.directoryView = false; updateGuideMode(); }
+  if (WEB_MODE && state.favoritesOnly) { state.search = ''; els.search.value = ''; state.category = 'all'; state.directoryView = false; state.sportsWorldwide = false; updateGuideMode(); }
   els.favoritesFilter.classList.toggle('active', state.favoritesOnly);
   els.favoritesFilter.setAttribute('aria-pressed', String(state.favoritesOnly));
   setNavActive(state.favoritesOnly ? 'nav-favorites' : 'nav-guide');
@@ -825,7 +886,7 @@ async function loadFavoriteChannels() {
   const codes = [...new Set(ids.map(id => state.favoriteCountries[id] || (id.startsWith('in-') ? 'IN' : state.country)))]
     .filter(code => webCatalogIndex?.countries.some(country => country.code === code));
   const results = await Promise.allSettled(codes.map(code => webCatalog.country(code)));
-  const channels = results.flatMap(result => result.status === 'fulfilled' ? result.value.channels : []);
+  const channels = results.flatMap(result => result.status === 'fulfilled' ? [...result.value.channels, ...result.value.directory] : []);
   state.favoriteChannels = channels.filter(channel => state.favorites.has(channel.id));
   if (state.favoritesOnly) filterChannels(true);
   renderRail();
@@ -895,6 +956,7 @@ async function activateWebCountry(code, { loading = true } = {}) {
   const ticket = ++webCountryLoad;
   const country = webCatalogIndex?.countries.find(item => item.code === code);
   if (!country) return;
+  state.sportsWorldwide = false;
   if (loading) {
     els.result.textContent = `Loading ${country.name} channels…`;
     els.list.innerHTML = `<div class="empty-list"><strong>Finding ${escapeHTML(country.name)} channels</strong><p>Loading this country's guide.</p></div>`;
@@ -940,6 +1002,7 @@ async function loadGuide() {
       const wanted = state.preferences?.completed && state.countries.some(country => country.code === state.preferences.country) ? state.preferences.country : 'IN';
       state.language = state.preferences?.completed ? state.preferences.language || 'all' : 'all';
       await activateWebCountry(wanted, { loading: false });
+      if (state.preferences?.completed) radioMode.applyPreferences(state.preferences);
       if (!state.preferences?.completed) onboarding.show(state.countries, state.languages, null, onboardingOptions());
       return;
     }
@@ -947,6 +1010,11 @@ async function loadGuide() {
     if (!response.ok) throw new Error(await response.text());
     const data = await response.json();
     state.channels = data.channels;
+    try {
+      const india = await webCatalog.country('IN');
+      const directIds = new Set(state.channels.map(channel => channel.id));
+      state.directory = india.directory.filter(channel => !directIds.has(channel.id)).map(channel => ({ ...channel, directoryOnly: true }));
+    } catch { state.directory = []; }
     state.countries = data.countries.sort((a, b) => a.name.localeCompare(b.name));
     state.languages = data.languages || [];
     state.preferences = readStore('openwave-preferences', null);

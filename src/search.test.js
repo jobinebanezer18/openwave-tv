@@ -29,3 +29,11 @@ test('British and UK searches use the worldwide catalog country code', () => {
   assert.equal(parseQuery('British news', worldCountries, languages).countryCode, 'GB');
   assert.equal(parseQuery('UK news', worldCountries, languages).countryCode, 'GB');
 });
+
+test('an exact channel name leads provider-directory search results', () => {
+  const entries = [
+    { id: 'music', name: 'Sun Music', title: 'Sun NXT', country: 'IN', categories: ['music'], languages: ['tam'] },
+    { id: 'tv', name: 'Sun TV', title: 'Sun NXT', country: 'IN', categories: ['entertainment'], languages: ['tam'] },
+  ];
+  assert.equal(rankChannels(entries, 'Sun TV', countries, [...languages, { code: 'tam', name: 'Tamil' }])[0].id, 'tv');
+});

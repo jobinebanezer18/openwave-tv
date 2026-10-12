@@ -1,5 +1,5 @@
-const CACHE_NAME = 'openwave-web-shell-v5';
-const APP_SHELL = ['/', '/favicon.svg', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/catalog/world/index.v1.json', '/catalog/world/IN.v1.json', '/radio/stations.v1.json'];
+const CACHE_NAME = 'openwave-web-shell-v6';
+const APP_SHELL = ['/', '/favicon.svg', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/catalog/world/index.v1.json', '/catalog/world/IN.v1.json', '/catalog/world/sports.v1.json', '/radio/stations.v1.json'];
 
 async function precacheAppShell(cache) {
   await cache.addAll(APP_SHELL);
@@ -27,7 +27,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
   if (url.pathname.endsWith('.m3u8') || url.pathname.endsWith('.ts') || url.pathname.endsWith('.m4s')) return;
-  if (/^\/catalog\/world\/(?:index|[A-Z]{2})\.v1\.json$/.test(url.pathname)) {
+  if (/^\/catalog\/world\/(?:index|sports|[A-Z]{2})\.v1\.json$/.test(url.pathname)) {
     event.respondWith(caches.open(CACHE_NAME).then(async cache => {
       try {
         const response = await fetch(request);

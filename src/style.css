@@ -198,3 +198,121 @@ html.openwave-native,html.openwave-native body,html.openwave-native #app{height:
   .openwave-web .mobile-tabs button[aria-pressed="true"]{background:#145fcf;color:#fff;box-shadow:0 5px 11px #1457ae42}
   .openwave-web .ios-install-card,.openwave-web .web-update-banner{bottom:calc(76px + env(safe-area-inset-bottom))}
 }
+
+/* Radio console: the disc is the single authored motion cue; controls stay still. */
+.radio-console{isolation:isolate;background:radial-gradient(circle at 50% 36%,#3783e9 0%,#1454af 38%,#082e78 78%,#071e52 100%)}
+.radio-console::before{opacity:.38}
+.radio-console::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(135deg,#ffffff1c,transparent 30%,transparent 74%,#031a4a65)}
+.radio-console-top{position:absolute;z-index:2;top:26px;left:clamp(25px,4vw,57px);right:clamp(25px,4vw,57px);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.radio-console-brand{font-size:10px;font-weight:900;letter-spacing:.14em;color:#e3efff}
+.radio-signal-state{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 10px;border:1px solid #bddcff89;border-radius:6px;background:#0829638c;color:#f0f7ff;font-size:9px;font-weight:900;letter-spacing:.1em;white-space:nowrap}
+.radio-signal-state i{width:7px;height:7px;border-radius:50%;background:#a6c7ed;box-shadow:0 0 0 3px #b9ddff30}
+.radio-playing .radio-signal-state i{background:#afffd5;box-shadow:0 0 0 3px #afffd540;animation:radio-live-dot 1.8s ease-in-out infinite}
+.radio-connecting .radio-signal-state i{background:#fff5b5;animation:radio-live-dot 1s ease-in-out infinite}
+@keyframes radio-live-dot{50%{opacity:.42;transform:scale(.72)}}
+.radio-orbit{top:70px;width:344px;height:344px}
+.radio-orbit-ring-a{width:340px;height:340px;border:1px solid #b6d7ff83;border-style:solid;box-shadow:0 0 0 1px #ffffff13}
+.radio-orbit-ring-a::after{content:'';position:absolute;inset:9px;border:1px dashed #e5f4ff70;border-radius:50%}
+.radio-orbit-ring-b{width:306px;height:306px;border:1px solid #d1e6ff70;background:repeating-radial-gradient(circle at center,#14386f 0px,#14386f 2px,#113166 3px,#123369 4px);box-shadow:0 26px 50px #02143f91,inset 0 1px #b3d8ff63}
+.radio-orbit-ring-c{width:206px;height:206px;border:1px solid #bedbff8a;box-shadow:0 0 0 1px #0c3676a8}
+.radio-orbit-core{position:relative;width:136px;height:136px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;border:1px solid #fff9;border-radius:50%;background:radial-gradient(circle at 34% 22%,#8fbdff,#4284de 63%,#1f60bb);box-shadow:inset 0 2px #ffffffa8,0 14px 28px #031c53a8;backdrop-filter:none}
+.radio-orbit-core::after{content:'';position:absolute;inset:50%;width:6px;height:6px;transform:translate(-50%,-50%);border:1px solid #fff8;border-radius:50%;background:#194078;opacity:.55}
+.radio-orbit-core span{font-size:66px;line-height:1;letter-spacing:-.02em}
+.radio-orbit-core small{margin-top:2px;font-size:7px;font-weight:900;letter-spacing:.2em}
+.radio-playing .radio-orbit-ring-b,.radio-playing .radio-orbit-ring-c{animation:radio-disc-spin 9s linear infinite}
+.radio-playing .radio-orbit-ring-a{animation:none}
+.radio-hidden .radio-orbit-ring-b,.radio-hidden .radio-orbit-ring-c,.radio-hidden .radio-signal-state i{animation-play-state:paused}
+@keyframes radio-disc-spin{to{transform:rotate(360deg)}}
+.radio-signal-bars{top:383px;height:28px;gap:4px;opacity:.75}
+.radio-signal-bars span{width:3px;height:21px;border-radius:3px;background:#d7eaff;transform:scaleY(.38);transform-origin:center}
+.radio-signal-bars span:nth-child(3n){height:21px}.radio-signal-bars span:nth-child(5n){height:21px}
+.radio-player-content{bottom:34px}
+.radio-content-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.radio-label{font-size:10px;letter-spacing:.14em;color:#d6eaff}
+.radio-frequency{max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d9eaff;font-size:9px;font-weight:900;letter-spacing:.09em;font-variant-numeric:tabular-nums}
+.radio-player-content h2{max-width:100%;margin:10px 0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(40px,4vw,58px);line-height:1.02}
+.radio-player-content #radio-status{min-height:18px;margin-top:10px;color:#dcecff;font-size:11px}
+.radio-controls{gap:20px;margin-top:18px}
+.radio-play-toggle{width:56px;height:56px;box-shadow:0 12px 25px #031a4b80;transition:transform .18s var(--ease),box-shadow .18s var(--ease)}
+.radio-play-toggle svg{width:23px;height:23px;fill:currentColor}
+.radio-play-toggle .radio-pause-icon{display:none}.radio-playing .radio-play-toggle .radio-play-icon{display:none}.radio-playing .radio-play-toggle .radio-pause-icon{display:block}
+.radio-play-toggle:hover{transform:scale(1.055);box-shadow:0 17px 30px #031a4ba8}.radio-play-toggle:active{transform:scale(.96)}
+.radio-volume-label{flex:1;max-width:310px;display:flex;align-items:center;gap:12px;color:#e7f3ff;font-size:9px;font-weight:900;letter-spacing:.09em}
+.radio-volume-label input{width:100%;min-width:74px;height:25px;accent-color:#fff;cursor:pointer}
+.radio-row{transition:background-color .16s var(--ease),transform .16s var(--ease)}
+.radio-row:hover:not(.selected){transform:translateX(2px)}
+.radio-row.selected .radio-row-mark{background:#d6e9ff;color:#0d4a9f}
+.radio-row.selected .radio-row-arrow{animation:radio-row-arrow .7s var(--ease) both}
+@keyframes radio-row-arrow{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:translateX(0)}}
+.platform-downloads{display:flex;align-items:center;gap:4px;padding:4px;border:1px solid #d4ebff8c;border-radius:10px;background:#e4f3ff25;backdrop-filter:blur(10px)}
+.platform-downloads a{width:36px;height:36px;display:grid;place-items:center;border-radius:7px;color:#fff;text-decoration:none;transition:background-color .16s var(--ease),transform .16s var(--ease)}
+.platform-downloads a:hover{background:#fff;color:#124b9d;transform:translateY(-2px)}
+.platform-downloads a:active{transform:scale(.94)}
+.platform-downloads a:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@media(max-width:1350px){.openwave-web .topbar-actions{gap:10px}.openwave-web .topbar-guide{display:none}}
+@media(max-width:860px){.radio-orbit{top:54px;width:314px;height:314px}.radio-orbit-ring-a{width:310px;height:310px}.radio-orbit-ring-b{width:280px;height:280px}.radio-orbit-ring-c{width:188px;height:188px}.radio-signal-bars{top:338px}.radio-player-content{bottom:27px}.openwave-web .topbar-actions{gap:7px}}
+@media(max-width:560px){
+  .radio-console{min-height:510px}.radio-console-top{top:20px;left:22px;right:22px}.radio-console-brand{font-size:9px}.radio-signal-state{min-height:29px;font-size:8px}
+  .radio-orbit{top:58px;width:220px;height:220px}.radio-orbit-ring-a{width:218px;height:218px}.radio-orbit-ring-b{width:198px;height:198px}.radio-orbit-ring-c{width:137px;height:137px}.radio-orbit-core{width:96px;height:96px}.radio-orbit-core span{font-size:45px}.radio-orbit-core small{font-size:6px}.radio-signal-bars{top:278px;height:22px;gap:3px}.radio-signal-bars span{width:2px;height:17px!important}
+  .radio-player-content{left:22px;right:22px;bottom:22px}.radio-player-content h2{font-size:36px}.radio-controls{margin-top:14px}.radio-play-toggle{width:50px;height:50px}.radio-volume-label{gap:8px}.radio-volume-label input{min-width:0}
+  .openwave-web .brand{min-width:32px}.openwave-web .brand>span:last-child{display:none}.openwave-web .platform-downloads{gap:1px;padding:3px}.openwave-web .platform-downloads a{width:34px;height:34px}.openwave-web .topbar-actions{gap:5px}
+}
+@media(prefers-reduced-motion:reduce){.radio-playing .radio-orbit-ring-b,.radio-playing .radio-orbit-ring-c,.radio-playing .radio-signal-state i,.radio-connecting .radio-signal-state i,.radio-row.selected .radio-row-arrow{animation:none}}
+
+/* Keep the listening action and station guide in one desktop viewport. */
+@media(min-width:1024px) and (min-height:650px){
+  .openwave-web .radio-screen{height:calc(100dvh - 91px);min-height:0;display:flex;flex-direction:column;padding-top:14px;padding-bottom:14px;overflow:hidden}
+  .openwave-web .radio-heading{min-height:0;flex:0 0 102px}
+  .openwave-web .radio-heading h1{font-size:clamp(42px,4.1vw,66px)}
+  .openwave-web .radio-heading p{margin-top:6px;font-size:11px}
+  .openwave-web .radio-count{min-height:70px;min-width:105px;padding:9px 13px;border-radius:14px 14px 14px 5px}
+  .openwave-web .radio-count strong{font-size:32px}
+  .openwave-web .radio-count small{font-size:7px}
+  .openwave-web .radio-grid{min-height:0;flex:1;grid-template-columns:minmax(0,1fr) minmax(310px,370px);gap:16px;margin-top:8px;align-items:stretch}
+  .openwave-web .radio-console,.openwave-web .radio-guide{height:100%;min-height:0}
+  .openwave-web .radio-guide{padding:14px}
+  .openwave-web .radio-guide-heading{margin-bottom:9px}
+  .openwave-web .radio-guide-heading h2{font-size:27px}
+  .openwave-web .radio-search{height:44px}
+  .openwave-web .radio-genres{height:44px;margin:7px 0 2px;padding:0}
+  .openwave-web .radio-genre{height:44px}
+  .openwave-web .radio-place{margin-top:1px}
+  .openwave-web .radio-place-row{margin-top:4px}
+  .openwave-web .radio-location-note{min-height:0;margin:5px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .openwave-web .radio-list-heading{margin:8px 0 4px}
+  .openwave-web .radio-list{min-height:0;flex:1}
+  .openwave-web .radio-row{min-height:52px}
+  .openwave-web .radio-orbit{top:51px;width:235px;height:235px}
+  .openwave-web .radio-orbit-ring-a{width:232px;height:232px}
+  .openwave-web .radio-orbit-ring-b{width:212px;height:212px}
+  .openwave-web .radio-orbit-ring-c{width:143px;height:143px}
+  .openwave-web .radio-orbit-core{width:103px;height:103px}
+  .openwave-web .radio-orbit-core span{font-size:49px}
+  .openwave-web .radio-signal-bars{top:280px}
+  .openwave-web .radio-player-content{bottom:20px}
+  .openwave-web .radio-player-content h2{font-size:clamp(31px,3.4vw,46px)}
+  .openwave-web .radio-controls{margin-top:12px}
+}
+@media(min-width:1024px) and (min-height:650px){.openwave-web.radio-mode .app-shell{max-width:none;min-height:100dvh;margin:0}}
+.radio-search-row{display:flex;gap:8px}.radio-search-row .radio-search{min-width:0;flex:1}.radio-filter-toggle{display:none}
+@media(max-width:560px){
+  .radio-heading{min-height:132px;padding:16px 2px 8px}
+  .radio-heading h1{max-width:310px;font-size:clamp(36px,9.2vw,43px);line-height:.95}
+  .radio-heading p{max-width:235px;margin-top:7px;font-size:10px}
+  .radio-count{bottom:8px;width:92px;min-height:56px;padding:7px}.radio-count strong{font-size:24px}.radio-count small{font-size:6px}
+  .radio-grid{gap:12px;margin-top:8px}
+  .radio-console{min-height:375px;height:375px}
+  .radio-orbit{top:42px;width:172px;height:172px}.radio-orbit-ring-a{width:170px;height:170px}.radio-orbit-ring-b{width:156px;height:156px}.radio-orbit-ring-c{width:108px;height:108px}.radio-orbit-core{width:78px;height:78px}.radio-orbit-core span{font-size:38px}.radio-orbit-core small{font-size:5px}
+  .radio-signal-bars{display:none}
+  .radio-player-content h2{font-size:33px}.radio-player-content #radio-status{margin-top:7px}.radio-controls{margin-top:12px}
+  .radio-guide{height:auto;min-height:0;padding:15px}
+  .radio-guide-heading{margin-bottom:10px}.radio-guide-heading h2{font-size:27px}
+  .radio-search-row .radio-search{height:44px}.radio-search-row .radio-search input{font-size:12px}
+  .radio-filter-toggle{min-width:91px;height:44px;display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid #c2d4ea;border-radius:8px;background:#edf4fc;color:#28547e;font-size:11px;font-weight:850}
+  .radio-filter-toggle svg{width:16px;height:16px}.radio-filter-toggle[aria-expanded="true"]{background:#172133;color:#fff}.radio-filter-toggle[aria-expanded="true"] span{transform:rotate(180deg)}
+  .radio-filter-panel{display:none}.radio-guide.filters-open .radio-filter-panel{display:block}
+  .radio-list-heading{margin:11px 0 5px}.radio-list{max-height:315px;min-height:0;overflow:auto}.radio-row{min-height:57px}.radio-row-favorite{min-width:44px;min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){.radio-connecting .radio-play-toggle .radio-pause-icon{display:block}}
+.radio-connecting .radio-play-toggle .radio-play-icon{display:none}.radio-connecting .radio-play-toggle .radio-pause-icon{display:block}
+@media(max-width:560px){.radio-console{height:335px;min-height:335px}.radio-orbit{top:35px;width:150px;height:150px}.radio-orbit-ring-a{width:148px;height:148px}.radio-orbit-ring-b{width:136px;height:136px}.radio-orbit-ring-c{width:94px;height:94px}.radio-orbit-core{width:70px;height:70px}.radio-orbit-core span{font-size:33px}}

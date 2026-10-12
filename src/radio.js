@@ -15,22 +15,27 @@ export function mountRadioMode() {
     <div class="radio-heading"><div><h1>EVERY FREQUENCY.<br>ONE PLACE.</h1><p>Internet streams from stations around the world.</p></div><span id="radio-count" class="radio-count">TUNING THE DIAL</span></div>
     <div class="radio-grid">
       <section class="radio-console" aria-label="Radio player">
-        <div class="radio-orbit" aria-hidden="true"><div class="radio-orbit-ring radio-orbit-ring-a"></div><div class="radio-orbit-ring radio-orbit-ring-b"></div><div class="radio-orbit-core"><span id="radio-initials">FM</span></div></div>
+        <div class="radio-console-top"><span class="radio-console-brand">OPENWAVE RADIO</span><span id="radio-signal-state" class="radio-signal-state"><i></i> READY TO TUNE</span></div>
+        <div class="radio-orbit" aria-hidden="true"><div class="radio-orbit-ring radio-orbit-ring-a"></div><div class="radio-orbit-ring radio-orbit-ring-b"></div><div class="radio-orbit-ring radio-orbit-ring-c"></div><div class="radio-orbit-core"><span id="radio-initials">OW</span><small>OPENWAVE</small></div></div>
         <div class="radio-signal-bars" aria-hidden="true">${Array.from({ length: 27 }, (_, i) => `<span style="--i:${i}"></span>`).join('')}</div>
-        <div class="radio-player-content"><span class="radio-label">ON THE AIR</span><h2 id="radio-now">Pick a station</h2><p id="radio-meta">Your next favorite sound is out there.</p><p id="radio-status" role="status">Ready when you are.</p><div class="radio-controls"><button id="radio-play-toggle" class="radio-play-toggle" aria-label="Play station">▶</button><label class="radio-volume-label">Volume <input id="radio-volume" type="range" min="0" max="100" value="75" aria-label="Radio volume"></label></div></div>
+        <div class="radio-player-content"><div class="radio-content-top"><span id="radio-label" class="radio-label">YOUR NEXT LISTEN</span><span id="radio-frequency" class="radio-frequency">LIVE RADIO</span></div><h2 id="radio-now">Pick a station</h2><p id="radio-meta">Find a sound you love in the station guide.</p><p id="radio-status" role="status">Ready when you are.</p><div class="radio-controls"><button id="radio-play-toggle" class="radio-play-toggle" aria-label="Play station"><svg class="radio-play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg><svg class="radio-pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg></button><label class="radio-volume-label"><span>VOLUME</span><input id="radio-volume" type="range" min="0" max="100" value="75" aria-label="Radio volume"></label></div></div>
         <audio id="radio-audio" preload="none"></audio>
       </section>
       <aside class="radio-guide" aria-label="Radio station guide"><div class="radio-guide-heading"><div><h2>Explore radio</h2><p id="radio-summary">Loading stations…</p></div><button id="radio-favorites-toggle" class="radio-favorites-toggle" aria-pressed="false">♡ My stations</button></div>
-        <label class="radio-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search stations</span><input id="radio-search-input" type="search" placeholder="Station, country, or genre" autocomplete="off"></label>
+        <div class="radio-search-row"><label class="radio-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search stations</span><input id="radio-search-input" type="search" placeholder="Station, country, or genre" autocomplete="off"></label>
+        <button id="radio-filter-toggle" class="radio-filter-toggle" type="button" aria-expanded="false" aria-controls="radio-filter-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></svg> Filters <span aria-hidden="true">⌄</span></button>
+        </div>
+        <div id="radio-filter-panel" class="radio-filter-panel">
         <div id="radio-genres" class="radio-genres" role="group" aria-label="Radio genres"></div>
         <div class="radio-place"><div class="radio-place-row"><button id="radio-country" class="radio-place-choice" aria-haspopup="dialog" aria-controls="radio-picker" aria-expanded="false">Everywhere <span>⌄</span></button><button id="radio-city" class="radio-place-choice" aria-haspopup="dialog" aria-controls="radio-picker" aria-expanded="false">All cities <span>⌄</span></button></div><div class="radio-place-row"><button id="radio-near-me" class="radio-near-me">◎ Use my location</button><button id="radio-fm-only" class="radio-fm-only" aria-pressed="false">FM frequencies</button></div><p id="radio-location-note" class="radio-location-note">OpenWave matches locally; your browser or OS may use a location provider. City data: <a href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">GeoNames</a>.</p></div>
+        </div>
         <div class="radio-list-heading"><span>STATIONS</span><span id="radio-list-count">—</span></div><div id="radio-list" class="radio-list"></div><div id="radio-pager" class="channel-pager" aria-label="Station pages" hidden><button id="radio-page-prev" type="button">← Previous</button><span id="radio-page-status" role="status" aria-live="polite"></span><button id="radio-page-next" type="button">Next →</button></div><button id="radio-more" class="radio-more" hidden>Show more stations ↓</button>
         <div id="radio-picker" class="radio-picker" role="dialog" aria-modal="true" aria-labelledby="radio-picker-title" hidden><div class="radio-picker-heading"><button id="radio-picker-back" aria-label="Back to radio guide">←</button><h3 id="radio-picker-title">Choose country</h3></div><label class="radio-picker-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search places</span><input id="radio-picker-search" type="search" placeholder="Search places" aria-controls="radio-picker-list"></label><div id="radio-picker-list" class="radio-picker-list" role="group" aria-label="Country options"></div></div>
       </aside>
     </div>`;
   document.querySelector('.app-shell').append(screen);
   const el = {
-    count: screen.querySelector('#radio-count'), now: screen.querySelector('#radio-now'), meta: screen.querySelector('#radio-meta'), status: screen.querySelector('#radio-status'), initials: screen.querySelector('#radio-initials'),
+    count: screen.querySelector('#radio-count'), now: screen.querySelector('#radio-now'), meta: screen.querySelector('#radio-meta'), status: screen.querySelector('#radio-status'), initials: screen.querySelector('#radio-initials'), label: screen.querySelector('#radio-label'), frequency: screen.querySelector('#radio-frequency'), signalState: screen.querySelector('#radio-signal-state'),
     audio: screen.querySelector('#radio-audio'), play: screen.querySelector('#radio-play-toggle'), volume: screen.querySelector('#radio-volume'),
     summary: screen.querySelector('#radio-summary'), favorites: screen.querySelector('#radio-favorites-toggle'), search: screen.querySelector('#radio-search-input'), genres: screen.querySelector('#radio-genres'),
     list: screen.querySelector('#radio-list'), listCount: screen.querySelector('#radio-list-count'), more: screen.querySelector('#radio-more'), pager: screen.querySelector('#radio-pager'), pagePrev: screen.querySelector('#radio-page-prev'), pageNext: screen.querySelector('#radio-page-next'), pageStatus: screen.querySelector('#radio-page-status'),
@@ -168,18 +173,26 @@ export function mountRadioMode() {
     el.now.textContent = station.name;
     el.meta.textContent = `${station.country} · ${station.codec.toUpperCase()}${station.fmMhz?.length ? ` · ${station.fmMhz[0]} FM` : ''}`;
     el.initials.textContent = station.name.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 2).toUpperCase() || 'FM';
+    el.frequency.textContent = station.fmMhz?.length ? `${station.fmMhz[0]} MHz` : 'INTERNET RADIO';
+    el.label.textContent = 'TUNING IN';
+    el.signalState.innerHTML = '<i></i> CONNECTING';
     el.status.textContent = 'Connecting to station…';
-    el.play.textContent = 'Ⅱ'; el.play.setAttribute('aria-label', 'Pause station');
-    screen.classList.add('radio-playing');
+    el.play.setAttribute('aria-label', 'Pause station');
+    screen.classList.remove('radio-playing'); screen.classList.add('radio-connecting');
     renderList();
-    el.audio.play().catch(() => { el.status.textContent = 'Tap play to start this station.'; el.play.textContent = '▶'; el.play.setAttribute('aria-label', 'Play station'); screen.classList.remove('radio-playing'); });
+    el.audio.play().catch(() => { el.status.textContent = 'Tap play to start this station.'; el.play.setAttribute('aria-label', 'Play station'); el.signalState.innerHTML = '<i></i> READY'; screen.classList.remove('radio-connecting'); });
   }
-  el.audio.addEventListener('playing', () => { el.status.textContent = 'Live audio'; screen.classList.add('radio-playing'); el.play.textContent = 'Ⅱ'; });
-  el.audio.addEventListener('pause', () => { screen.classList.remove('radio-playing'); el.play.textContent = '▶'; el.play.setAttribute('aria-label', 'Play station'); if (state.selected) el.status.textContent = 'Paused'; });
-  el.audio.addEventListener('error', () => { screen.classList.remove('radio-playing'); el.status.textContent = 'This station is unavailable right now. Try another.'; el.play.textContent = '▶'; });
+  el.audio.addEventListener('playing', () => { el.status.textContent = 'Live audio'; el.label.textContent = 'NOW PLAYING'; el.signalState.innerHTML = '<i></i> ON AIR'; screen.classList.remove('radio-connecting'); screen.classList.add('radio-playing'); el.play.setAttribute('aria-label', 'Pause station'); });
+  el.audio.addEventListener('pause', () => { screen.classList.remove('radio-playing', 'radio-connecting'); el.play.setAttribute('aria-label', 'Play station'); el.signalState.innerHTML = '<i></i> PAUSED'; if (state.selected) { el.label.textContent = 'PAUSED'; el.status.textContent = 'Paused'; } });
+  el.audio.addEventListener('error', () => { screen.classList.remove('radio-playing', 'radio-connecting'); el.status.textContent = 'This station is unavailable right now. Try another.'; el.label.textContent = 'SIGNAL LOST'; el.signalState.innerHTML = '<i></i> SIGNAL LOST'; el.play.setAttribute('aria-label', 'Play station'); });
   el.play.addEventListener('click', () => { if (!state.selected) { el.status.textContent = 'Choose a station from the list.'; el.search.focus(); return; } if (el.audio.paused) el.audio.play().catch(() => { el.status.textContent = 'This station cannot play in your browser.'; }); else el.audio.pause(); });
   el.volume.addEventListener('input', () => { el.audio.volume = Number(el.volume.value) / 100; });
   el.search.addEventListener('input', event => { state.query = event.target.value; state.shown = 60; filter(); });
+  screen.querySelector('#radio-filter-toggle').addEventListener('click', event => {
+    const expanded = event.currentTarget.getAttribute('aria-expanded') !== 'true';
+    event.currentTarget.setAttribute('aria-expanded', String(expanded));
+    screen.querySelector('.radio-guide').classList.toggle('filters-open', expanded);
+  });
   el.genres.addEventListener('click', event => { const chip = event.target.closest('[data-radio-genre]'); if (!chip) return; state.genre = chip.dataset.radioGenre; state.shown = 60; filter(); });
   el.country.addEventListener('click', () => openPlacePicker('country'));
   el.city.addEventListener('click', () => openPlacePicker('city'));
@@ -276,10 +289,11 @@ export function mountRadioMode() {
     show() {
       document.querySelector('[data-tv-layout]').hidden = true;
       screen.hidden = false;
+      document.documentElement.classList.add('radio-mode');
       window.scrollTo({ top: 0, behavior: 'instant' });
       load();
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) animate(screen, { opacity: [0.6, 1], transform: ['translateY(14px)', 'translateY(0)'] }, { duration: .46, ease: [.16, 1, .3, 1] });
     },
-    hide() { if (state.pickerKind) closePlacePicker(false); el.audio.pause(); screen.hidden = true; document.querySelector('[data-tv-layout]').hidden = false; }
+    hide() { if (state.pickerKind) closePlacePicker(false); el.audio.pause(); screen.hidden = true; document.documentElement.classList.remove('radio-mode'); document.querySelector('[data-tv-layout]').hidden = false; }
   };
 }

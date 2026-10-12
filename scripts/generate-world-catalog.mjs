@@ -17,10 +17,38 @@ const SOURCE_URLS = [
   'https://iptv-org.github.io/api/channels.json',
   'https://iptv-org.github.io/api/streams.json',
   'https://iptv-org.github.io/api/feeds.json',
+  'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8',
+  'https://raw.githubusercontent.com/Romaxa55/world_ip_tv/master/output/in.m3u',
   'public/catalog/india.v1.json',
   'catalog/india-browser-checks.v1.json',
 ];
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
+const SUN_NXT_IDS = new Set([
+  'AdithyaTV.in', 'ChuttiTV.in', 'KochuTV.in', 'KTV.in', 'KushiTV.in',
+  'SunBangla.in', 'SunGemini.in', 'SunGeminiComedy.in', 'SunGeminiLife.in',
+  'SunGeminiMovies.in', 'SunGeminiMusic.in', 'SunLife.in', 'SunMarathi.in',
+  'SunMusic.in', 'SunNeo.in', 'SunNews.in', 'SunSurya.in', 'SunSuryaComedy.in',
+  'SunSuryaMovies.in', 'SunSuryaMusic.in', 'SunTV.in', 'SunUdaya.in',
+  'SunUdayaComedy.in', 'SunUdayaMovies.in', 'SunUdayaMusic.in',
+]);
+const SUN_NXT_DEEP_LINKS = new Map([
+  ['SunTV.in', 'https://www.sunnxt.com/live/14020/sun-tv-hd'],
+  ['KTV.in', 'https://www.sunnxt.com/live/ktv-hd-tamil-live/194405/ktv-hd'],
+  ['SunGemini.in', 'https://www.sunnxt.com/live/gemini-tv-hd-telugu-live/194392/gemini-tv-hd'],
+  ['SunUdaya.in', 'https://www.sunnxt.com/live/sun-udaya-kannada-live/193239/sun-udaya'],
+  ['SunBangla.in', 'https://www.sunnxt.com/live/sun-bangla-bengali-live/194388/sun-bangla'],
+]);
+const officialSportsLink = (code, id) => {
+  if (code !== 'IN') return null;
+  if (/^StarSports|^Star4K/.test(id)) return 'https://www.hotstar.com/in/sports';
+  if (/^SonySportsTen|^TenCricket/.test(id)) return 'https://www.sonyliv.com/';
+  return null;
+};
+const VERIFIED_SPORTS = [
+  { id: 'NSports.mn', name: 'N Sports', country: 'MN', languages: ['mon'], categories: ['sports'], url: 'https://cdn4.skygo.mn/live/disk1/ONTV/HLSv3-FTA/ONTV.m3u8' },
+  { id: 'SportOutdoorTV.it', name: 'SportOutdoor.tv', country: 'IT', languages: ['eng'], categories: ['sports', 'outdoor'], url: 'https://gto2000-sportoutdoortv-1-it.samsung.wurl.tv/playlist.m3u8' },
+];
+const REJECTED_STREAM_IDS = new Set(['StarSports2Hindi.in']);
 const countryNames = new Intl.DisplayNames(['en'], { type: 'region' });
 const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
 
@@ -140,6 +168,7 @@ function main() {
     return byCountry.get(code);
   };
   const add = (code, channel, urls, options) => {
+    if (REJECTED_STREAM_IDS.has(channel?.id)) return false;
     const record = ensureCountry(code);
     const clean = cleanChannel(channel, code, urls, options);
     if (!clean || record.ids.has(clean.id)) return false;
@@ -183,6 +212,13 @@ function main() {
     }
     add(code, { ...channel, languages }, urls);
   }
+  // Public manifests and first media segments were verified with a browser Origin.
+  for (const channel of VERIFIED_SPORTS) add(channel.country, channel, [channel.url], { curated: true });
+  const ddSports = byCountry.get('IN')?.channels.find(channel => channel.id === 'DDSports.in');
+  const ddSportsBackup = safeHttpsUrl('https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/b17adfe543354fdd8d189b110617cddd/index.m3u8', { hls: true });
+  if (ddSports && ddSportsBackup && ddSports.url !== ddSportsBackup) {
+    ddSports.urls = [...new Set([ddSports.url, ...(ddSports.urls || []), ddSportsBackup])];
+  }
 
   // Keep identities without a direct browser feed in a separate directory.
   // They are discoverable, but never represented as playable rows.
@@ -194,7 +230,8 @@ function main() {
     if (record.ids.has(channel.id)) continue;
     const normalizedName = channel.name.normalize('NFKC').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
     if (record.channels.some(entry => entry.name.normalize('NFKC').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]+/gu, ' ').trim() === normalizedName)) continue;
-    const website = safeHttpsUrl(channel.website);
+    const provider = code === 'IN' && SUN_NXT_IDS.has(channel.id) ? 'Sun NXT' : null;
+    const website = safeHttpsUrl(provider ? SUN_NXT_DEEP_LINKS.get(channel.id) || 'https://www.sunnxt.com/live' : officialSportsLink(code, channel.id) || channel.website);
     const languages = [...(feedLanguages.get(channel.id) || [])].sort();
     const categories = Array.isArray(channel.categories) ? [...new Set(channel.categories.filter(value => typeof value === 'string' && value.trim()))].sort() : [];
     record.directory.push({
@@ -203,6 +240,7 @@ function main() {
       country: code,
       languages,
       categories,
+      ...(provider ? { provider, title: 'Sun NXT' } : {}),
       ...(website ? { website } : {}),
     });
     record.ids.add(channel.id);
@@ -253,6 +291,13 @@ function main() {
     total: countryRows.reduce((sum, country) => sum + country.count, 0),
     directory_total: countryRows.reduce((sum, country) => sum + country.directory_count, 0),
   };
+  const sports = {
+    version: 1,
+    channels: countryRows.flatMap(row => row.channels.filter(channel => channel.categories.includes('sports'))),
+    directory: countryRows.flatMap(row => row.directory.filter(channel => channel.categories.includes('sports'))),
+  };
+  index.sports_stream_count = sports.channels.length;
+  index.sports_directory_count = sports.channels.length + sports.directory.length;
   for (const row of countryRows) {
     const document = { version: 1, country: { code: row.code, name: row.name }, channels: row.channels, directory: row.directory };
     const content = `${JSON.stringify(document)}\n`;
@@ -261,6 +306,7 @@ function main() {
     fs.writeFileSync(path.join(args.outDir, `${row.code}.v1.json`), content);
   }
   fs.writeFileSync(path.join(args.outDir, 'index.v1.json'), `${JSON.stringify(index, null, 2)}\n`);
+  fs.writeFileSync(path.join(args.outDir, 'sports.v1.json'), `${JSON.stringify(sports)}\n`);
   const largestCountry = [...countryRows].sort((a, b) => b.channels.length - a.channels.length)[0];
   process.stdout.write(`Generated ${countryRows.length} countries and ${index.total} channels; India first. Largest: ${largestCountry.code} (${largestCountry.count}).\n`);
 }

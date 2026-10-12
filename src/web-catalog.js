@@ -2,6 +2,7 @@ const INDEX_URL = '/catalog/world/index.v1.json';
 
 export function createWebCatalog(fetchImpl = fetch) {
   let indexPromise;
+  let sportsPromise;
   const countryPromises = new Map();
 
   async function getJSON(url) {
@@ -27,5 +28,15 @@ export function createWebCatalog(fetchImpl = fetch) {
     return countryPromises.get(code);
   }
 
-  return { index, country };
+  function sports() {
+    if (!sportsPromise) {
+      sportsPromise = getJSON('/catalog/world/sports.v1.json').then(data => {
+        if (data.version !== 1 || !Array.isArray(data.channels) || !Array.isArray(data.directory)) throw new Error('Invalid sports catalog');
+        return data;
+      }).catch(error => { sportsPromise = null; throw error; });
+    }
+    return sportsPromise;
+  }
+
+  return { index, country, sports };
 }
