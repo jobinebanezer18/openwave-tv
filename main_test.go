@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -125,11 +127,112 @@ func TestRewritePlaylistResolvesSegmentsAndKeys(t *testing.T) {
 }
 
 func TestValidURLRejectsPrivateNetwork(t *testing.T) {
-	for _, raw := range []string{"http://127.0.0.1/live.m3u8", "http://192.168.1.2/live.m3u8", "file:///tmp/playlist.m3u8"} {
+	for _, raw := range []string{"http://127.0.0.1/live.m3u8", "http://192.168.1.2/live.m3u8", "http://localhost/live.m3u8", "http://station.localhost/live.m3u8", "http://100.64.1.1/live.m3u8", "http://198.18.0.1/live.m3u8", "file:///tmp/playlist.m3u8"} {
 		u, _ := url.Parse(raw)
 		if validURL(u) == nil {
 			t.Fatalf("accepted unsafe URL: %s", raw)
 		}
+	}
+}
+
+func TestPrivateSessionValidatesBoundaryAndBody(t *testing.T) {
+	s := &server{}
+	handler := localOnly(http.HandlerFunc(s.createPrivateSession))
+	tests := []struct {
+		name, host, origin, contentType, body string
+		want                                  int
+	}{
+		{"hostile origin", "127.0.0.1:8765", "https://attacker.example", "application/json", `{"url":"https://example.com/live.m3u8"}`, http.StatusForbidden},
+		{"remote host", "attacker.example", "", "application/json", `{"url":"https://example.com/live.m3u8"}`, http.StatusForbidden},
+		{"form body", "127.0.0.1:8765", "", "text/plain", `{"url":"https://example.com/live.m3u8"}`, http.StatusUnsupportedMediaType},
+		{"local URL", "127.0.0.1:8765", "", "application/json", `{"url":"http://127.0.0.1/live.m3u8"}`, http.StatusBadRequest},
+		{"localhost URL", "127.0.0.1:8765", "", "application/json", `{"url":"http://localhost/live.m3u8"}`, http.StatusBadRequest},
+		{"local mapped IPv6 URL", "127.0.0.1:8765", "", "application/json", `{"url":"http://[::ffff:127.0.0.1]/live.m3u8"}`, http.StatusBadRequest},
+		{"unsupported scheme", "127.0.0.1:8765", "", "application/json", `{"url":"file:///tmp/live.m3u8"}`, http.StatusBadRequest},
+		{"unknown field", "127.0.0.1:8765", "", "application/json", `{"url":"https://example.com/live.m3u8","name":"My TV"}`, http.StatusBadRequest},
+		{"extra document", "127.0.0.1:8765", "", "application/json", `{"url":"https://example.com/live.m3u8"}{}`, http.StatusBadRequest},
+		{"oversized body", "127.0.0.1:8765", "", "application/json", `{"url":"https://example.com/` + strings.Repeat("a", maxSessionRequestBytes) + `"}`, http.StatusRequestEntityTooLarge},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/api/private-session", strings.NewReader(tc.body))
+			r.Host = tc.host
+			r.Header.Set("Content-Type", tc.contentType)
+			if tc.origin != "" {
+				r.Header.Set("Origin", tc.origin)
+			}
+			w := httptest.NewRecorder()
+			handler.ServeHTTP(w, r)
+			if w.Code != tc.want {
+				t.Fatalf("got HTTP %d, want %d: %s", w.Code, tc.want, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestPrivateSessionRejectsNonHLSAndPlaysHLS(t *testing.T) {
+	segment := make([]byte, 188*6)
+	for offset := 0; offset < len(segment); offset += 188 {
+		segment[offset] = 0x47
+	}
+	remote := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/ordinary.m3u8":
+			w.Header().Set("Content-Type", "audio/x-mpegurl")
+			fmt.Fprint(w, "#EXTM3U\n#EXTINF:-1,Some channel\nhttps://other.example/live.m3u8\n")
+		case "/live.m3u8":
+			w.Header().Set("Content-Type", "application/vnd.apple.mpegurl")
+			fmt.Fprint(w, "#EXTM3U\n#EXT-X-TARGETDURATION:4\n#EXTINF:4,\nseg.ts\n")
+		case "/seg.ts":
+			w.Header().Set("Content-Type", "video/mp2t")
+			w.Write(segment)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer remote.Close()
+	client := &http.Client{Transport: &http.Transport{DialContext: func(ctx context.Context, network, _ string) (net.Conn, error) {
+		return (&net.Dialer{}).DialContext(ctx, network, remote.Listener.Addr().String())
+	}}}
+	s := &server{client: client, sessions: map[string]*session{}, probeCache: map[string]probeResult{}, probeSlots: make(chan struct{}, 1)}
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /api/private-session", s.createPrivateSession)
+	mux.HandleFunc("GET /api/media/{session}/{resource}", s.media)
+	handler := localOnly(mux)
+	post := func(path string) *httptest.ResponseRecorder {
+		t.Helper()
+		r := httptest.NewRequest(http.MethodPost, "/api/private-session", strings.NewReader(`{"url":"http://stream.example`+path+`"}`))
+		r.Host = "127.0.0.1:8765"
+		r.Header.Set("Origin", "http://127.0.0.1:8765")
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, r)
+		return w
+	}
+	if w := post("/ordinary.m3u8"); w.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("ordinary M3U returned %d: %s", w.Code, w.Body.String())
+	}
+	w := post("/live.m3u8")
+	if w.Code != http.StatusOK {
+		t.Fatalf("HLS returned %d: %s", w.Code, w.Body.String())
+	}
+	var result struct {
+		URL         string `json:"url"`
+		Sources     int    `json:"sources"`
+		SourceIndex int    `json:"sourceIndex"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.Sources != 1 || result.SourceIndex != 0 || !strings.HasPrefix(result.URL, "/api/media/") || strings.Contains(w.Body.String(), "stream.example") {
+		t.Fatalf("unexpected response: %s", w.Body.String())
+	}
+	request := httptest.NewRequest(http.MethodGet, result.URL, nil)
+	request.Host = "127.0.0.1:8765"
+	playback := httptest.NewRecorder()
+	handler.ServeHTTP(playback, request)
+	if playback.Code != http.StatusOK || !strings.Contains(playback.Body.String(), "/api/media/") || strings.Contains(playback.Body.String(), "seg.ts") {
+		t.Fatalf("manifest proxy failed: %d %s", playback.Code, playback.Body.String())
 	}
 }
 

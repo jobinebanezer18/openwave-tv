@@ -15,6 +15,7 @@ import (
 	"mime"
 	"net"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"os/exec"
 	"path/filepath"
@@ -38,6 +39,15 @@ const maxSessions = 256
 const maxProbeCacheEntries = 2048
 const maxSessionURLs = 512
 const maxConcurrentProbes = 8
+
+var specialUseIPRanges = [...]netip.Prefix{
+	netip.MustParsePrefix("0.0.0.0/8"),
+	netip.MustParsePrefix("100.64.0.0/10"),
+	netip.MustParsePrefix("192.0.0.0/24"),
+	netip.MustParsePrefix("198.18.0.0/15"),
+	netip.MustParsePrefix("240.0.0.0/4"),
+	netip.MustParsePrefix("2001::/23"),
+}
 
 type apiChannel struct {
 	ID         string   `json:"id"`
@@ -149,6 +159,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/channels", s.channels)
 	mux.HandleFunc("POST /api/session", s.createSession)
+	mux.HandleFunc("POST /api/private-session", s.createPrivateSession)
 	mux.HandleFunc("GET /api/media/{session}/{resource}", s.media)
 	mux.HandleFunc("GET /", s.static)
 	listener, err := net.Listen("tcp", *addr)
@@ -210,7 +221,9 @@ func localHost(host string) bool {
 func safeClient() *http.Client {
 	dialer := &net.Dialer{Timeout: 10 * time.Second}
 	transport := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
+		// A configured HTTP proxy could resolve a public-looking stream hostname
+		// to a private address on our behalf, bypassing the dial-time IP check.
+		Proxy: nil,
 		DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
 			host, port, err := net.SplitHostPort(address)
 			if err != nil {
@@ -239,8 +252,20 @@ func safeClient() *http.Client {
 }
 
 func publicIP(ip net.IP) bool {
-	if ip == nil || ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
+	if ip == nil || !ip.IsGlobalUnicast() || ip.IsPrivate() {
 		return false
+	}
+	address, ok := netip.AddrFromSlice(ip)
+	if !ok {
+		return false
+	}
+	address = address.Unmap()
+	// Go's IsPrivate does not include carrier-grade NAT, benchmark ranges, or
+	// other special-use networks that may be reachable within a local network.
+	for _, prefix := range specialUseIPRanges {
+		if prefix.Contains(address) {
+			return false
+		}
 	}
 	return true
 }
@@ -248,6 +273,10 @@ func publicIP(ip net.IP) bool {
 func validURL(u *url.URL) error {
 	if u == nil || (u.Scheme != "http" && u.Scheme != "https") || u.Hostname() == "" || u.User != nil {
 		return errors.New("invalid stream URL")
+	}
+	name := strings.ToLower(strings.TrimSuffix(u.Hostname(), "."))
+	if name == "localhost" || strings.HasSuffix(name, ".localhost") {
+		return errors.New("private stream URL")
 	}
 	if ip := net.ParseIP(u.Hostname()); ip != nil && !publicIP(ip) {
 		return errors.New("private stream URL")
@@ -617,6 +646,132 @@ func (s *server) createSession(w http.ResponseWriter, r *http.Request) {
 	s.mu.Unlock()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{"url": "/api/media/" + token + "/0", "sources": len(choices), "sourceIndex": chosenIndex})
+}
+
+// Private streams are supplied by the viewer and remain in memory for the
+// lifetime of a playback session. They never enter the shared channel guide.
+func (s *server) createPrivateSession(w http.ResponseWriter, r *http.Request) {
+	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	if err != nil || mediaType != "application/json" {
+		http.Error(w, "Content-Type must be application/json", http.StatusUnsupportedMediaType)
+		return
+	}
+	if r.ContentLength > maxSessionRequestBytes {
+		http.Error(w, "Request too large", http.StatusRequestEntityTooLarge)
+		return
+	}
+	var body struct {
+		URL string `json:"url"`
+	}
+	decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxSessionRequestBytes))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&body); err != nil {
+		var sizeError *http.MaxBytesError
+		if errors.As(err, &sizeError) {
+			http.Error(w, "Request too large", http.StatusRequestEntityTooLarge)
+			return
+		}
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	if decoder.Decode(new(any)) != io.EOF {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	if len(body.URL) == 0 || len(body.URL) > 900 {
+		http.Error(w, "Invalid stream URL", http.StatusBadRequest)
+		return
+	}
+	parsed, err := url.Parse(body.URL)
+	if err != nil || validURL(parsed) != nil || parsed.Fragment != "" {
+		http.Error(w, "Unsupported stream URL", http.StatusBadRequest)
+		return
+	}
+	if s.probeSlots != nil {
+		select {
+		case s.probeSlots <- struct{}{}:
+			defer func() { <-s.probeSlots }()
+		case <-time.After(2 * time.Second):
+			http.Error(w, "Playback is busy; please retry", http.StatusTooManyRequests)
+			return
+		case <-r.Context().Done():
+			return
+		}
+	}
+	if !s.privateHLS(r.Context(), body.URL) {
+		http.Error(w, "This link is not an available HLS stream", http.StatusUnprocessableEntity)
+		return
+	}
+	stream := apiStream{URL: body.URL}
+	if !s.probe(stream) {
+		http.Error(w, "No playable media is available at this link", http.StatusServiceUnavailable)
+		return
+	}
+	tokenBytes := make([]byte, 20)
+	if _, err := rand.Read(tokenBytes); err != nil {
+		http.Error(w, "Session error", http.StatusInternalServerError)
+		return
+	}
+	token := hex.EncodeToString(tokenBytes)
+	sess := &session{stream: stream, urls: map[string]string{"0": body.URL}, expires: time.Now().Add(4 * time.Hour)}
+	s.mu.Lock()
+	for key, old := range s.sessions {
+		if time.Now().After(old.expires) {
+			delete(s.sessions, key)
+		}
+	}
+	if len(s.sessions) >= maxSessions {
+		s.mu.Unlock()
+		http.Error(w, "Too many active playback sessions", http.StatusTooManyRequests)
+		return
+	}
+	if s.sessions == nil {
+		s.sessions = make(map[string]*session)
+	}
+	s.sessions[token] = sess
+	s.mu.Unlock()
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{"url": "/api/media/" + token + "/0", "sources": 1, "sourceIndex": 0})
+}
+
+func (s *server) privateHLS(parent context.Context, rawURL string) bool {
+	ctx, cancel := context.WithTimeout(parent, 8*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+	if err != nil {
+		return false
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 OpenWaveTV/0.1")
+	res, err := s.client.Do(req)
+	if err != nil {
+		return false
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return false
+	}
+	// The media proxy must recognize this URL as a playlist too; otherwise it
+	// would forward the manifest without rewriting its nested media links.
+	contentType := strings.ToLower(res.Header.Get("Content-Type"))
+	if !strings.Contains(contentType, "mpegurl") && !strings.Contains(strings.ToLower(res.Request.URL.Path), ".m3u8") {
+		return false
+	}
+	const maxManifestBytes = 256 << 10
+	data, err := io.ReadAll(io.LimitReader(res.Body, maxManifestBytes+1))
+	if err != nil || len(data) > maxManifestBytes {
+		return false
+	}
+	manifest := strings.TrimPrefix(strings.TrimSpace(string(data)), "\ufeff")
+	if !strings.HasPrefix(manifest, "#EXTM3U\n") && !strings.HasPrefix(manifest, "#EXTM3U\r\n") {
+		return false
+	}
+	for _, line := range strings.Split(manifest, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "#EXT-X-") {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *server) probe(st apiStream) bool {

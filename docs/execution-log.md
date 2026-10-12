@@ -33,4 +33,15 @@ The rights register is a guardrail, not proof of permission. The current app sti
 
 ## Next measured slice
 
-Choose the first launch country and name a content/rights owner. Build a small approved-source snapshot; test actual first-frame and 10-minute playback on physical iPhone and Android over two networks. Use those measurements to decide whether direct browser playback is sufficient for the PWA and whether a native Android player is needed. In parallel, complete signed desktop packaging once owner signing identities are available.
+India is the first launch country. Assign a catalog maintainer, build a small curated free-stream snapshot with provenance and playback results, and test first-frame and 10-minute playback on physical iPhone and Android over two networks. Use those measurements to decide whether direct browser playback is sufficient for the web app and whether a native Android player is needed. In parallel, complete signed desktop packaging once owner signing identities are available.
+
+## India-first personal-playlist slice
+
+Owner direction: India first, curated public free streams plus local personal playlists, no app-store listing, and pragmatic community source records. The plans now distinguish desktop/Android direct downloads from the iPhone India Home Screen web route. The owner asked to use Luna on suitable bounded work; a Luna agent audited plan consistency.
+
+- Added a bounded, session-only M3U file parser and a separate searchable private guide. Imported URLs are held in page memory, do not enter favorites/recents or the public guide, and country/language preferences do not hide imported rows. Removing the import stops active private playback. Unsupported formats are skipped or rejected with a readable message.
+- Added `POST /api/private-session` behind the local Host/Origin boundary. It accepts one public HTTP(S) HLS URL, validates the manifest and media, and returns the existing local media-session shape. Local/private-network targets are rejected and token-bearing URLs are not logged or returned in the JSON response.
+- Integrated browser check: imported Apple's public HLS developer test stream from a selected M3U file, received a local media session, reached `readyState=4` with advancing playback and no player error, then removed the file and confirmed playback stopped and the guide cleared. This verifies the local desktop path; it does not establish live-TV or mobile compatibility.
+- The personal-playlist file and URLs are not automatically stored. A reload requires reimport. The Go process can retain a previously created playback URL in session memory for up to four hours; [privacy notice](privacy.md) states this limit.
+
+The private import is not yet available in a static iPhone Home Screen web build because that route lacks the Go proxy. Android APK and physical India playback tests remain open. The source-review policy for the community alpha is provenance, actual playback, known territory/access notes, and a removal path; it does not demand a written grant for every public free stream before engineering tests.

@@ -3,6 +3,7 @@ import { animate, stagger } from 'motion';
 import { inferCategory, rankChannels, parseQuery } from './search.js';
 import { mountRadioMode } from './radio.js';
 import { createOnboarding } from './onboarding.js';
+import { parsePrivatePlaylist, PRIVATE_PLAYLIST_MAX_BYTES } from './private-playlist.js';
 import './style.css';
 
 const app = document.querySelector('#app');
@@ -11,6 +12,7 @@ const categories = ['all', 'news', 'sports', 'movies', 'music', 'kids', 'documen
 const quickCategories = categories.slice(0, 6);
 const state = {
   channels: [], countries: [], languages: [], results: [], selected: null, hls: null,
+  privateChannels: [], privateOnly: false,
   search: '', category: 'all', country: 'all', language: 'all', favoritesOnly: false,
   favorites: new Set(readStore('openwave-favorites', [])),
   recent: readStore('openwave-recent', []),
@@ -35,7 +37,8 @@ const glyph = (name, size = 20) => {
     arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
     expand: '<path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/>',
     signal: '<path d="M2 17h2l2-9 3 13 3-17 3 13 2-5 2 5h3"/>',
-    sliders: '<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2"/><circle cx="16" cy="17" r="2"/>'
+    sliders: '<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2"/><circle cx="16" cy="17" r="2"/>',
+    upload: '<path d="M12 16V4m-4 4 4-4 4 4M4 16v4h16v-4"/>'
   };
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
 };
@@ -77,13 +80,20 @@ app.innerHTML = `
         <section class="rail-section" aria-label="Suggested channels"><div class="rail-heading"><div><h2 id="rail-title">Start watching</h2><p id="rail-subtitle">Good places to begin.</p></div><span class="rail-hint">PICK A SIGNAL →</span></div><div id="recent-rail" class="recent-rail"></div></section>
       </div>
       <aside class="guide" id="guide" aria-label="Channel guide">
-        <div class="guide-heading"><div><h2>Explore live</h2><p id="result-summary" aria-live="polite">Loading channels…</p></div><button id="favorites-filter" class="favorites-filter" aria-pressed="false" title="Show saved channels">${glyph('heart', 17)}<span>My channels</span><span class="favorite-count"></span></button></div>
+        <div class="guide-heading"><div><h2 id="guide-title">Explore live</h2><p id="result-summary" aria-live="polite">Loading channels…</p></div><button id="favorites-filter" class="favorites-filter" aria-pressed="false" title="Show saved channels">${glyph('heart', 17)}<span>My channels</span><span class="favorite-count"></span></button></div>
         <form id="search-form" class="search-box"><label class="sr-only" for="search-input">Search channels</label>${glyph('search', 19)}<input id="search-input" type="search" placeholder="Find a channel, mood, or place" autocomplete="off"><button type="submit" aria-label="Smart search using on-device MiniLM" title="Smart search using on-device MiniLM"><span class="ai-star">✦</span> Smart</button></form>
         <p class="ai-hint" id="ai-hint">Smart search uses MiniLM on this device. First use downloads the model.</p>
         <div class="quick-categories" id="quick-categories" role="group" aria-label="Quick category filters"></div>
         <div class="filter-area"><button id="filter-toggle" class="filter-toggle" aria-expanded="false" aria-controls="advanced-filters">${glyph('sliders', 17)}<span>Refine channels</span><span id="filter-count" class="filter-count"></span>${glyph('chevron', 15)}</button>
           <div id="advanced-filters" class="advanced-filters" hidden><div class="filters"><div><span class="filter-label">Country</span><button id="country-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">Everywhere ${glyph('chevron', 15)}</button></div><div><span class="filter-label">Language</span><button id="language-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">Any language ${glyph('chevron', 15)}</button></div></div><div class="category-field"><span class="filter-label">Browse category</span><button id="category-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">All categories ${glyph('chevron', 15)}</button></div></div></div>
-        <div class="list-heading"><span>CHANNELS</span><span id="list-count">—</span></div>
+        <div class="private-tools" role="group" aria-label="Private playlist">
+          <button id="private-view" class="private-view" type="button" hidden>Your playlist</button>
+          <button id="private-import" class="private-import" type="button">${glyph('upload', 16)} <span>Import M3U</span></button>
+          <button id="private-clear" class="private-clear" type="button" hidden>Remove</button>
+          <input id="private-file" type="file" accept=".m3u,.m3u8,audio/x-mpegurl,application/vnd.apple.mpegurl" hidden aria-label="Choose private M3U playlist">
+        </div>
+        <p id="private-status" class="private-status" role="status" aria-live="polite">Session only. Reloading clears it; import again next time.</p>
+        <div class="list-heading"><span id="list-label">CHANNELS</span><span id="list-count">—</span></div>
         <div class="channel-list" id="channel-list"></div>
         <button id="show-more" class="show-more" hidden>Show more channels ${glyph('chevron', 16)}</button>
         <div id="filter-picker" class="filter-picker" role="dialog" aria-modal="true" aria-labelledby="picker-title" hidden><div class="picker-heading"><button id="picker-back" class="picker-back" aria-label="Back to filters">←</button><h3 id="picker-title">Choose</h3></div><label class="picker-search">${glyph('search', 19)}<span class="sr-only">Search options</span><input id="picker-search-input" type="search" placeholder="Search" autocomplete="off" aria-controls="picker-list"></label><div id="picker-list" class="picker-list" role="group" aria-label="Filter options"></div></div>
@@ -104,6 +114,17 @@ const els = {
   filterToggle: document.querySelector('#filter-toggle'), advanced: document.querySelector('#advanced-filters'), filterCount: document.querySelector('#filter-count'),
   picker: document.querySelector('#filter-picker'), pickerTitle: document.querySelector('#picker-title'), pickerSearch: document.querySelector('#picker-search-input'), pickerList: document.querySelector('#picker-list'), stageCount: document.querySelector('#stage-count')
 };
+const privateEls = {
+  tools: document.querySelector('.private-tools'),
+  view: document.querySelector('#private-view'),
+  import: document.querySelector('#private-import'),
+  file: document.querySelector('#private-file'),
+  clear: document.querySelector('#private-clear'),
+  status: document.querySelector('#private-status'),
+  label: document.querySelector('#list-label'),
+  title: document.querySelector('#guide-title'),
+  smart: document.querySelector('#search-form button[type="submit"]')
+};
 const alternativeButton = document.querySelector('#alternative-button');
 const radioMode = mountRadioMode();
 const onboarding = createOnboarding(preferences => {
@@ -115,6 +136,7 @@ const onboarding = createOnboarding(preferences => {
   els.search.value = '';
   state.aiCategory = null;
   state.favoritesOnly = false;
+  setPrivateView(false);
   els.favoritesFilter.classList.remove('active');
   els.favoritesFilter.setAttribute('aria-pressed', 'false');
   setFiltersOpen(false);
@@ -128,20 +150,24 @@ const onboarding = createOnboarding(preferences => {
 
 function countryName(code) { return state.countries.find(c => c.code === code)?.name || code || 'Worldwide'; }
 function languageName(code) { return state.languages.find(l => l.code === code)?.name || code; }
-function channelMeta(ch) { return `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0, 2).join(', ') || ch.categories[0] || 'TV'}`; }
+function channelMeta(ch) { return ch.private ? 'Private playlist · This tab only' : `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0, 2).join(', ') || ch.categories[0] || 'TV'}`; }
+function findChannel(id) { return id.startsWith('private:') ? state.privateChannels.find(ch => ch.id === id) : state.channels.find(ch => ch.id === id); }
 function isUnavailable(ch) { return Date.now() - (state.unavailable[ch.id] || 0) < 30 * 60 * 1000; }
 function rememberUnavailable(ch) {
+  if (ch.private) return;
   state.unavailable[ch.id] = Date.now();
   localStorage.setItem('openwave-unavailable', JSON.stringify(state.unavailable));
   filterChannels(); renderRail();
 }
 function clearUnavailable(ch) {
+  if (ch.private) return;
   if (!state.unavailable[ch.id]) return;
   delete state.unavailable[ch.id];
   localStorage.setItem('openwave-unavailable', JSON.stringify(state.unavailable));
   filterChannels(); renderRail();
 }
 function suggestAlternative(ch) {
+  if (ch.private) return state.privateChannels.find(candidate => candidate.id !== ch.id);
   return state.channels.filter(candidate => candidate.id !== ch.id && !isUnavailable(candidate) && candidate.country === ch.country && candidate.categories.some(category => ch.categories.includes(category)))
     .sort((a, b) => (Number(b.languages?.some(language => ch.languages?.includes(language))) - Number(a.languages?.some(language => ch.languages?.includes(language)))) || (b.health_score || 0) - (a.health_score || 0))[0];
 }
@@ -160,6 +186,7 @@ function renderCategories() {
 
 function channelMarkup(ch, index) {
   const selected = state.selected?.id === ch.id;
+  if (ch.private) return `<div class="channel-row ${selected ? 'playing' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="Play ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}><span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo private-logo">${glyph('tv', 20)}</span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>Private playlist · This tab only</small></span><span class="row-arrow">${glyph('arrow', 17)}</span></button></div>`;
   const favorite = state.favorites.has(ch.id);
   const unavailable = isUnavailable(ch);
   return `<div class="channel-row ${selected ? 'playing' : ''} ${unavailable ? 'unavailable' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="${unavailable ? 'Retry' : 'Play'} ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}>
@@ -175,7 +202,7 @@ function renderList(withMotion = false) {
   els.list.innerHTML = displayed.length ? displayed.map(channelMarkup).join('') : `<div class="empty-list">${glyph(state.favoritesOnly ? 'heart' : 'search', 25)}<strong>${state.favoritesOnly ? 'Your shortlist starts here' : 'No channels here yet'}</strong><p>${state.favoritesOnly ? 'Tap a heart beside any channel to save it here.' : 'Try a broader search or clear a filter.'}</p></div>`;
   const count = state.results.length.toLocaleString();
   els.count.textContent = count;
-  els.result.textContent = `${count} channels ready to explore`;
+  els.result.textContent = state.privateOnly ? `${count} channel${state.results.length === 1 ? '' : 's'} from your file` : `${count} channels ready to explore`;
   els.more.hidden = state.results.length <= shown;
   document.querySelector('.favorite-count').textContent = state.favorites.size || '';
   if (withMotion && !reduceMotion.matches) {
@@ -205,6 +232,13 @@ function renderRail() {
 }
 
 function filterChannels(withMotion = false) {
+  if (state.privateOnly) {
+    const query = state.search.trim().toLocaleLowerCase();
+    state.results = state.privateChannels.filter(ch => !query || ch.name.toLocaleLowerCase().includes(query));
+    renderList(withMotion);
+    els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>PRIVATE CHANNELS</small>`;
+    return;
+  }
   let pool = state.channels;
   if (state.favoritesOnly) pool = pool.filter(ch => state.favorites.has(ch.id));
   else if (!state.search.trim()) pool = pool.filter(ch => !isUnavailable(ch));
@@ -257,7 +291,7 @@ function startTune(ch, attempt) {
   const serial = state.playSerial;
   state.tuneTimer = setTimeout(() => {
     if (state.playSerial === serial && !els.shell.classList.contains('is-playing')) showError(`No video arrived from ${ch.name}.`, ch);
-  }, 15000);
+  }, ch.private ? 25000 : 15000);
   state.tuneAnimation?.stop?.();
   els.tune.hidden = false;
   els.tune.classList.remove('failed');
@@ -280,17 +314,19 @@ function finishTune() {
 }
 
 function rememberChannel(id) {
+  if (id.startsWith('private:')) return;
   state.recent = [id, ...state.recent.filter(item => item !== id)].slice(0, 12);
   localStorage.setItem('openwave-recent', JSON.stringify(state.recent));
   renderRail();
 }
 
 async function playChannel(id, attempt = 0, preferredLanguage = null) {
-  const ch = state.channels.find(item => item.id === id);
+  const ch = findChannel(id);
   if (!ch) return;
   const serial = ++state.playSerial;
   if (preferredLanguage === null) preferredLanguage = state.language !== 'all' ? state.language : (parseQuery(state.search, state.countries, state.languages).languageCode || '');
   state.selected = ch;
+  if (ch.private) state.sourceCount = 1;
   state.sourceAttempt = attempt;
   clearError(); startTune(ch, attempt);
   els.shell.classList.remove('is-playing');
@@ -298,15 +334,17 @@ async function playChannel(id, attempt = 0, preferredLanguage = null) {
   els.video.classList.add('visible');
   els.title.textContent = ch.name;
   els.meta.textContent = attempt ? `Trying another feed · ${attempt + 1}` : channelMeta(ch);
-  els.favorite.hidden = false; els.fullscreen.hidden = false;
+  els.favorite.hidden = Boolean(ch.private); els.fullscreen.hidden = false;
   els.favorite.classList.toggle('is-favorite', state.favorites.has(id));
   els.favorite.setAttribute('aria-label', state.favorites.has(id) ? 'Remove from favorites' : 'Add to favorites');
   renderList(); rememberChannel(id);
   if (state.hls) { state.hls.destroy(); state.hls = null; }
   els.video.pause(); els.video.removeAttribute('src'); els.video.load();
   try {
-    const response = await fetch('/api/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, attempt, language: preferredLanguage }) });
-    if (!response.ok) throw new Error(response.status === 503 ? 'No working feed is available for this channel right now.' : 'This channel could not be opened.');
+    const response = ch.private
+      ? await fetch('/api/private-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: ch.url }) })
+      : await fetch('/api/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, attempt, language: preferredLanguage }) });
+    if (!response.ok) throw new Error(response.status === 503 ? 'No working feed is available for this channel right now.' : ch.private ? 'This private stream could not be opened. Check its HLS URL.' : 'This channel could not be opened.');
     const { url, sources, sourceIndex } = await response.json();
     if (state.playSerial !== serial) return;
     state.sourceCount = sources;
@@ -333,12 +371,12 @@ async function playChannel(id, attempt = 0, preferredLanguage = null) {
       els.video.src = url;
       els.video.play().catch(error => { if (state.playSerial === serial) handlePlayRejection(error, ch); });
     } else showError('This browser cannot play HLS video. Try current Chrome, Edge, Firefox, or Safari.');
-  } catch (error) { if (state.playSerial === serial) showError(error.message || 'The channel could not be opened.', responseFailureIsUnavailable(error) ? ch : null); }
+  } catch (error) { if (state.playSerial === serial) showError(error.message || 'The channel could not be opened.', ch.private ? ch : responseFailureIsUnavailable(error) ? ch : null); }
 }
 
 function responseFailureIsUnavailable(error) { return error?.message === 'No working feed is available for this channel right now.'; }
 
-els.video.addEventListener('playing', () => { finishTune(); els.shell.classList.add('is-playing'); if (state.selected) clearUnavailable(state.selected); });
+els.video.addEventListener('playing', () => { clearError(); finishTune(); els.shell.classList.add('is-playing'); if (state.selected) clearUnavailable(state.selected); });
 els.video.addEventListener('error', () => {
   if (!state.selected || state.hls) return;
   if (state.sourceAttempt + 1 < state.sourceCount) playChannel(state.selected.id, state.sourceAttempt + 1);
@@ -352,6 +390,81 @@ function jumpToGuide() {
   document.querySelector('#guide').scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'start' });
   els.search.focus({ preventScroll: true });
 }
+function setPrivateView(on) {
+  state.privateOnly = on && state.privateChannels.length > 0;
+  state.favoritesOnly = false;
+  state.search = '';
+  state.aiCategory = null;
+  els.search.value = '';
+  els.search.placeholder = state.privateOnly ? 'Find in your playlist' : 'Find a channel, mood, or place';
+  els.quick.hidden = state.privateOnly;
+  document.querySelector('.filter-area').hidden = state.privateOnly;
+  privateEls.smart.hidden = state.privateOnly;
+  els.ai.hidden = state.privateOnly;
+  els.favoritesFilter.hidden = state.privateOnly;
+  privateEls.title.textContent = state.privateOnly ? 'Your playlist' : 'Explore live';
+  privateEls.view.hidden = !state.privateChannels.length;
+  privateEls.clear.hidden = !state.privateChannels.length;
+  privateEls.view.classList.toggle('active', state.privateOnly);
+  privateEls.view.textContent = state.privateOnly ? 'Public guide' : `Your playlist · ${state.privateChannels.length}`;
+  privateEls.import.querySelector('span').textContent = state.privateChannels.length ? 'Replace file' : 'Import M3U';
+  privateEls.label.textContent = state.privateOnly ? 'YOUR CHANNELS' : 'CHANNELS';
+  els.favoritesFilter.classList.remove('active');
+  els.favoritesFilter.setAttribute('aria-pressed', 'false');
+  setFiltersOpen(false);
+  filterChannels(true);
+}
+function stopPrivatePlayback() {
+  if (!state.selected?.private) return;
+  ++state.playSerial;
+  clearTimeout(state.tuneTimer);
+  state.hls?.destroy();
+  state.hls = null;
+  els.video.pause();
+  els.video.removeAttribute('src');
+  els.video.load();
+  els.video.classList.remove('visible');
+  els.shell.classList.remove('is-playing');
+  els.cover.hidden = false;
+  els.tune.hidden = true;
+  els.favorite.hidden = true;
+  els.fullscreen.hidden = true;
+  els.title.textContent = 'Pick your first channel';
+  els.meta.textContent = 'The guide is ready when you are.';
+  state.selected = null;
+  clearError();
+}
+privateEls.import.addEventListener('click', () => privateEls.file.click());
+privateEls.file.addEventListener('change', async () => {
+  const file = privateEls.file.files?.[0];
+  privateEls.file.value = '';
+  if (!file) return;
+  if (file.size > PRIVATE_PLAYLIST_MAX_BYTES) {
+    privateEls.status.textContent = 'Choose an M3U file smaller than 1 MB.';
+    return;
+  }
+  try {
+    const { channels, skipped } = parsePrivatePlaylist(await file.text());
+    stopPrivatePlayback();
+    state.privateChannels = channels.map(ch => ({ ...ch, private: true }));
+    privateEls.status.textContent = `${channels.length} channel${channels.length === 1 ? '' : 's'} loaded${skipped ? ` · ${skipped} unsupported stream${skipped === 1 ? '' : 's'} skipped` : ''}. Session only; reimport after reload.`;
+    setPrivateView(true);
+    jumpToGuide();
+  } catch (error) {
+    privateEls.status.textContent = error.message || 'Could not read this playlist. Choose an M3U file.';
+  }
+});
+privateEls.view.addEventListener('click', () => {
+  setPrivateView(!state.privateOnly);
+  setNavActive('nav-guide');
+});
+privateEls.clear.addEventListener('click', () => {
+  stopPrivatePlayback();
+  state.privateChannels = [];
+  privateEls.status.textContent = 'Private playlist removed from this tab.';
+  setPrivateView(false);
+  privateEls.import.focus();
+});
 function jumpToPlayer() {
   els.shell.scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'center' });
   els.shell.focus({ preventScroll: true });
@@ -360,8 +473,8 @@ document.querySelector('#cover-browse').addEventListener('click', jumpToGuide);
 document.querySelector('#header-guide').addEventListener('click', jumpToGuide);
 function setNavActive(id) { document.querySelectorAll('.top-nav button').forEach(button => button.classList.toggle('active', button.id === id)); }
 document.querySelector('#nav-home').addEventListener('click', () => { radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
-document.querySelector('#nav-guide').addEventListener('click', () => { setNavActive('nav-guide'); jumpToGuide(); });
-document.querySelector('#nav-favorites').addEventListener('click', () => { state.favoritesOnly = true; els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); jumpToGuide(); });
+document.querySelector('#nav-guide').addEventListener('click', () => { setPrivateView(false); setNavActive('nav-guide'); jumpToGuide(); });
+document.querySelector('#nav-favorites').addEventListener('click', () => { setPrivateView(false); state.favoritesOnly = true; els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); jumpToGuide(); });
 function showRadio() { els.video.pause(); setNavActive('nav-radio'); radioMode.show(); }
 document.querySelector('#nav-radio').addEventListener('click', showRadio);
 document.querySelector('#mobile-radio').addEventListener('click', showRadio);
@@ -482,6 +595,7 @@ els.search.addEventListener('input', event => {
 });
 document.querySelector('#search-form').addEventListener('submit', async event => {
   event.preventDefault();
+  if (state.privateOnly) { filterChannels(true); return; }
   const query = state.search.trim(); if (!query) { els.search.focus(); return; }
   clearTimeout(state.filterTimer);
   const serial = ++state.searchSerial;
@@ -500,6 +614,7 @@ document.querySelector('#search-form').addEventListener('submit', async event =>
   } catch { if (serial === state.searchSerial) els.ai.textContent = 'Smart search unavailable. Name, country, and category search still work.'; }
 });
 els.favoritesFilter.addEventListener('click', () => {
+  if (state.privateOnly) setPrivateView(false);
   state.favoritesOnly = !state.favoritesOnly;
   els.favoritesFilter.classList.toggle('active', state.favoritesOnly);
   els.favoritesFilter.setAttribute('aria-pressed', String(state.favoritesOnly));
@@ -507,6 +622,7 @@ els.favoritesFilter.addEventListener('click', () => {
   filterChannels(true);
 });
 function toggleFavorite(id, sourceButton = null) {
+  if (id.startsWith('private:')) return;
   if (state.favorites.has(id)) state.favorites.delete(id); else state.favorites.add(id);
   localStorage.setItem('openwave-favorites', JSON.stringify([...state.favorites]));
   if (state.selected?.id === id) {
