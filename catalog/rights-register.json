@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "policy": "Production catalog includes only approved items with documented stream and artwork use. This file is a review queue; its entries do not grant permission.",
+  "sources": [
+    {
+      "id": "tv:France24.fr",
+      "type": "tv",
+      "name": "France 24",
+      "review_status": "unreviewed",
+      "stream_origin": null,
+      "stream_evidence": [],
+      "uses_artwork": true,
+      "artwork_evidence": [],
+      "territories": [],
+      "review_owner": null,
+      "reviewed_on": null,
+      "contact": null,
+      "notes": "Pilot candidate only. Verify broadcaster stream and artwork terms before use in a production catalog."
+    },
+    {
+      "id": "tv:BBCNews.uk",
+      "type": "tv",
+      "name": "BBC News",
+      "review_status": "unreviewed",
+      "stream_origin": null,
+      "stream_evidence": [],
+      "uses_artwork": true,
+      "artwork_evidence": [],
+      "territories": [],
+      "review_owner": null,
+      "reviewed_on": null,
+      "contact": null,
+      "notes": "Pilot candidate only. A publicly visible stream or playlist entry is not permission for app playback."
+    },
+    {
+      "id": "radio:pilot-local-fm",
+      "type": "radio",
+      "name": "Local FM pilot station to be selected",
+      "review_status": "unreviewed",
+      "stream_origin": null,
+      "stream_evidence": [],
+      "uses_artwork": false,
+      "artwork_evidence": [],
+      "territories": [],
+      "review_owner": null,
+      "reviewed_on": null,
+      "contact": null,
+      "notes": "Select after the first launch country and station contact are confirmed."
+    }
+  ]
+}

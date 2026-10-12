@@ -1,0 +1,97 @@
+# OpenWave platform distribution plan
+
+Status: planning draft, 12 October 2026. Recheck linked platform rules before each submission. This document covers installation on ordinary, unmodified devices; it does not authorize publishing, purchasing accounts, or claiming rights to any feed.
+
+## Decision in one page
+
+| Platform | First public route | Later route | Main gate |
+| --- | --- | --- | --- |
+| iPhone and iPad, worldwide | Hosted HTTPS web app added to Home Screen | Native app through an eligible alternative marketplace in supported regions; EU direct Web Distribution only if Apple approves eligibility | The present localhost Go server cannot be installed as a website; redesign media delivery and validate rights first. Ordinary iPhones outside eligible regions have no general direct native APK-style install route. |
+| Android | Hosted web app, then signed APK from official download page | Optional alternative marketplace listing; Google Play only if project direction changes | Stable signing key, mobile playback, Android developer verification as rollout expands. |
+| macOS | Existing GitHub release for technical testers | Developer ID signed, hardened-runtime, notarized `.dmg` or `.pkg` | Apple Developer Program and notarization; clean launch under Gatekeeper. |
+| Windows | Existing GitHub release for technical testers | Authenticode signed installer or signed MSIX; `winget` listing after installer stabilizes | Publisher identity, trusted certificate, update and uninstall behavior; initial SmartScreen reputation. |
+| Linux | Existing GitHub release | AppImage, then optional Flathub | Portability across supported distributions, desktop integration, sandbox/portal behavior. |
+
+**Do not equate a PWA with a native iOS package.** The Home Screen route is the broadest outside-store iPhone route. An iOS native app cannot simply be posted as an `.ipa` for arbitrary users to sideload. Apple’s [alternative distribution overview](https://developer.apple.com/support/apps-in-the-eu) and [regional rules](https://developer.apple.com/documentation/marketplacekit/participating-in-alternative-distribution-for-specific-regions) limit native paths by region and approval.
+
+## Current project baseline
+
+The repository currently builds a Vite frontend into an embedded Go executable. The Go process binds to `127.0.0.1`, fetches channel catalogs, creates playback sessions, and proxies HLS media to the browser; the README states that local server is required. GitHub Actions builds unsigned executable archives for Linux `amd64/arm64`, macOS `amd64/arm64`, and Windows `amd64`. There is no mobile package, publicly hosted backend, service worker, installable manifest, updater, signing workflow, or native mobile playback implementation. This is a useful desktop prototype, not a production install experience.
+
+**Architecture gate before mobile packaging:** choose and prototype one supported media path:
+
+1. **Hosted HTTPS service + PWA:** easiest route to all ordinary phones, but each video segment may traverse our infrastructure. Establish source permissions, proxy abuse controls, bandwidth budget, regional access behavior, and privacy boundaries first. Do not expose the current session API publicly unchanged.
+2. **Direct broadcaster URLs where permitted:** avoids paying to relay media, but many feeds require headers, block browser cross-origin access, or fail due to mixed content. Support only after measuring real-device success by broadcaster and browser.
+3. **Device-local service in a native shell:** closest to the desktop architecture, but background execution, local network permissions, app lifecycle, audio focus, and iOS review/distribution need proof on physical devices. Treat as research, not the default roadmap.
+
+Decision record to complete: measure 50 representative TV feeds and 30 radio feeds across iPhone Safari, Android Chrome, macOS Safari/Chrome, and Windows Edge. Record direct-play success, codec, latency, bandwidth, failure reason, and whether a proxy was necessary. Choose the simplest lawful path that reaches a declared launch reliability target; keep the catalog and UI shared either way.
+
+## iOS and iPadOS
+
+### Home Screen web app, worldwide
+
+Ship the app at a stable HTTPS origin with a Web App Manifest, icons, `display: standalone`, correct safe-area/mobile video behavior, and a service worker that caches only the application shell and permitted metadata. Explain “Add to Home Screen” in an optional install affordance after the viewer has tried playback; never imply it is an App Store app. WebKit documents [Home Screen web apps](https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/) and says that on iOS/iPadOS 26 any site can be added as a web app, while a manifest still supplies identity and icons ([WebKit 26 notes](https://webkit.org/blog/17333/webkit-features-in-safari-26-0/)). Live video still needs network connectivity. Do not cache or redistribute stream segments offline without broadcaster permission.
+
+Acceptance: on two supported iPhone sizes and an iPad, install from Safari; reopen from icon; onboarding and favorites persist; HLS starts by explicit tap; switching TV/radio, background audio, rotation, captions when present, and recovery after connection loss work; no local-server setup is shown to the user.
+
+### Native outside Apple’s store, regional and conditional
+
+The EU permits notarized apps through authorized alternative marketplaces and, for developers Apple approves, direct Web Distribution from a registered site. Apple expanded eligibility in October 2026, but Web Distribution still requires meeting one of several qualifications (for example financial stability review, public company/venture funding/audit, qualifying nonprofit, substantial letter of credit, or one million first annual installs) and Apple authorization. A new solo project must **not** assume approval ([Apple EU support](https://developer.apple.com/support/apps-in-the-eu)). Japan supports alternative marketplaces on iOS 26.2+ and Brazil on iOS 26.5+; Apple’s regional documentation says ordinary apps in those markets distribute through marketplaces, while only the marketplace app itself installs from a website ([Apple regional rules](https://developer.apple.com/documentation/marketplacekit/participating-in-alternative-distribution-for-specific-regions)). Other regions should be offered the web app unless Apple adds a supported channel. Apple notarizes alternative-distribution apps and checks functionality, safety, security, and privacy ([Apple EU support](https://developer.apple.com/support/apps-in-the-eu)).
+
+If an alternative marketplace path is viable: enroll in the Apple Developer Program, confirm target region and account eligibility, choose a legitimate marketplace partner, build a reviewable iOS client, submit for notarization in App Store Connect, supply age rating/privacy/support metadata, and test install plus update on a real eligible-region account and device. Direct EU web distribution is a separate business decision after an explicit eligibility confirmation. The [Apple Developer Program](https://developer.apple.com/programs/whats-included/) is USD 99 per membership year (or local currency). Apple’s current EU terms may impose a commission on **sales of paid apps or digital goods/services** for apps outside its store; this free prototype should not be assigned a fabricated per-install cost ([Apple EU terms](https://developer.apple.com/support/apps-in-the-eu)). Recheck terms before any monetization.
+
+Do not plan Enterprise certificates, developer provisioning, or TestFlight as public consumer distribution; Apple describes Enterprise as private employee distribution ([program overview](https://developer.apple.com/programs/)).
+
+## Android
+
+Google explicitly allows a release-ready APK to be hosted on a website; users must opt in to install apps from that source, on Android 8+ through a per-source “Install unknown apps” setting ([Android alternative distribution](https://developer.android.com/distribute/marketing-tools/alternative-distribution)). Build a real Android experience around the shared discovery UI and validated media path. Download only from the project’s official HTTPS domain or verified GitHub release; display package name, version, SHA-256, and publisher identity. Never coach users to disable security globally.
+
+Reserve a stable reverse-domain package ID; create a production signing key in controlled storage; sign and verify every APK; preserve the same signing identity for updates. Android requires installed APKs to be signed, and changing/losing the app signing key breaks normal updates ([Android app signing](https://developer.android.com/studio/publish/app-signing)). Provide an in-app update notice linking to the authenticated release page, or implement a carefully reviewed package installer update flow later. Test install, upgrade, uninstall, background audio, notification controls, picture-in-picture if supported, and devices without Google services.
+
+As of October 2026, Android developer verification has begun for installs from participating stores on certified devices in Brazil, Indonesia, Singapore, and Thailand; direct sideloading is not yet included in that September phase, but Google says a broader rollout follows in 2027 ([official timeline](https://developer.android.com/developer-verification), [FAQ](https://developer.android.com/developer-verification/guides/faq)). Register the app and signing identity with the Android Developer Console before wide distribution, rather than relying on the advanced power-user flow. Google lists a USD 25 full-distribution account fee; the no-fee limited account is for up to 20 specified test devices, not public launch ([FAQ](https://developer.android.com/developer-verification/guides/faq), [console guide](https://developer.android.com/developer-verification/guides/android-developer-console)).
+
+## Desktop
+
+### macOS
+
+Package a launcher around the current Go server and browser UI only after defining lifecycle: a single instance, randomized loopback port, reliable shutdown, menu/dock behavior, crash recovery, and no privileged installation. Sign application and installer with Developer ID, use hardened runtime, submit to Apple’s notary service, staple the result, and test a downloaded artifact on a clean Mac with Gatekeeper. Apple says Developer ID identifies outside-store software to Gatekeeper; notarization adds a review for trusted distribution ([Developer ID](https://developer.apple.com/developer-id/), [notarization requirements](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)). Preserve both Apple silicon and Intel artifacts until support data justifies change. Add a verified updater or clear manual update path, with rollback.
+
+### Windows
+
+Package the current executable as a standard user installer or MSIX, then sign with a trusted publisher certificate. Direct-download MSIX requires a CA-trusted signature; self-signed packages force user trust setup. Microsoft recommends Azure Artifact Signing where eligible, but its availability is region/account limited; use a recognized CA code-signing certificate if unavailable. Initial SmartScreen reputation may still cause prompts even with a valid signature ([Microsoft code signing](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options), [distribution paths](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/choose-distribution-path)). Test installer, uninstall, update, per-user permissions, Windows Defender behavior, firewall prompts, and process cleanup. Submit a `winget` manifest after the signed installer and stable URL exist; Microsoft validates submitted manifests and installers ([winget submission](https://learn.microsoft.com/en-us/windows/package-manager/package/repository)). Do not promise warning-free direct downloads.
+
+### Linux
+
+Keep tarballs for technical users. Build a tested AppImage for an easy direct download; publish it on the official release page without wrapping it in another archive, following [AppImage distribution guidance](https://docs.appimage.org/packaging-guide/distribution.html). Include desktop entry, icon, dependency/license notices, executable permissions instructions, and a checksum. Test on representative recent Ubuntu, Fedora, and Debian distributions, X11 and Wayland, `amd64` and `arm64` where feasible. Flathub is an optional discovery path after packaging stabilizes; it requires a legal and technical review and may reject unsuitable submissions ([Flathub submission](https://docs.flathub.org/docs/for-app-authors/submission)). A Flatpak sandbox needs its own media/network/portal validation.
+
+## Cross-platform release requirements
+
+These are release gates, not aspirations:
+
+1. **Content and distribution rights.** Create a catalog policy that distinguishes broadcaster-published public streams, contributor-supplied links, and restricted/paid channels. Document evidence for any feed the app proxies at scale. Honor takedown requests. Do not integrate paid OTT streams or YTS/YIFY files without authorization. Public indexing does not grant redistribution rights.
+2. **Playback reliability.** Define a measured launch set, not an inflated global channel count. Health checks must sample actual decodable media where possible, identify geo and codec failure separately, expire quickly, and offer a useful alternative. Track success rate by platform, geography, and source. State that live availability is variable.
+3. **Security and privacy.** Review the proxy for SSRF, redirect-to-private-network behavior, open relay abuse, rate limits, token expiry, header handling, and bandwidth exhaustion before hosting it. Keep geolocation opt-in and local when possible. Publish a plain privacy notice describing catalog fetches, media requests, optional AI download, and data retention. Do not collect account data until a sync feature requires it.
+4. **Accessibility and UX.** Test remote/keyboard/touch navigation, reduced motion, focus order, readable captions when supplied, high contrast, and clear play/retry controls. Keep onboarding once, make country/language settings editable in secondary controls, and show viewer-relevant channel counts only.
+5. **Release engineering.** Pin toolchains/dependencies; run frontend, Go, and integration tests; produce a versioned artifact matrix; run dependency/security scans; sign; generate SHA-256 checksums and SBOM; publish changelog and source tag; verify every downloaded artifact on a clean device. Keep signing keys out of the repository and restrict CI release secrets to protected tags with review.
+6. **Support and operations.** Provide status/known-feed-issues page, issue template with platform/region/browser/channel, response owner, takedown contact, incident procedure, and rollback plan. Monitor crash-free starts, successful first plays, time to first frame, channel switch time, radio start rate, and per-region failures without storing exact user location.
+
+## Staged execution and exit criteria
+
+| Stage | Work | Exit evidence |
+| --- | --- | --- |
+| 0. Evidence and architecture | Rights inventory; source and codec sample; decide hosted/direct/local media path; cost envelope; brand/package IDs; device matrix. | Written architecture decision, feed permission policy, measured playback table, budget owner. |
+| 1. Production desktop baseline | Fix launcher lifecycle, package and sign macOS/Windows, AppImage Linux, checksums, CI release gates, clean-machine installs. | Reproducible signed downloads; install/update/uninstall tests; documented rollback. |
+| 2. Hosted mobile web beta | HTTPS deployment with protected media path, installable manifest and shell cache, responsive player, consent-based location, mobile QA. | 50+ representative feed sample results; first-play and recovery targets met on physical iOS/Android devices; safe proxy load test. |
+| 3. Android direct APK beta | Native shell or client, stable signed APK, registration, update route, accessibility and device tests. | Verified identity and signing; install/upgrade/uninstall on physical devices; staged public beta with rollback. |
+| 4. iOS native feasibility | Verify eligible regions and partner marketplace; seek Apple approval; build/notarize only if route is viable and product adds value beyond Home Screen app. | Written eligibility confirmation and approved installation test. If unavailable, retain global Home Screen app. |
+| 5. Public launch | Publish only passing platforms, support/privacy/rights pages, issue intake, release notes; monitor metrics and feed reliability. | Launch checklist signed by engineering, product, content/legal owner; 72-hour monitored rollout and rollback trigger. |
+
+Order is deliberate: a native wrapper cannot repair unreliable or unauthorized streams. Stages may overlap in development, but a distribution claim must wait for its own exit evidence. The project owner should decide whether operating a media proxy and pursuing Apple native distribution are worth their cost before committing to them.
+
+## Decisions still needed from owner
+
+- Public web hosting and media transport budget/owner; self-hosted-only remains a valid desktop choice, but cannot deliver the proposed phone web app by itself.
+- Stream permission threshold and who handles broadcaster complaints or takedowns.
+- Final product name and reverse-domain app IDs after trademark/domain checks. Current `OpenWave TV` is a working name.
+- Apple Developer Program enrollment, Android Developer Console registration, and Windows signing identity. Each requires the owner’s verified identity or organization and may incur cost.
+- Initial launch countries and minimum supported OS versions, based on device testing and source availability.

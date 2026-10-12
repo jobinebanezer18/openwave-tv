@@ -2,6 +2,8 @@
 
 A local, open-source TV and radio guide that plays public live streams in your browser. No VLC setup, account, or API key is needed.
 
+**Release status:** Current downloads are unsigned technical previews. The public catalog includes third-party links and has not passed the [production source review](catalog/rights-register.json). See the [cross-platform launch plan](docs/launch-plan.md) and its [independent quality audit](docs/launch-quality.md) before treating a build as a consumer release.
+
 ## Download and watch
 
 Download the executable for your computer from [Releases](https://github.com/jobinebanezer18/openwave-tv/releases), unzip it, and run it. OpenWave starts a local server and opens your browser. The server binds to `127.0.0.1`; it does not expose the player to your network. Keep the program running while you watch.
@@ -15,7 +17,7 @@ An internet connection is needed for the guide and streams. The optional AI mode
 - Shows feeds recently marked online by [IPTV Nexus](https://github.com/dearbulut/iptv), which builds on [iptv-org](https://github.com/iptv-org/iptv). Matching streams from [Free-TV](https://github.com/Free-TV/IPTV) and [World IPTV](https://github.com/Romaxa55/world_ip_tv) may provide alternate sources.
 - Checks HLS playlists and the newest media segments locally before opening a feed. Empty transport packets are rejected. A failed channel is removed from the default guide for 30 minutes and a similar channel is suggested.
 - Filters TV by country, language, and category. Selecting a channel brings the player into view.
-- Offers internet radio by country, city, and genre, with saved stations and an FM-frequency filter when station metadata provides a frequency. Optional location matching happens on your device against a bundled city index; coordinates are not sent to a geocoding service.
+- Offers internet radio by country, city, and genre, with saved stations and an FM-frequency filter when station metadata provides a frequency. A bundled station guide opens immediately and refreshes from its source in the background. Optional location matching happens on your device against a bundled city index; coordinates are not sent to a geocoding service.
 - Uses an optional on-device [MiniLM model](https://huggingface.co/Xenova/all-MiniLM-L6-v2) to interpret ambiguous search phrases. Names, countries, languages, and common categories work without loading the model.
 
 ## Run from source

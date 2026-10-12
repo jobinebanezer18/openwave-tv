@@ -2,12 +2,109 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 	"time"
 )
+
+func TestLocalOnlyRejectsHostAndCrossOrigin(t *testing.T) {
+	handler := localOnly(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	tests := []struct {
+		name, host, origin string
+		want               int
+	}{
+		{"normal localhost", "127.0.0.1:8765", "http://127.0.0.1:8765", http.StatusNoContent},
+		{"vite forwarded host", "127.0.0.1:5173", "http://127.0.0.1:5173", http.StatusNoContent},
+		{"local CLI without Origin", "localhost:8765", "", http.StatusNoContent},
+		{"IPv6 loopback", "[::1]:8765", "http://[::1]:8765", http.StatusNoContent},
+		{"DNS rebinding host", "watch.example:8765", "http://watch.example:8765", http.StatusForbidden},
+		{"private LAN host", "192.168.1.20:8765", "http://192.168.1.20:8765", http.StatusForbidden},
+		{"hostile origin", "127.0.0.1:8765", "https://watch.example", http.StatusForbidden},
+		{"other local origin", "127.0.0.1:8765", "http://127.0.0.1:5173", http.StatusForbidden},
+		{"null origin", "127.0.0.1:8765", "null", http.StatusForbidden},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/api/session", strings.NewReader(`{"id":"news"}`))
+			r.Host = tc.host
+			if tc.origin != "" {
+				r.Header.Set("Origin", tc.origin)
+			}
+			w := httptest.NewRecorder()
+			handler.ServeHTTP(w, r)
+			if w.Code != tc.want {
+				t.Fatalf("got HTTP %d, want %d", w.Code, tc.want)
+			}
+		})
+	}
+	r := httptest.NewRequest(http.MethodPost, "/api/session", strings.NewReader(`{"id":"news"}`))
+	r.Host = "127.0.0.1:8765"
+	r.Header.Set("Sec-Fetch-Site", "cross-site")
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, r)
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("cross-site request without Origin returned HTTP %d", w.Code)
+	}
+}
+
+func TestCreateSessionRejectsWrongTypeAndOversizedBody(t *testing.T) {
+	s := &server{}
+	tests := []struct {
+		name, contentType, body string
+		unknownLength           bool
+		want                    int
+	}{
+		{"form POST", "application/x-www-form-urlencoded", `{"id":"news"}`, false, http.StatusUnsupportedMediaType},
+		{"plain POST", "text/plain", `{"id":"news"}`, false, http.StatusUnsupportedMediaType},
+		{"oversized known length", "application/json", fmt.Sprintf(`{"id":"%s"}`, strings.Repeat("a", maxSessionRequestBytes)), false, http.StatusRequestEntityTooLarge},
+		{"oversized streaming body", "application/json", fmt.Sprintf(`{"id":"%s"}`, strings.Repeat("a", maxSessionRequestBytes)), true, http.StatusRequestEntityTooLarge},
+		{"extra JSON document", "application/json", `{"id":"news"}{"id":"news"}`, false, http.StatusBadRequest},
+		{"unknown field", "application/json", `{"id":"news","url":"https://example.com/live.m3u8"}`, false, http.StatusBadRequest},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/api/session", strings.NewReader(tc.body))
+			r.Header.Set("Content-Type", tc.contentType)
+			if tc.unknownLength {
+				r.ContentLength = -1
+			}
+			w := httptest.NewRecorder()
+			s.createSession(w, r)
+			if w.Code != tc.want {
+				t.Fatalf("got HTTP %d, want %d: %s", w.Code, tc.want, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestSessionProxyURLLimit(t *testing.T) {
+	base, _ := url.Parse("https://example.com/live/index.m3u8")
+	sess := &session{urls: map[string]string{"0": base.String()}}
+	first := sess.proxyURL("segment-1.ts", base, "token")
+	if first == "" {
+		t.Fatal("first media resource was rejected")
+	}
+	for i := 2; i < maxSessionURLs+20; i++ {
+		if got := sess.proxyURL(fmt.Sprintf("segment-%d.ts", i), base, "token"); got == "" {
+			t.Fatalf("resource %d rejected", i)
+		}
+	}
+	if len(sess.urls) != maxSessionURLs || len(sess.urlOrder) != maxSessionURLs-1 {
+		t.Fatalf("session stored %d URLs and %d ordered keys", len(sess.urls), len(sess.urlOrder))
+	}
+	if _, exists := sess.urls["0"]; !exists {
+		t.Fatal("root playlist URL was evicted")
+	}
+	if got := strings.TrimPrefix(first, "/api/media/token/"); sess.urls[got] != "" {
+		t.Fatal("stale first segment URL was not evicted")
+	}
+}
 
 func TestRewritePlaylistResolvesSegmentsAndKeys(t *testing.T) {
 	base, _ := url.Parse("https://example.com/live/playlist.m3u8")

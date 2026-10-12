@@ -33,6 +33,12 @@ const apiBase = "https://dearbulut.github.io/iptv/api/v1/"
 const freeTVPlaylist = "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8"
 const worldTVPlaylist = "https://romaxa55.github.io/world_ip_tv/output/index.m3u"
 
+const maxSessionRequestBytes = 1024
+const maxSessions = 256
+const maxProbeCacheEntries = 2048
+const maxSessionURLs = 512
+const maxConcurrentProbes = 8
+
 type apiChannel struct {
 	ID         string   `json:"id"`
 	Name       string   `json:"name"`
@@ -110,10 +116,11 @@ type catalog struct {
 	Loaded    time.Time          `json:"-"`
 }
 type session struct {
-	stream  apiStream
-	urls    map[string]string
-	mu      sync.Mutex
-	expires time.Time
+	stream   apiStream
+	urls     map[string]string
+	urlOrder []string
+	mu       sync.Mutex
+	expires  time.Time
 }
 type server struct {
 	mu         sync.Mutex
@@ -122,6 +129,7 @@ type server struct {
 	client     *http.Client
 	probeMu    sync.Mutex
 	probeCache map[string]probeResult
+	probeSlots chan struct{}
 	deadMu     sync.Mutex
 	dead       map[string]time.Time
 }
@@ -134,7 +142,10 @@ func main() {
 	addr := flag.String("addr", "127.0.0.1:0", "local listen address")
 	noBrowser := flag.Bool("no-browser", false, "do not open browser automatically")
 	flag.Parse()
-	s := &server{sessions: map[string]*session{}, probeCache: map[string]probeResult{}, dead: map[string]time.Time{}, client: safeClient()}
+	if !localHost(*addr) {
+		log.Fatal("listen address must use localhost or a loopback IP")
+	}
+	s := &server{sessions: map[string]*session{}, probeCache: map[string]probeResult{}, probeSlots: make(chan struct{}, maxConcurrentProbes), dead: map[string]time.Time{}, client: safeClient()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/channels", s.channels)
 	mux.HandleFunc("POST /api/session", s.createSession)
@@ -149,7 +160,51 @@ func main() {
 	if !*noBrowser {
 		go openBrowser(localURL)
 	}
-	log.Fatal(http.Serve(listener, mux))
+	log.Fatal((&http.Server{
+		Handler:           localOnly(mux),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}).Serve(listener))
+}
+
+// A loopback listener alone is not enough: a hostile website can submit blind
+// requests to a local server, and DNS rebinding can supply a non-local Host.
+func localOnly(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !localHost(r.Host) {
+			http.Error(w, "Invalid local host", http.StatusForbidden)
+			return
+		}
+		if r.Method == http.MethodPost {
+			if site := r.Header.Get("Sec-Fetch-Site"); site != "" && site != "same-origin" && site != "none" {
+				http.Error(w, "Cross-site request denied", http.StatusForbidden)
+				return
+			}
+			origin := r.Header.Get("Origin")
+			if origin != "" {
+				u, err := url.Parse(origin)
+				if err != nil || u.Scheme != "http" || u.Host != r.Host || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
+					http.Error(w, "Invalid request origin", http.StatusForbidden)
+					return
+				}
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func localHost(host string) bool {
+	u, err := url.Parse("http://" + host)
+	if err != nil || u.Host != host || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
+		return false
+	}
+	name := strings.ToLower(u.Hostname())
+	if name == "localhost" || name == "localhost." {
+		return true
+	}
+	ip := net.ParseIP(name)
+	return ip != nil && ip.IsLoopback()
 }
 
 func safeClient() *http.Client {
@@ -450,13 +505,37 @@ func (s *server) setChannelDead(id string, dead bool) {
 }
 
 func (s *server) createSession(w http.ResponseWriter, r *http.Request) {
+	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	if err != nil || mediaType != "application/json" {
+		http.Error(w, "Content-Type must be application/json", http.StatusUnsupportedMediaType)
+		return
+	}
+	if r.ContentLength > maxSessionRequestBytes {
+		http.Error(w, "Request too large", http.StatusRequestEntityTooLarge)
+		return
+	}
 	var body struct {
 		ID       string `json:"id"`
 		Language string `json:"language"`
 		Attempt  int    `json:"attempt"`
 	}
-	if err := json.NewDecoder(io.LimitReader(r.Body, 1024)).Decode(&body); err != nil {
+	decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxSessionRequestBytes))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&body); err != nil {
+		var sizeError *http.MaxBytesError
+		if errors.As(err, &sizeError) {
+			http.Error(w, "Request too large", http.StatusRequestEntityTooLarge)
+			return
+		}
 		http.Error(w, "Invalid request", 400)
+		return
+	}
+	if decoder.Decode(new(any)) != io.EOF {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	if body.ID == "" || len(body.ID) > 256 || len(body.Language) > 32 {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 	data, err := s.getCatalog()
@@ -489,6 +568,17 @@ func (s *server) createSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No more sources", 404)
 		return
 	}
+	if s.probeSlots != nil {
+		select {
+		case s.probeSlots <- struct{}{}:
+			defer func() { <-s.probeSlots }()
+		case <-time.After(2 * time.Second):
+			http.Error(w, "Playback is busy; please retry", http.StatusTooManyRequests)
+			return
+		case <-r.Context().Done():
+			return
+		}
+	}
 	chosenIndex := -1
 	for i := body.Attempt; i < len(choices); i++ {
 		if s.probe(choices[i].Stream) {
@@ -517,6 +607,11 @@ func (s *server) createSession(w http.ResponseWriter, r *http.Request) {
 		if time.Now().After(old.expires) {
 			delete(s.sessions, key)
 		}
+	}
+	if len(s.sessions) >= maxSessions {
+		s.mu.Unlock()
+		http.Error(w, "Too many active playback sessions", http.StatusTooManyRequests)
+		return
 	}
 	s.sessions[token] = sess
 	s.mu.Unlock()
@@ -605,6 +700,19 @@ func (s *server) probe(st apiStream) bool {
 		}
 	}
 	s.probeMu.Lock()
+	if s.probeCache == nil {
+		s.probeCache = make(map[string]probeResult)
+	}
+	if len(s.probeCache) >= maxProbeCacheEntries {
+		var oldestKey string
+		var oldestTime time.Time
+		for key, entry := range s.probeCache {
+			if oldestKey == "" || entry.At.Before(oldestTime) {
+				oldestKey, oldestTime = key, entry.At
+			}
+		}
+		delete(s.probeCache, oldestKey)
+	}
 	s.probeCache[st.URL] = probeResult{OK: ok, At: time.Now()}
 	s.probeMu.Unlock()
 	return ok
@@ -766,6 +874,13 @@ func (sess *session) proxyURL(raw string, base *url.URL, token string) string {
 	bytes := sha256.Sum256([]byte(resolved.String()))
 	key := hex.EncodeToString(bytes[:12])
 	sess.mu.Lock()
+	if _, exists := sess.urls[key]; !exists {
+		if len(sess.urls) >= maxSessionURLs && len(sess.urlOrder) > 0 {
+			delete(sess.urls, sess.urlOrder[0])
+			sess.urlOrder = sess.urlOrder[1:]
+		}
+		sess.urlOrder = append(sess.urlOrder, key)
+	}
 	sess.urls[key] = resolved.String()
 	sess.mu.Unlock()
 	return "/api/media/" + token + "/" + key

@@ -1,8 +1,8 @@
 import { animate } from 'motion';
+import { createRadioCatalog } from './radio-catalog.js';
 
-const DATA_URL = 'https://raw.githubusercontent.com/eyalev/verified-radio-streams/main/stations/all.json';
 const genres = ['all', 'jazz', 'pop', 'rock', 'classical', 'electronic'];
-const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
+const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 const readFavorites = () => { try { return new Set(JSON.parse(localStorage.getItem('openwave-radio-favorites') || '[]')); } catch { return new Set(); } };
 
 export function mountRadioMode() {
@@ -36,7 +36,8 @@ export function mountRadioMode() {
     country: screen.querySelector('#radio-country'), city: screen.querySelector('#radio-city'), nearMe: screen.querySelector('#radio-near-me'), fmOnly: screen.querySelector('#radio-fm-only'), locationNote: screen.querySelector('#radio-location-note'),
     picker: screen.querySelector('#radio-picker'), pickerTitle: screen.querySelector('#radio-picker-title'), pickerSearch: screen.querySelector('#radio-picker-search'), pickerList: screen.querySelector('#radio-picker-list')
   };
-  const state = { stations: [], results: [], selected: null, favorites: readFavorites(), favoritesOnly: false, genre: 'all', query: '', shown: 60, loading: false, loaded: false, country: 'all', city: 'all', fmOnly: false, pickerKind: null, pendingCountry: null };
+  const state = { stations: [], results: [], selected: null, favorites: readFavorites(), favoritesOnly: false, genre: 'all', query: '', shown: 60, loading: false, loaded: false, catalogStale: false, country: 'all', city: 'all', fmOnly: false, pickerKind: null, pendingCountry: null };
+  const catalog = createRadioCatalog();
   el.audio.volume = .75;
 
   function stationId(station) { return `${station.countryCode}:${station.id}`; }
@@ -84,7 +85,7 @@ export function mountRadioMode() {
     const visible = state.results.slice(0, state.shown);
     el.list.innerHTML = visible.length ? visible.map(stationMarkup).join('') : `<div class="radio-empty">${state.favoritesOnly ? 'Save a station with the heart beside its name.' : 'No stations match this search.'}</div>`;
     el.listCount.textContent = state.results.length.toLocaleString();
-    el.summary.textContent = `${state.results.length.toLocaleString()} stations`;
+    el.summary.textContent = `${state.results.length.toLocaleString()} stations${state.catalogStale ? ' · saved guide may be out of date' : ''}`;
     el.more.hidden = state.results.length <= state.shown;
   }
   function filter() {
@@ -97,22 +98,25 @@ export function mountRadioMode() {
       if (state.fmOnly && !station.fmMhz?.length) return false;
       return !query || [station.name, station.country, ...(station.genre || [])].some(value => String(value).toLowerCase().includes(query));
     });
+    el.count.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>STATIONS TO EXPLORE</small>`;
     renderGenres(); renderList(); renderPlaceLabels();
+  }
+  function adoptCatalog(data) {
+    state.stations = data.stations;
+    state.catalogStale = data.stale;
+    if (state.pendingCountry && state.stations.some(station => station.countryCode === state.pendingCountry)) {
+      state.country = state.pendingCountry;
+      state.pendingCountry = null;
+    }
+    filter();
   }
   async function load() {
     if (state.loaded || state.loading) return;
     state.loading = true;
     try {
-      const response = await fetch(DATA_URL);
-      if (!response.ok) throw new Error('Radio guide could not be fetched');
-      const data = await response.json();
-      state.stations = data.countries.flatMap(country => country.stations.map(station => ({ ...station, country: country.country, countryCode: country.countryCode })))
-        .filter(station => /^https:\/\//.test(station.stream) && ['mp3', 'aac', 'ogg'].includes(station.codec.toLowerCase()))
-        .sort((a, b) => (b.votes || 0) - (a.votes || 0) || a.name.localeCompare(b.name));
-      if (state.pendingCountry && state.stations.some(station => station.countryCode === state.pendingCountry)) state.country = state.pendingCountry;
+      adoptCatalog(await catalog.load());
       state.loaded = true;
-      el.count.innerHTML = `<strong>${state.stations.length.toLocaleString()}</strong><small>STATIONS ON THE DIAL</small>`;
-      filter();
+      catalog.refresh().then(updated => { if (updated) adoptCatalog(updated); });
     } catch {
       el.summary.textContent = 'Radio guide unavailable';
       el.list.innerHTML = '<div class="radio-empty">The station list could not load. Check your connection and try again.</div>';
@@ -147,7 +151,7 @@ export function mountRadioMode() {
     const option = event.target.closest('[data-place-value]'); if (!option || !state.pickerKind) return;
     const kind = state.pickerKind;
     state[kind] = option.dataset.placeValue;
-    if (kind === 'country') state.city = 'all';
+    if (kind === 'country') { state.city = 'all'; state.pendingCountry = null; }
     state.shown = 60; filter(); closePlacePicker();
   });
   el.picker.addEventListener('keydown', event => { if (event.key === 'Escape') { closePlacePicker(); event.preventDefault(); } });
