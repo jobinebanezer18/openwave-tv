@@ -2,7 +2,7 @@
 
 A local, open-source TV and radio guide that plays public live streams in your browser. No VLC setup, account, or API key is needed.
 
-**Release status:** Current downloads are unsigned technical previews. The public catalog includes third-party links and has not passed the [production source review](catalog/rights-register.json). See the [cross-platform launch plan](docs/launch-plan.md) and its [independent quality audit](docs/launch-quality.md) before treating a build as a consumer release.
+**Release status:** Current downloads are unsigned technical previews. The public catalog includes third-party links and has not passed the [production source review](catalog/README.md). See the [cross-platform launch plan](docs/launch-plan.md) and its [independent quality audit](docs/launch-quality.md) before treating a build as a consumer release.
 
 ## Download and watch
 
@@ -13,7 +13,7 @@ An internet connection is needed for the guide and streams. The optional AI mode
 ## What it does
 
 - Plays HLS streams in Chrome, Edge, Firefox, or Safari using [hls.js](https://github.com/video-dev/hls.js) or native HLS support.
-- Starts with a two-step choice of country, language, and interests; the channel guide then opens with matching channels. Preferences and favorites stay in your browser.
+- Starts with a two-step choice of country, language, and interests; the channel guide then opens with matching channels. Preferences and favorites are saved in your browser.
 - Shows feeds recently marked online by [IPTV Nexus](https://github.com/dearbulut/iptv), which builds on [iptv-org](https://github.com/iptv-org/iptv). Matching streams from [Free-TV](https://github.com/Free-TV/IPTV) and [World IPTV](https://github.com/Romaxa55/world_ip_tv) may provide alternate sources.
 - Checks HLS playlists and the newest media segments locally before opening a feed. Empty transport packets are rejected. A failed channel is removed from the default guide for 30 minutes and a similar channel is suggested.
 - Filters TV by country, language, and category. Selecting a channel brings the player into view.
@@ -22,7 +22,7 @@ An internet connection is needed for the guide and streams. The optional AI mode
 
 ## Run from source
 
-Install Go 1.22+ and Node.js 20+, then:
+Install Go 1.27.2 (the tested release toolchain) and Node.js 20+, then:
 
 ```sh
 npm ci
@@ -30,7 +30,7 @@ npm run build
 go run .
 ```
 
-OpenWave prints its local URL. To use a fixed port without opening a browser automatically:
+OpenWave prints its local URL. By default it uses `127.0.0.1:8765` so browser favorites and preferences remain on the same origin across launches. If another process already uses that port, close it before starting OpenWave. To run without opening a browser automatically:
 
 ```sh
 go run . -no-browser -addr 127.0.0.1:8765
@@ -47,6 +47,10 @@ Stream health is temporary. A broadcaster may remove a link, block a region, cha
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and pull requests are welcome for playback failures, accessibility, UI improvements, translations, and catalog quality. Please include a channel name, country, browser, and error details for playback reports. Do not submit links to paid, encrypted, or unauthorized streams.
+
+## Privacy
+
+The current app has no account or app-operated analytics. See [Privacy and network activity](docs/privacy.md) for the requests made to catalogs, media hosts, logo hosts, and the optional AI model, plus local storage and data-clearing details.
 
 ## Credits and license
 

@@ -82,11 +82,11 @@ app.innerHTML = `
         <p class="ai-hint" id="ai-hint">Smart search uses MiniLM on this device. First use downloads the model.</p>
         <div class="quick-categories" id="quick-categories" role="group" aria-label="Quick category filters"></div>
         <div class="filter-area"><button id="filter-toggle" class="filter-toggle" aria-expanded="false" aria-controls="advanced-filters">${glyph('sliders', 17)}<span>Refine channels</span><span id="filter-count" class="filter-count"></span>${glyph('chevron', 15)}</button>
-          <div id="advanced-filters" class="advanced-filters" hidden><div class="filters"><div><span class="filter-label">Country</span><button id="country-trigger" class="filter-choice" aria-haspopup="dialog">Everywhere ${glyph('chevron', 15)}</button></div><div><span class="filter-label">Language</span><button id="language-trigger" class="filter-choice" aria-haspopup="dialog">Any language ${glyph('chevron', 15)}</button></div></div><div class="category-field"><span class="filter-label">Browse category</span><button id="category-trigger" class="filter-choice" aria-haspopup="dialog">All categories ${glyph('chevron', 15)}</button></div></div></div>
+          <div id="advanced-filters" class="advanced-filters" hidden><div class="filters"><div><span class="filter-label">Country</span><button id="country-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">Everywhere ${glyph('chevron', 15)}</button></div><div><span class="filter-label">Language</span><button id="language-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">Any language ${glyph('chevron', 15)}</button></div></div><div class="category-field"><span class="filter-label">Browse category</span><button id="category-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">All categories ${glyph('chevron', 15)}</button></div></div></div>
         <div class="list-heading"><span>CHANNELS</span><span id="list-count">—</span></div>
         <div class="channel-list" id="channel-list"></div>
         <button id="show-more" class="show-more" hidden>Show more channels ${glyph('chevron', 16)}</button>
-        <div id="filter-picker" class="filter-picker" role="dialog" aria-modal="true" aria-labelledby="picker-title" hidden><div class="picker-heading"><button id="picker-back" class="picker-back" aria-label="Back to filters">←</button><h3 id="picker-title">Choose</h3></div><label class="picker-search">${glyph('search', 19)}<span class="sr-only">Search options</span><input id="picker-search-input" type="search" placeholder="Search" autocomplete="off"></label><div id="picker-list" class="picker-list" role="listbox"></div></div>
+        <div id="filter-picker" class="filter-picker" role="dialog" aria-modal="true" aria-labelledby="picker-title" hidden><div class="picker-heading"><button id="picker-back" class="picker-back" aria-label="Back to filters">←</button><h3 id="picker-title">Choose</h3></div><label class="picker-search">${glyph('search', 19)}<span class="sr-only">Search options</span><input id="picker-search-input" type="search" placeholder="Search" autocomplete="off" aria-controls="picker-list"></label><div id="picker-list" class="picker-list" role="group" aria-label="Filter options"></div></div>
       </aside>
     </main>
   </div>`;
@@ -388,9 +388,21 @@ function setFiltersOpen(open) {
   if (open && !reduceMotion.matches) animate(els.advanced, { opacity: [0, 1], transform: ['translateY(-8px)', 'translateY(0)'] }, { duration: 0.25, ease: [0.16, 1, 0.3, 1] });
 }
 els.filterToggle.addEventListener('click', () => setFiltersOpen(els.advanced.hidden));
-document.addEventListener('click', event => { if (!els.advanced.hidden && !event.target.closest('.filter-area')) setFiltersOpen(false); });
+document.addEventListener('click', event => { if (!els.advanced.hidden && !activePicker && !event.target.closest('.filter-area') && !event.target.closest('#filter-picker')) setFiltersOpen(false); });
 let activePicker = null;
+let pickerInertNodes = [];
 const pickerTriggers = { country: els.countryTrigger, language: els.languageTrigger, category: els.categoryTrigger };
+function setPickerBackgroundInert(inert) {
+  if (!inert) { for (const [node, wasInert] of pickerInertNodes) node.inert = wasInert; pickerInertNodes = []; return; }
+  for (let current = els.picker; current.parentElement && current !== document.body; current = current.parentElement) {
+    for (const sibling of current.parentElement.children) {
+      if (sibling !== current && sibling instanceof HTMLElement) {
+        pickerInertNodes.push([sibling, sibling.inert]);
+        sibling.inert = true;
+      }
+    }
+  }
+}
 function pickerOptions() {
   if (activePicker === 'country') return [{ value: 'all', label: 'Everywhere' }, ...state.countries.map(c => ({ value: c.code, label: c.name }))];
   if (activePicker === 'language') return [{ value: 'all', label: 'Any language' }, ...state.languages.map(l => ({ value: l.code, label: l.name }))];
@@ -399,27 +411,42 @@ function pickerOptions() {
 function renderPickerOptions() {
   const query = els.pickerSearch.value.trim().toLowerCase();
   const items = pickerOptions().filter(item => item.label.toLowerCase().includes(query));
-  els.pickerList.innerHTML = items.length ? items.map(item => `<button class="picker-option ${state[activePicker] === item.value ? 'selected' : ''}" role="option" aria-selected="${state[activePicker] === item.value}" data-pick-value="${escapeHTML(item.value)}"><span>${escapeHTML(item.label)}</span><span class="picker-check">${state[activePicker] === item.value ? '✓' : ''}</span></button>`).join('') : '<p class="picker-empty">No matching options</p>';
+  els.pickerList.innerHTML = items.length ? items.map((item, index) => `<button class="picker-option ${state[activePicker] === item.value ? 'selected' : ''}" aria-pressed="${state[activePicker] === item.value}" tabindex="${index === 0 ? 0 : -1}" data-pick-value="${escapeHTML(item.value)}"><span>${escapeHTML(item.label)}</span><span class="picker-check" aria-hidden="true">${state[activePicker] === item.value ? '✓' : ''}</span></button>`).join('') : '<p class="picker-empty">No matching options</p>';
   els.pickerList.scrollTop = 0;
 }
 function openPicker(kind) {
   activePicker = kind;
+  pickerTriggers[kind].setAttribute('aria-expanded', 'true');
   els.pickerTitle.textContent = kind === 'country' ? 'Choose country' : kind === 'language' ? 'Choose language' : 'Choose category';
+  els.pickerList.setAttribute('aria-label', kind === 'country' ? 'Country options' : kind === 'language' ? 'Language options' : 'Category options');
+  els.pickerSearch.setAttribute('aria-label', kind === 'country' ? 'Search countries' : kind === 'language' ? 'Search languages' : 'Search categories');
   els.pickerSearch.placeholder = kind === 'country' ? 'Search countries' : kind === 'language' ? 'Search languages' : 'Search categories';
   els.pickerSearch.value = '';
   els.picker.hidden = false;
   renderPickerOptions();
+  setPickerBackgroundInert(true);
   els.pickerSearch.focus();
   if (!reduceMotion.matches) animate(els.picker, { opacity: [0, 1], transform: ['translateX(14px)', 'translateX(0)'] }, { duration: 0.26, ease: [0.16, 1, 0.3, 1] });
 }
 function closePicker(focusTrigger = true) {
   const trigger = pickerTriggers[activePicker];
+  trigger?.setAttribute('aria-expanded', 'false');
   els.picker.hidden = true;
+  setPickerBackgroundInert(false);
   activePicker = null;
   if (focusTrigger) trigger?.focus();
 }
 Object.entries(pickerTriggers).forEach(([kind, button]) => button.addEventListener('click', () => openPicker(kind)));
 document.querySelector('#picker-back').addEventListener('click', () => closePicker());
+els.picker.addEventListener('keydown', event => {
+  if (event.key === 'Escape') { closePicker(); event.preventDefault(); event.stopPropagation(); return; }
+  if (event.key !== 'Tab') return;
+  const focusable = [...els.picker.querySelectorAll('button:not([disabled]), input:not([disabled])')].filter(node => node.tabIndex >= 0 && node.getClientRects().length);
+  const first = focusable[0], last = focusable.at(-1);
+  if (event.shiftKey && document.activeElement === first) { last?.focus(); event.preventDefault(); }
+  else if (!event.shiftKey && document.activeElement === last) { first?.focus(); event.preventDefault(); }
+});
+document.addEventListener('focusin', event => { if (activePicker && !els.picker.contains(event.target)) els.pickerSearch.focus(); });
 els.pickerSearch.addEventListener('input', renderPickerOptions);
 els.pickerSearch.addEventListener('keydown', event => {
   if (event.key === 'ArrowDown') { els.pickerList.querySelector('.picker-option')?.focus(); event.preventDefault(); }
@@ -429,7 +456,8 @@ els.pickerList.addEventListener('keydown', event => {
   if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
   const options = [...els.pickerList.querySelectorAll('.picker-option')];
   const index = options.indexOf(document.activeElement);
-  options[Math.max(0, Math.min(options.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))]?.focus();
+  const next = options[Math.max(0, Math.min(options.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))];
+  if (next) { document.activeElement.tabIndex = -1; next.tabIndex = 0; next.focus(); }
   event.preventDefault();
 });
 els.pickerList.addEventListener('click', event => {

@@ -139,7 +139,7 @@ type probeResult struct {
 }
 
 func main() {
-	addr := flag.String("addr", "127.0.0.1:0", "local listen address")
+	addr := flag.String("addr", "127.0.0.1:8765", "local listen address")
 	noBrowser := flag.Bool("no-browser", false, "do not open browser automatically")
 	flag.Parse()
 	if !localHost(*addr) {
@@ -153,7 +153,7 @@ func main() {
 	mux.HandleFunc("GET /", s.static)
 	listener, err := net.Listen("tcp", *addr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("OpenWave could not start on %s (another copy or app may be using the port): %v", *addr, err)
 	}
 	localURL := "http://" + listener.Addr().String()
 	log.Printf("OpenWave TV: %s", localURL)

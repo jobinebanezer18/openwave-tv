@@ -22,9 +22,9 @@ export function mountRadioMode() {
       <aside class="radio-guide" aria-label="Radio station guide"><div class="radio-guide-heading"><div><h2>Explore radio</h2><p id="radio-summary">Loading stations…</p></div><button id="radio-favorites-toggle" class="radio-favorites-toggle" aria-pressed="false">♡ My stations</button></div>
         <label class="radio-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search stations</span><input id="radio-search-input" type="search" placeholder="Station, country, or genre" autocomplete="off"></label>
         <div id="radio-genres" class="radio-genres" role="group" aria-label="Radio genres"></div>
-        <div class="radio-place"><div class="radio-place-row"><button id="radio-country" class="radio-place-choice">Everywhere <span>⌄</span></button><button id="radio-city" class="radio-place-choice">All cities <span>⌄</span></button></div><div class="radio-place-row"><button id="radio-near-me" class="radio-near-me">◎ Use my location</button><button id="radio-fm-only" class="radio-fm-only" aria-pressed="false">FM frequencies</button></div><p id="radio-location-note" class="radio-location-note">Approximate city matching stays on this device. City data: <a href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">GeoNames</a>.</p></div>
+        <div class="radio-place"><div class="radio-place-row"><button id="radio-country" class="radio-place-choice" aria-haspopup="dialog" aria-controls="radio-picker" aria-expanded="false">Everywhere <span>⌄</span></button><button id="radio-city" class="radio-place-choice" aria-haspopup="dialog" aria-controls="radio-picker" aria-expanded="false">All cities <span>⌄</span></button></div><div class="radio-place-row"><button id="radio-near-me" class="radio-near-me">◎ Use my location</button><button id="radio-fm-only" class="radio-fm-only" aria-pressed="false">FM frequencies</button></div><p id="radio-location-note" class="radio-location-note">OpenWave matches locally; your browser or OS may use a location provider. City data: <a href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">GeoNames</a>.</p></div>
         <div class="radio-list-heading"><span>STATIONS</span><span id="radio-list-count">—</span></div><div id="radio-list" class="radio-list"></div><button id="radio-more" class="radio-more" hidden>Show more stations ↓</button>
-        <div id="radio-picker" class="radio-picker" role="dialog" aria-modal="true" aria-labelledby="radio-picker-title" hidden><div class="radio-picker-heading"><button id="radio-picker-back" aria-label="Back to radio guide">←</button><h3 id="radio-picker-title">Choose country</h3></div><label class="radio-picker-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search places</span><input id="radio-picker-search" type="search" placeholder="Search places"></label><div id="radio-picker-list" class="radio-picker-list" role="listbox"></div></div>
+        <div id="radio-picker" class="radio-picker" role="dialog" aria-modal="true" aria-labelledby="radio-picker-title" hidden><div class="radio-picker-heading"><button id="radio-picker-back" aria-label="Back to radio guide">←</button><h3 id="radio-picker-title">Choose country</h3></div><label class="radio-picker-search"><span aria-hidden="true">⌕</span><span class="sr-only">Search places</span><input id="radio-picker-search" type="search" placeholder="Search places" aria-controls="radio-picker-list"></label><div id="radio-picker-list" class="radio-picker-list" role="group" aria-label="Country options"></div></div>
       </aside>
     </div>`;
   document.querySelector('.app-shell').append(screen);
@@ -37,6 +37,19 @@ export function mountRadioMode() {
     picker: screen.querySelector('#radio-picker'), pickerTitle: screen.querySelector('#radio-picker-title'), pickerSearch: screen.querySelector('#radio-picker-search'), pickerList: screen.querySelector('#radio-picker-list')
   };
   const state = { stations: [], results: [], selected: null, favorites: readFavorites(), favoritesOnly: false, genre: 'all', query: '', shown: 60, loading: false, loaded: false, catalogStale: false, country: 'all', city: 'all', fmOnly: false, pickerKind: null, pendingCountry: null };
+  let pickerInertNodes = [];
+  const pickerTriggers = { country: el.country, city: el.city };
+  function setPickerBackgroundInert(inert) {
+    if (!inert) { for (const [node, wasInert] of pickerInertNodes) node.inert = wasInert; pickerInertNodes = []; return; }
+    for (let current = el.picker; current.parentElement && current !== document.body; current = current.parentElement) {
+      for (const sibling of current.parentElement.children) {
+        if (sibling !== current && sibling instanceof HTMLElement) {
+          pickerInertNodes.push([sibling, sibling.inert]);
+          sibling.inert = true;
+        }
+      }
+    }
+  }
   const catalog = createRadioCatalog();
   el.audio.volume = .75;
 
@@ -46,8 +59,8 @@ export function mountRadioMode() {
   }
   function renderPlaceLabels() {
     const country = state.stations.find(station => station.countryCode === state.country)?.country || 'Everywhere';
-    el.country.innerHTML = `${escapeHTML(country)} <span>⌄</span>`;
-    el.city.innerHTML = `${escapeHTML(state.city === 'all' ? 'All cities' : state.city)} <span>⌄</span>`;
+    el.country.innerHTML = `${escapeHTML(country)} <span aria-hidden="true">⌄</span>`;
+    el.city.innerHTML = `${escapeHTML(state.city === 'all' ? 'All cities' : state.city)} <span aria-hidden="true">⌄</span>`;
     el.fmOnly.classList.toggle('active', state.fmOnly);
     el.fmOnly.setAttribute('aria-pressed', String(state.fmOnly));
   }
@@ -62,20 +75,31 @@ export function mountRadioMode() {
   function renderPlaceOptions() {
     const query = el.pickerSearch.value.trim().toLowerCase();
     const options = placeOptions().filter(item => item.label.toLowerCase().includes(query));
-    el.pickerList.innerHTML = options.length ? options.map(item => `<button class="radio-picker-option ${state[state.pickerKind] === item.value ? 'active' : ''}" role="option" aria-selected="${state[state.pickerKind] === item.value}" data-place-value="${escapeHTML(item.value)}">${escapeHTML(item.label)}<span>${state[state.pickerKind] === item.value ? '✓' : ''}</span></button>`).join('') : '<p class="radio-picker-empty">No matching places</p>';
+    el.pickerList.innerHTML = options.length ? options.map((item, index) => `<button class="radio-picker-option ${state[state.pickerKind] === item.value ? 'active' : ''}" aria-pressed="${state[state.pickerKind] === item.value}" tabindex="${index === 0 ? 0 : -1}" data-place-value="${escapeHTML(item.value)}">${escapeHTML(item.label)}<span aria-hidden="true">${state[state.pickerKind] === item.value ? '✓' : ''}</span></button>`).join('') : '<p class="radio-picker-empty">No matching places</p>';
     el.pickerList.scrollTop = 0;
   }
   function openPlacePicker(kind) {
     if (kind === 'city' && state.country === 'all') { el.locationNote.textContent = 'Choose a country first to browse its cities and regions.'; return; }
     state.pickerKind = kind;
+    pickerTriggers[kind].setAttribute('aria-expanded', 'true');
     el.pickerTitle.textContent = kind === 'country' ? 'Choose country' : 'Choose city or region';
+    el.pickerList.setAttribute('aria-label', kind === 'country' ? 'Country options' : 'City or region options');
+    el.pickerSearch.setAttribute('aria-label', kind === 'country' ? 'Search countries' : 'Search cities and regions');
     el.pickerSearch.value = '';
     el.pickerSearch.placeholder = kind === 'country' ? 'Search countries' : 'Search cities';
     el.picker.hidden = false;
     renderPlaceOptions();
+    setPickerBackgroundInert(true);
     el.pickerSearch.focus();
   }
-  function closePlacePicker() { el.picker.hidden = true; state.pickerKind = null; }
+  function closePlacePicker(focusTrigger = true) {
+    const trigger = pickerTriggers[state.pickerKind];
+    trigger?.setAttribute('aria-expanded', 'false');
+    el.picker.hidden = true;
+    setPickerBackgroundInert(false);
+    state.pickerKind = null;
+    if (focusTrigger) trigger?.focus();
+  }
   function stationMarkup(station) {
     const id = stationId(station);
     const favorite = state.favorites.has(id);
@@ -144,9 +168,20 @@ export function mountRadioMode() {
   el.genres.addEventListener('click', event => { const chip = event.target.closest('[data-radio-genre]'); if (!chip) return; state.genre = chip.dataset.radioGenre; state.shown = 60; filter(); });
   el.country.addEventListener('click', () => openPlacePicker('country'));
   el.city.addEventListener('click', () => openPlacePicker('city'));
-  screen.querySelector('#radio-picker-back').addEventListener('click', closePlacePicker);
+  screen.querySelector('#radio-picker-back').addEventListener('click', () => closePlacePicker());
   el.pickerSearch.addEventListener('input', renderPlaceOptions);
-  el.pickerSearch.addEventListener('keydown', event => { if (event.key === 'Enter') { el.pickerList.querySelector('.radio-picker-option')?.click(); event.preventDefault(); } });
+  el.pickerSearch.addEventListener('keydown', event => {
+    if (event.key === 'Enter') { el.pickerList.querySelector('.radio-picker-option')?.click(); event.preventDefault(); }
+    if (event.key === 'ArrowDown') { el.pickerList.querySelector('.radio-picker-option')?.focus(); event.preventDefault(); }
+  });
+  el.pickerList.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    const options = [...el.pickerList.querySelectorAll('.radio-picker-option')];
+    const index = options.indexOf(document.activeElement);
+    const next = options[Math.max(0, Math.min(options.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))];
+    if (next) { document.activeElement.tabIndex = -1; next.tabIndex = 0; next.focus(); }
+    event.preventDefault();
+  });
   el.pickerList.addEventListener('click', event => {
     const option = event.target.closest('[data-place-value]'); if (!option || !state.pickerKind) return;
     const kind = state.pickerKind;
@@ -154,7 +189,15 @@ export function mountRadioMode() {
     if (kind === 'country') { state.city = 'all'; state.pendingCountry = null; }
     state.shown = 60; filter(); closePlacePicker();
   });
-  el.picker.addEventListener('keydown', event => { if (event.key === 'Escape') { closePlacePicker(); event.preventDefault(); } });
+  el.picker.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { closePlacePicker(); event.preventDefault(); event.stopPropagation(); return; }
+    if (event.key !== 'Tab') return;
+    const focusable = [...el.picker.querySelectorAll('button:not([disabled]), input:not([disabled])')].filter(node => node.tabIndex >= 0 && node.getClientRects().length);
+    const first = focusable[0], last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) { last?.focus(); event.preventDefault(); }
+    else if (!event.shiftKey && document.activeElement === last) { first?.focus(); event.preventDefault(); }
+  });
+  document.addEventListener('focusin', event => { if (state.pickerKind && !el.picker.contains(event.target)) el.pickerSearch.focus(); });
   el.fmOnly.addEventListener('click', () => { state.fmOnly = !state.fmOnly; state.shown = 60; filter(); });
   let citiesPromise;
   el.nearMe.addEventListener('click', () => {
@@ -180,7 +223,7 @@ export function mountRadioMode() {
         state.fmOnly = true; state.shown = 60; filter();
         if (!state.results.length) { state.fmOnly = false; filter(); }
         if (!state.results.length) { state.city = 'all'; filter(); }
-        el.locationNote.innerHTML = `Near ${escapeHTML(nearest[0])}. ${state.city === 'all' ? 'Showing country stations.' : 'Showing local matches.'} Approximate city from <a href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">GeoNames</a>; coordinates stay on this device.`;
+        el.locationNote.innerHTML = `Near ${escapeHTML(nearest[0])}. ${state.city === 'all' ? 'Showing country stations.' : 'Showing local matches.'} OpenWave matches locally; your browser or OS may use a location provider. City data: <a href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">GeoNames</a>.`;
       } catch { el.locationNote.textContent = 'Could not match a nearby city. Choose a country instead.'; }
     }, () => { el.locationNote.textContent = 'Location access was not available. Choose a country instead.'; }, { enableHighAccuracy: false, maximumAge: 3600000, timeout: 10000 });
   });
@@ -214,6 +257,6 @@ export function mountRadioMode() {
       load();
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) animate(screen, { opacity: [0.6, 1], transform: ['translateY(14px)', 'translateY(0)'] }, { duration: .46, ease: [.16, 1, .3, 1] });
     },
-    hide() { el.audio.pause(); screen.hidden = true; document.querySelector('[data-tv-layout]').hidden = false; }
+    hide() { if (state.pickerKind) closePlacePicker(false); el.audio.pause(); screen.hidden = true; document.querySelector('[data-tv-layout]').hidden = false; }
   };
 }

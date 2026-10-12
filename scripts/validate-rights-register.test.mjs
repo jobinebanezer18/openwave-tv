@@ -11,7 +11,7 @@ const candidate = () => ({
 test('unreviewed sources can be tracked but cannot pass a production gate', () => {
   const register = { schema_version: 1, sources: [candidate()] };
   assert.deepEqual(validateRightsRegister(register), []);
-  assert.match(validateRightsRegister(register, { production: true }).join(' '), /not approved/);
+  assert.match(validateRightsRegister(register, { production: true }).join(' '), /at least one approved/);
 });
 
 test('approval requires independent evidence and territory', () => {
@@ -33,4 +33,12 @@ test('a claimed approval cannot use placeholder evidence', () => {
     review_owner: 'Reviewer', reviewed_on: '2026-10-12' };
   const errors = validateRightsRegister({ schema_version: 1, sources: [source] });
   assert.ok(errors.some(error => error.includes('entries must be HTTPS')));
+});
+
+test('production validation allows a review queue beside a complete approved source', () => {
+  const approved = { ...candidate(), id: 'tv:approved', review_status: 'approved',
+    stream_origin: 'https://example.org/live.m3u8',
+    stream_evidence: ['https://example.org/terms'], artwork_evidence: ['private:artwork-grant-1'],
+    territories: ['IN'], review_owner: 'Reviewer', reviewed_on: '2026-10-12' };
+  assert.deepEqual(validateRightsRegister({ schema_version: 1, sources: [candidate(), approved] }, { production: true }), []);
 });

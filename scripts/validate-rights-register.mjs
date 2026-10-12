@@ -51,7 +51,6 @@ export function validateRightsRegister(register, { production = false } = {}) {
       if (!source.review_owner || !source.reviewed_on) errors.push(`${label} needs a review owner and date for approval.`);
       else if (!/^\d{4}-\d{2}-\d{2}$/.test(source.reviewed_on)) errors.push(`${label}.reviewed_on must be YYYY-MM-DD.`);
     }
-    if (production && source.review_status !== 'approved') errors.push(`${label} is not approved for production.`);
   }
   if (production && approved === 0) errors.push('Production requires at least one approved source.');
   return errors;

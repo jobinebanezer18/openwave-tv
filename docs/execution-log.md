@@ -12,15 +12,20 @@ Date: 12 October 2026. This records verified work against the [launch plan](laun
 | Source review foundation | A versioned review queue and validator. Every current candidate is deliberately unreviewed; `--production` fails until genuine rights evidence is entered. | `catalog/rights-register.json`, `scripts/validate-rights-register.mjs`, focused gate tests. This register is not yet wired into the running catalog. |
 | Release verification | CI builds five unsigned archives, writes checksums, tests executable startup on Linux/macOS/Windows runners, and publishes tag builds only after smoke jobs pass. | `.github/workflows/build.yml`, `scripts/smoke-release.go`; local macOS packaged smoke passed. Target-runner CI status is recorded below. |
 | Integration review | Found and fixed Vite development POST rejection introduced by the tighter Origin rule. Corrected radio name escaping and made its large count match the country-filtered guide. | Local proxy POST returned 404 for a valid-origin unknown ID and 403 for a hostile Origin; browser showed `150 STATIONS TO EXPLORE` and a station name containing an apostrophe correctly. |
+| Privacy and stable preferences | Published an actual network/data map, corrected UI copy that overstated location and preference isolation, and changed the default launcher to fixed `127.0.0.1:8765`. | [Privacy notice](privacy.md), browser copy review, Go startup test. Multi-instance and old random-port migration remain open. |
+| Picker accessibility | TV and radio place pickers now keep keyboard focus inside, make the background inert, expose expanded and pressed states, return focus on close, and use larger targets. | Isolated Chromium keyboard smoke: ArrowDown changed the roving Tab stop, Tab wrapped to Back, Escape returned to the trigger, and background inert state cleared for both pickers. Screen-reader and device testing remain open. |
 
 ## Verification status
 
-- JavaScript search/radio tests: **9 passed**. Rights-register tests: **4 passed**. Production web build completed.
+- JavaScript search/radio tests: **9 passed**. Rights-register tests: **5 passed**. Production web build completed.
 - Go tests, race tests, vet, and diff whitespace checks passed locally.
 - Local packaged macOS arm64 smoke verified archive hash, loopback startup, HTML, favicon, and embedded JS asset.
 - Local browser test verified first-run preferences and bundled radio catalog on the development server.
-- First changed-workflow run: Linux and Windows packaged smoke passed; the macOS runner failed before smoke execution because the CI-selected Go 1.22 toolchain's `go run` binary lacked an `LC_UUID` load command required by that runner. CI is now pinned to [Go 1.27.2](https://go.dev/doc/devel/release), a current supported release; the rerun is pending. This is a toolchain compatibility issue, not a passed macOS install test.
-- Physical iOS/Android playback, direct APK install, signed desktop install/update, rights review, multi-region stream reliability, accessibility audit: **not yet performed**.
+- Local keyboard browser test verified TV and radio picker focus containment, roving Tab stop, Escape recovery, and trigger state.
+- First changed-workflow run: Linux and Windows packaged smoke passed; the macOS runner failed before smoke execution because the CI-selected Go 1.22 toolchain's `go run` binary lacked an `LC_UUID` load command required by that runner. CI was pinned to [Go 1.27.2](https://go.dev/doc/devel/release). The [rerun at commit `75fca3b`](https://github.com/jobinebanezer18/openwave-tv/actions/runs/38207332599) passed packaged startup and checksum checks on Linux, macOS, and Windows. These were runner smoke tests, not signed clean-device installs.
+- The default desktop port is now fixed at `127.0.0.1:8765` so browser preferences and favorites persist across normal restarts. Port collisions fail explicitly; multi-instance handling remains a later desktop lifecycle task.
+- Physical iOS/Android playback, direct APK install, signed desktop install/update, source-use review, multi-region stream reliability, screen-reader accessibility audit: **not yet performed**.
+- Free-hosting review identified Cloudflare Pages Free as a possible static app/catalog host. The current optional ONNX WASM file exceeds its 25 MiB per-file limit, and the TV UI still depends on the localhost Go API; a mobile web launch is therefore not ready. See the [distribution addendum](platform-distribution.md).
 
 ## What is still blocked from a production claim
 

@@ -30,7 +30,7 @@ The cycle is complete when tests run locally and in CI, a reviewer can trace the
 
 - Final brand, domain, app/package IDs, and trademark review. `OpenWave` remains a working identifier.
 - Launch countries, source-permission threshold, and the person handling broadcaster contact/takedown requests.
-- Whether to operate and fund an HTTPS catalog or media service; no public mobile website can run against `127.0.0.1` on each user's phone without a local service.
+- The owner prefers free hosting where viable. Cloudflare Pages Free is a candidate for a static shell and small approved catalog, but direct phone playback, the localhost API replacement, and the oversized optional AI asset remain unresolved. A media relay is a separate cost and source-use decision.
 - Apple Developer enrollment and alternative-distribution eligibility, Android developer identity/signing, Windows trusted signing, and macOS Developer ID. Do not purchase or submit on the owner's behalf without a concrete budget and identity setup.
 
 We can execute code, tests, documentation, unsigned prototypes, and simulator builds while those decisions remain open. A public production launch remains gated by them.

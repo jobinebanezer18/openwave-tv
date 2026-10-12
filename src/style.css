@@ -55,3 +55,7 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid #0e4
 @media(max-width:700px){.onboarding-overlay{padding:8px}.onboarding-card{width:100%;max-height:calc(100vh - 16px);min-height:0;display:flex;flex-direction:column;border-radius:15px}.onboarding-art{min-height:145px;flex:none;padding:16px 20px}.onboarding-art strong{font-size:37px;line-height:.9}.onboarding-art-footer{display:none}.onboarding-form{padding:21px 20px 16px}.onboarding-top{margin-bottom:25px}.onboarding-form h2{font-size:34px}.onboarding-form section>p{margin-bottom:19px}.onboarding-chips{grid-template-columns:repeat(2,1fr)}.onboarding-chips button{min-height:42px}}
 @media(max-width:560px){.preferences-button{width:36px;height:36px}.onboarding-form{max-height:calc(100vh - 165px)}.onboarding-privacy{margin-top:14px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.signal-graphic path{stroke-dashoffset:0}.tune-progress span{transform:none;width:100%}.radio-playing .radio-orbit-ring-a,.radio-playing .radio-signal-bars span{animation:none}}
+
+/* Picker controls keep a comfortable hit area on touch screens. */
+.filter-toggle,.filter-choice,.radio-place-choice,.radio-near-me,.radio-fm-only{height:44px;min-height:44px}
+.picker-back,.radio-picker-heading button{width:44px;height:44px;flex:none}

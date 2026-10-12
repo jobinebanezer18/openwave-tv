@@ -23,7 +23,7 @@ export function createOnboarding(onComplete) {
         <section id="onboarding-interests" hidden><h2 id="onboarding-interests-title">What feels like you?</h2><p>Pick a few interests. We’ll use them to shape your first row of channels.</p><div id="onboarding-chips" class="onboarding-chips"></div>
           <div class="onboarding-bottom"><button id="onboarding-back" class="onboarding-secondary">← Back</button><button id="onboarding-finish" class="onboarding-primary">Start watching <span>→</span></button></div>
         </section>
-        <p class="onboarding-privacy">Your choices stay in this browser.</p>
+        <p class="onboarding-privacy">Your preferences are saved in this browser.</p>
       </div>
     </div>`;
   document.querySelector('.app-shell').append(overlay);
