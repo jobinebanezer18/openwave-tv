@@ -19,8 +19,8 @@ export function createWebCatalog(fetchImpl = fetch) {
     if (!/^[A-Z]{2}$/.test(code)) return Promise.reject(new Error('Invalid country code'));
     if (!countryPromises.has(code)) {
       const promise = getJSON(`/catalog/world/${code}.v1.json`).then(data => {
-        if (data.version !== 1 || data.country?.code !== code || !Array.isArray(data.channels)) throw new Error('Invalid country catalog');
-        return data.channels;
+        if (data.version !== 1 || data.country?.code !== code || !Array.isArray(data.channels) || !Array.isArray(data.directory)) throw new Error('Invalid country catalog');
+        return data;
       }).catch(error => { countryPromises.delete(code); throw error; });
       countryPromises.set(code, promise);
     }

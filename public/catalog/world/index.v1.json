@@ -12,11 +12,14 @@
       "code": "IN",
       "name": "India",
       "count": 620,
+      "directory_count": 1447,
       "languages": [
         "asm",
         "ben",
+        "bgc",
         "bho",
         "eng",
+        "fra",
         "gom",
         "guj",
         "heb",
@@ -26,6 +29,7 @@
         "kan",
         "kok",
         "lus",
+        "mai",
         "mal",
         "mar",
         "nep",
@@ -34,6 +38,7 @@
         "pan",
         "por",
         "rus",
+        "sat",
         "sgn",
         "spa",
         "tam",
@@ -42,6 +47,8 @@
         "zho"
       ],
       "categories": [
+        "animation",
+        "auto",
         "business",
         "classic",
         "comedy",
@@ -50,6 +57,7 @@
         "documentary",
         "education",
         "entertainment",
+        "family",
         "general",
         "kids",
         "legislative",
@@ -60,6 +68,8 @@
         "outdoor",
         "religious",
         "science",
+        "series",
+        "shop",
         "sports",
         "travel",
         "weather"
@@ -69,7 +79,9 @@
       "code": "AF",
       "name": "Afghanistan",
       "count": 13,
+      "directory_count": 43,
       "languages": [
+        "fas",
         "prd",
         "pus"
       ],
@@ -77,34 +89,97 @@
         "education",
         "entertainment",
         "general",
+        "kids",
+        "lifestyle",
         "music",
         "news",
-        "religious"
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "AX",
+      "name": "Åland Islands",
+      "count": 0,
+      "directory_count": 1,
+      "languages": [
+        "fin",
+        "swe"
+      ],
+      "categories": [
+        "general"
       ]
     },
     {
       "code": "AL",
       "name": "Albania",
       "count": 11,
+      "directory_count": 134,
       "languages": [
+        "eng",
         "sqi"
       ],
       "categories": [
+        "business",
+        "documentary",
+        "education",
+        "family",
         "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
         "music",
-        "news"
+        "news",
+        "religious",
+        "science",
+        "series",
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "DZ",
       "name": "Algeria",
       "count": 2,
+      "directory_count": 44,
       "languages": [
         "ara",
+        "cnu",
         "eng",
-        "fra"
+        "fra",
+        "kab",
+        "mzb",
+        "shy",
+        "taq"
       ],
       "categories": [
+        "business",
+        "cooking",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "news",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "AS",
+      "name": "American Samoa",
+      "count": 0,
+      "directory_count": 7,
+      "languages": [
+        "eng",
+        "smo"
+      ],
+      "categories": [
+        "education",
+        "general",
         "news",
         "religious"
       ]
@@ -113,6 +188,7 @@
       "code": "AD",
       "name": "Andorra",
       "count": 1,
+      "directory_count": 2,
       "languages": [
         "cat"
       ],
@@ -124,30 +200,56 @@
       "code": "AO",
       "name": "Angola",
       "count": 3,
+      "directory_count": 52,
       "languages": [
+        "eng",
         "por"
       ],
       "categories": [
+        "entertainment",
         "general",
+        "kids",
+        "legislative",
+        "movies",
         "music",
-        "religious"
+        "news",
+        "religious",
+        "series",
+        "sports"
+      ]
+    },
+    {
+      "code": "AI",
+      "name": "Anguilla",
+      "count": 0,
+      "directory_count": 3,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "general",
+        "travel"
       ]
     },
     {
       "code": "AG",
       "name": "Antigua & Barbuda",
       "count": 1,
+      "directory_count": 4,
       "languages": [
         "eng"
       ],
       "categories": [
-        "general"
+        "general",
+        "legislative",
+        "music"
       ]
     },
     {
       "code": "AR",
       "name": "Argentina",
       "count": 82,
+      "directory_count": 480,
       "languages": [
         "eng",
         "por",
@@ -156,6 +258,8 @@
       "categories": [
         "animation",
         "auto",
+        "classic",
+        "comedy",
         "cooking",
         "culture",
         "documentary",
@@ -164,32 +268,50 @@
         "family",
         "general",
         "kids",
+        "legislative",
         "movies",
         "music",
         "news",
         "outdoor",
         "religious",
+        "science",
         "series",
-        "sports"
+        "shop",
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "AM",
       "name": "Armenia",
       "count": 3,
+      "directory_count": 59,
       "languages": [
         "arm",
-        "hye"
+        "hue",
+        "hye",
+        "rus"
       ],
       "categories": [
+        "business",
+        "comedy",
+        "culture",
+        "entertainment",
         "general",
-        "news"
+        "kids",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "sports"
       ]
     },
     {
       "code": "AW",
       "name": "Aruba",
       "count": 8,
+      "directory_count": 17,
       "languages": [
         "eng",
         "nld",
@@ -197,9 +319,12 @@
         "spa"
       ],
       "categories": [
+        "culture",
         "entertainment",
         "general",
+        "legislative",
         "music",
+        "news",
         "travel"
       ]
     },
@@ -207,26 +332,46 @@
       "code": "AU",
       "name": "Australia",
       "count": 35,
+      "directory_count": 180,
       "languages": [
+        "amh",
         "ara",
         "ben",
         "bos",
-        "eng"
+        "eng",
+        "hin",
+        "mal",
+        "mkd",
+        "mri",
+        "nep",
+        "tam",
+        "tir"
       ],
       "categories": [
+        "animation",
+        "auto",
         "business",
+        "classic",
+        "comedy",
+        "cooking",
         "culture",
+        "documentary",
         "education",
         "entertainment",
+        "family",
         "general",
         "kids",
+        "legislative",
         "lifestyle",
         "movies",
+        "music",
         "news",
         "relax",
         "religious",
+        "series",
         "shop",
         "sports",
+        "travel",
         "weather"
       ]
     },
@@ -234,17 +379,29 @@
       "code": "AT",
       "name": "Austria",
       "count": 23,
+      "directory_count": 120,
       "languages": [
+        "bos",
         "deu",
         "eng",
+        "ger",
+        "hrv",
         "por",
-        "spa"
+        "spa",
+        "srp",
+        "tur"
       ],
       "categories": [
+        "comedy",
         "culture",
+        "documentary",
+        "entertainment",
         "general",
+        "kids",
+        "lifestyle",
         "movies",
         "music",
+        "news",
         "outdoor",
         "religious",
         "sports",
@@ -255,17 +412,24 @@
       "code": "AZ",
       "name": "Azerbaijan",
       "count": 14,
+      "directory_count": 43,
       "languages": [
         "ara",
         "aze",
         "eng",
-        "rus"
+        "rus",
+        "tur"
       ],
       "categories": [
         "culture",
+        "entertainment",
         "general",
+        "kids",
+        "lifestyle",
         "music",
         "news",
+        "outdoor",
+        "religious",
         "sports"
       ]
     },
@@ -273,20 +437,27 @@
       "code": "BS",
       "name": "Bahamas",
       "count": 4,
+      "directory_count": 15,
       "languages": [
         "eng"
       ],
       "categories": [
+        "classic",
         "entertainment",
         "general",
         "legislative",
-        "news"
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "weather"
       ]
     },
     {
       "code": "BH",
       "name": "Bahrain",
       "count": 5,
+      "directory_count": 6,
       "languages": [
         "ara",
         "eng"
@@ -301,6 +472,7 @@
       "code": "BD",
       "name": "Bangladesh",
       "count": 22,
+      "directory_count": 78,
       "languages": [
         "ben",
         "eng"
@@ -312,6 +484,9 @@
         "family",
         "general",
         "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
         "music",
         "news",
         "religious",
@@ -322,17 +497,23 @@
       "code": "BB",
       "name": "Barbados",
       "count": 1,
+      "directory_count": 13,
       "languages": [
         "eng"
       ],
       "categories": [
-        "general"
+        "entertainment",
+        "general",
+        "legislative",
+        "music",
+        "sports"
       ]
     },
     {
       "code": "BY",
       "name": "Belarus",
       "count": 11,
+      "directory_count": 43,
       "languages": [
         "bel",
         "eng",
@@ -342,6 +523,8 @@
         "culture",
         "entertainment",
         "general",
+        "movies",
+        "music",
         "news",
         "sports"
       ]
@@ -350,6 +533,7 @@
       "code": "BE",
       "name": "Belgium",
       "count": 35,
+      "directory_count": 133,
       "languages": [
         "bos",
         "bul",
@@ -380,61 +564,134 @@
         "sqi",
         "srp",
         "swe",
+        "tur",
         "ukr"
       ],
       "categories": [
+        "animation",
         "business",
+        "cooking",
         "culture",
+        "entertainment",
         "general",
+        "kids",
         "legislative",
+        "lifestyle",
+        "movies",
         "music",
-        "news"
+        "news",
+        "series",
+        "sports"
       ]
     },
     {
       "code": "BZ",
       "name": "Belize",
       "count": 2,
+      "directory_count": 21,
       "languages": [
         "eng",
         "spa"
       ],
       "categories": [
+        "education",
+        "entertainment",
+        "general",
         "music",
-        "religious"
+        "news",
+        "religious",
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "BJ",
       "name": "Benin",
       "count": 8,
+      "directory_count": 66,
       "languages": [
         "ayb",
+        "bba",
+        "ddn",
+        "eng",
         "fon",
-        "fra"
+        "fra",
+        "ful",
+        "gej",
+        "guw",
+        "tbz",
+        "yor"
       ],
       "categories": [
         "business",
+        "culture",
+        "education",
         "general",
-        "news"
+        "kids",
+        "legislative",
+        "lifestyle",
+        "music",
+        "news",
+        "religious",
+        "science"
+      ]
+    },
+    {
+      "code": "BM",
+      "name": "Bermuda",
+      "count": 0,
+      "directory_count": 7,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "legislative",
+        "religious"
+      ]
+    },
+    {
+      "code": "BT",
+      "name": "Bhutan",
+      "count": 0,
+      "directory_count": 3,
+      "languages": [
+        "dzo",
+        "eng"
+      ],
+      "categories": [
+        "education",
+        "entertainment",
+        "general"
       ]
     },
     {
       "code": "BO",
       "name": "Bolivia",
       "count": 43,
+      "directory_count": 237,
       "languages": [
+        "eng",
         "spa"
       ],
       "categories": [
+        "business",
+        "comedy",
         "culture",
         "documentary",
         "education",
         "entertainment",
         "general",
+        "kids",
+        "lifestyle",
+        "movies",
         "music",
         "news",
+        "outdoor",
+        "religious",
         "science",
+        "series",
         "shop",
         "sports",
         "travel"
@@ -444,36 +701,73 @@
       "code": "BA",
       "name": "Bosnia & Herzegovina",
       "count": 12,
+      "directory_count": 105,
       "languages": [
         "bos",
+        "cnr",
+        "eng",
         "hrv",
         "spa",
+        "srb",
         "srp"
       ],
       "categories": [
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "family",
         "general",
         "kids",
+        "music",
         "news",
-        "religious"
+        "religious",
+        "shop",
+        "sports"
+      ]
+    },
+    {
+      "code": "BW",
+      "name": "Botswana",
+      "count": 0,
+      "directory_count": 9,
+      "languages": [
+        "eng",
+        "tsn"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "news",
+        "sports"
       ]
     },
     {
       "code": "BR",
       "name": "Brazil",
       "count": 182,
+      "directory_count": 794,
       "languages": [
+        "arr",
         "eng",
+        "fra",
+        "jpn",
         "kor",
         "por",
         "spa"
       ],
       "categories": [
         "animation",
+        "auto",
         "business",
+        "classic",
         "comedy",
+        "cooking",
         "culture",
+        "documentary",
         "education",
         "entertainment",
+        "family",
         "general",
         "kids",
         "legislative",
@@ -484,15 +778,19 @@
         "outdoor",
         "public",
         "religious",
+        "science",
         "series",
         "shop",
-        "sports"
+        "sports",
+        "travel",
+        "weather"
       ]
     },
     {
       "code": "VG",
       "name": "British Virgin Islands",
       "count": 2,
+      "directory_count": 4,
       "languages": [
         "eng"
       ],
@@ -505,9 +803,16 @@
       "code": "BN",
       "name": "Brunei",
       "count": 2,
+      "directory_count": 4,
       "languages": [
+        "cmn",
         "eng",
-        "msa"
+        "ind",
+        "kor",
+        "msa",
+        "tgl",
+        "tha",
+        "tur"
       ],
       "categories": [
         "general"
@@ -517,16 +822,33 @@
       "code": "BG",
       "name": "Bulgaria",
       "count": 19,
+      "directory_count": 146,
       "languages": [
-        "bul"
+        "bul",
+        "eng",
+        "ukr"
       ],
       "categories": [
+        "auto",
+        "business",
+        "classic",
+        "comedy",
+        "cooking",
+        "culture",
+        "documentary",
         "entertainment",
+        "family",
         "general",
+        "kids",
         "lifestyle",
+        "movies",
         "music",
+        "news",
         "outdoor",
         "religious",
+        "series",
+        "shop",
+        "sports",
         "travel"
       ]
     },
@@ -534,6 +856,7 @@
       "code": "BF",
       "name": "Burkina Faso",
       "count": 5,
+      "directory_count": 38,
       "languages": [
         "bbo",
         "bib",
@@ -552,9 +875,32 @@
         "sym"
       ],
       "categories": [
+        "business",
         "culture",
+        "entertainment",
         "general",
         "news",
+        "outdoor",
+        "religious",
+        "science",
+        "sports"
+      ]
+    },
+    {
+      "code": "BI",
+      "name": "Burundi",
+      "count": 0,
+      "directory_count": 16,
+      "languages": [
+        "eng",
+        "fra",
+        "run",
+        "swa"
+      ],
+      "categories": [
+        "culture",
+        "entertainment",
+        "general",
         "religious"
       ]
     },
@@ -562,6 +908,7 @@
       "code": "KH",
       "name": "Cambodia",
       "count": 19,
+      "directory_count": 44,
       "languages": [
         "eng",
         "khm"
@@ -570,68 +917,113 @@
         "education",
         "entertainment",
         "general",
+        "kids",
+        "legislative",
+        "movies",
+        "music",
         "news",
-        "religious"
+        "outdoor",
+        "religious",
+        "series",
+        "sports"
       ]
     },
     {
       "code": "CM",
       "name": "Cameroon",
       "count": 7,
+      "directory_count": 120,
       "languages": [
         "eng",
         "fra",
-        "fre"
+        "fre",
+        "ful",
+        "hau"
       ],
       "categories": [
+        "animation",
+        "business",
         "culture",
+        "education",
         "entertainment",
         "general",
+        "legislative",
+        "lifestyle",
         "movies",
+        "music",
         "news",
-        "religious"
+        "religious",
+        "sports"
       ]
     },
     {
       "code": "CA",
       "name": "Canada",
       "count": 98,
+      "directory_count": 607,
       "languages": [
+        "ara",
+        "arb",
         "aze",
         "ben",
         "bul",
         "ces",
         "deu",
+        "ell",
         "eng",
         "fas",
         "fra",
+        "guj",
         "hin",
         "hun",
+        "iku",
+        "ind",
+        "ita",
+        "kab",
+        "lat",
         "mal",
+        "mar",
+        "msa",
         "pan",
         "por",
         "prd",
+        "pus",
         "rus",
         "spa",
         "tam",
+        "taq",
+        "tgk",
+        "tgl",
         "tur",
         "urd",
+        "vie",
+        "yue",
         "zho"
       ],
       "categories": [
+        "animation",
+        "auto",
+        "business",
+        "classic",
+        "comedy",
         "cooking",
         "culture",
         "documentary",
         "education",
         "entertainment",
+        "family",
         "general",
+        "interactive",
         "kids",
         "legislative",
+        "lifestyle",
+        "movies",
         "music",
         "news",
         "outdoor",
         "relax",
         "religious",
+        "science",
         "series",
         "shop",
         "sports",
@@ -642,10 +1034,13 @@
       "code": "CV",
       "name": "Cape Verde",
       "count": 1,
+      "directory_count": 11,
       "languages": [
         "por"
       ],
       "categories": [
+        "general",
+        "legislative",
         "music"
       ]
     },
@@ -653,13 +1048,49 @@
       "code": "BQ",
       "name": "Caribbean Netherlands",
       "count": 3,
+      "directory_count": 8,
       "languages": [
         "eng",
         "nld",
-        "pap"
+        "pap",
+        "spa"
       ],
       "categories": [
+        "culture",
         "entertainment",
+        "general",
+        "music",
+        "religious",
+        "travel"
+      ]
+    },
+    {
+      "code": "KY",
+      "name": "Cayman Islands",
+      "count": 0,
+      "directory_count": 6,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "general",
+        "legislative",
+        "lifestyle",
+        "news",
+        "religious",
+        "travel"
+      ]
+    },
+    {
+      "code": "CF",
+      "name": "Central African Republic",
+      "count": 0,
+      "directory_count": 3,
+      "languages": [
+        "fra",
+        "sag"
+      ],
+      "categories": [
         "general"
       ]
     },
@@ -667,30 +1098,133 @@
       "code": "TD",
       "name": "Chad",
       "count": 1,
+      "directory_count": 11,
       "languages": [
         "ara",
         "fra"
       ],
       "categories": [
-        "general"
+        "culture",
+        "entertainment",
+        "general",
+        "news"
       ]
     },
     {
       "code": "CL",
       "name": "Chile",
       "count": 154,
+      "directory_count": 486,
       "languages": [
         "eng",
+        "jpn",
+        "kor",
+        "rap",
         "spa"
       ],
       "categories": [
+        "animation",
         "business",
         "classic",
+        "comedy",
+        "cooking",
         "culture",
         "documentary",
         "education",
         "entertainment",
         "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "science",
+        "series",
+        "sports",
+        "travel",
+        "weather"
+      ]
+    },
+    {
+      "code": "CN",
+      "name": "China",
+      "count": 51,
+      "directory_count": 745,
+      "languages": [
+        "aho",
+        "ara",
+        "bod",
+        "cmn",
+        "eng",
+        "fra",
+        "hau",
+        "hin",
+        "ind",
+        "jpn",
+        "kaz",
+        "mon",
+        "por",
+        "rus",
+        "spa",
+        "swa",
+        "tha",
+        "uig",
+        "yor",
+        "yue",
+        "zho"
+      ],
+      "categories": [
+        "animation",
+        "auto",
+        "business",
+        "classic",
+        "comedy",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "science",
+        "series",
+        "shop",
+        "sports",
+        "travel",
+        "weather"
+      ]
+    },
+    {
+      "code": "CO",
+      "name": "Colombia",
+      "count": 73,
+      "directory_count": 489,
+      "languages": [
+        "eng",
+        "icr",
+        "spa"
+      ],
+      "categories": [
+        "business",
+        "classic",
+        "comedy",
+        "culture",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "legislative",
         "lifestyle",
         "movies",
         "music",
@@ -698,74 +1232,44 @@
         "outdoor",
         "religious",
         "series",
-        "sports",
-        "travel"
+        "sports"
       ]
     },
     {
-      "code": "CN",
-      "name": "China",
-      "count": 51,
+      "code": "KM",
+      "name": "Comoros",
+      "count": 0,
+      "directory_count": 2,
       "languages": [
         "ara",
-        "eng",
-        "fra",
-        "ind",
-        "kaz",
-        "rus",
-        "spa",
-        "zho"
+        "fra"
       ],
       "categories": [
-        "animation",
-        "business",
-        "culture",
-        "documentary",
-        "education",
-        "general",
-        "kids",
-        "lifestyle",
-        "movies",
-        "music",
-        "news",
-        "science",
-        "sports",
-        "travel"
-      ]
-    },
-    {
-      "code": "CO",
-      "name": "Colombia",
-      "count": 73,
-      "languages": [
-        "eng",
-        "icr",
-        "spa"
-      ],
-      "categories": [
-        "culture",
-        "education",
         "entertainment",
-        "family",
-        "general",
-        "kids",
-        "movies",
-        "music",
-        "news",
-        "outdoor",
-        "religious"
+        "general"
       ]
     },
     {
       "code": "CG",
       "name": "Congo - Brazzaville",
       "count": 4,
+      "directory_count": 25,
       "languages": [
-        "fra"
+        "ara",
+        "eng",
+        "fra",
+        "kon",
+        "lin",
+        "mkw"
       ],
       "categories": [
         "culture",
+        "education",
+        "entertainment",
         "general",
+        "kids",
+        "music",
+        "news",
         "religious"
       ]
     },
@@ -773,71 +1277,163 @@
       "code": "CD",
       "name": "Congo - Kinshasa",
       "count": 5,
+      "directory_count": 184,
       "languages": [
         "eng",
         "fra",
-        "spa"
+        "gey",
+        "khy",
+        "kon",
+        "lin",
+        "lua",
+        "mdq",
+        "pof",
+        "spa",
+        "swa"
       ],
       "categories": [
+        "business",
+        "culture",
+        "documentary",
+        "education",
         "entertainment",
         "general",
+        "legislative",
+        "lifestyle",
         "movies",
-        "news",
-        "religious"
-      ]
-    },
-    {
-      "code": "CR",
-      "name": "Costa Rica",
-      "count": 33,
-      "languages": [
-        "eng",
-        "spa"
-      ],
-      "categories": [
-        "classic",
-        "entertainment",
-        "general",
         "music",
+        "news",
         "outdoor",
         "religious",
         "sports"
       ]
     },
     {
+      "code": "CK",
+      "name": "Cook Islands",
+      "count": 0,
+      "directory_count": 5,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "documentary",
+        "general",
+        "music",
+        "sports"
+      ]
+    },
+    {
+      "code": "CR",
+      "name": "Costa Rica",
+      "count": 33,
+      "directory_count": 126,
+      "languages": [
+        "eng",
+        "spa"
+      ],
+      "categories": [
+        "animation",
+        "classic",
+        "culture",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "sports",
+        "travel"
+      ]
+    },
+    {
       "code": "CI",
       "name": "Côte d’Ivoire",
       "count": 7,
+      "directory_count": 68,
       "languages": [
+        "eng",
         "fra"
       ],
       "categories": [
         "business",
+        "culture",
+        "education",
+        "entertainment",
         "general",
-        "religious"
+        "kids",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "series",
+        "sports"
       ]
     },
     {
       "code": "HR",
       "name": "Croatia",
       "count": 5,
+      "directory_count": 92,
       "languages": [
-        "hrv"
+        "bos",
+        "eng",
+        "hrv",
+        "hun",
+        "srp"
       ],
       "categories": [
         "auto",
+        "business",
+        "comedy",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
         "general",
-        "kids"
+        "kids",
+        "legislative",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "series",
+        "shop",
+        "sports"
+      ]
+    },
+    {
+      "code": "CU",
+      "name": "Cuba",
+      "count": 0,
+      "directory_count": 43,
+      "languages": [
+        "spa"
+      ],
+      "categories": [
+        "education",
+        "general",
+        "music",
+        "news",
+        "sports"
       ]
     },
     {
       "code": "CW",
       "name": "Curaçao",
       "count": 4,
+      "directory_count": 7,
       "languages": [
         "eng",
         "nld",
-        "pap"
+        "pap",
+        "spa"
       ],
       "categories": [
         "entertainment",
@@ -849,61 +1445,50 @@
       "code": "CY",
       "name": "Cyprus",
       "count": 13,
+      "directory_count": 58,
       "languages": [
         "ara",
+        "deu",
+        "eli",
         "ell",
         "eng",
         "fas",
+        "rus",
+        "spa",
         "tur"
       ],
       "categories": [
+        "education",
+        "entertainment",
         "general",
         "kids",
-        "religious"
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "shop",
+        "sports"
       ]
     },
     {
       "code": "CZ",
       "name": "Czechia",
       "count": 25,
+      "directory_count": 158,
       "languages": [
         "ces",
+        "cze",
         "eng",
-        "rus"
+        "hun",
+        "ron",
+        "rus",
+        "slk"
       ],
       "categories": [
-        "general",
-        "lifestyle",
-        "music",
-        "news",
-        "sports"
-      ]
-    },
-    {
-      "code": "DK",
-      "name": "Denmark",
-      "count": 7,
-      "languages": [
-        "dan",
-        "eng"
-      ],
-      "categories": [
+        "comedy",
+        "cooking",
         "culture",
-        "general",
-        "kids",
-        "legislative"
-      ]
-    },
-    {
-      "code": "DO",
-      "name": "Dominican Republic",
-      "count": 122,
-      "languages": [
-        "eng",
-        "spa"
-      ],
-      "categories": [
-        "culture",
+        "documentary",
         "entertainment",
         "general",
         "kids",
@@ -911,7 +1496,95 @@
         "movies",
         "music",
         "news",
+        "relax",
         "religious",
+        "shop",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "DK",
+      "name": "Denmark",
+      "count": 7,
+      "directory_count": 77,
+      "languages": [
+        "dan",
+        "dsl",
+        "eng",
+        "fra"
+      ],
+      "categories": [
+        "culture",
+        "documentary",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "music",
+        "news",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "DJ",
+      "name": "Djibouti",
+      "count": 0,
+      "directory_count": 8,
+      "languages": [
+        "aar",
+        "ara",
+        "fra",
+        "som"
+      ],
+      "categories": [
+        "general",
+        "movies"
+      ]
+    },
+    {
+      "code": "DM",
+      "name": "Dominica",
+      "count": 0,
+      "directory_count": 4,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "general",
+        "legislative",
+        "music"
+      ]
+    },
+    {
+      "code": "DO",
+      "name": "Dominican Republic",
+      "count": 122,
+      "directory_count": 341,
+      "languages": [
+        "eng",
+        "fra",
+        "hat",
+        "spa"
+      ],
+      "categories": [
+        "animation",
+        "business",
+        "culture",
+        "documentary",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "shop",
         "sports",
         "travel"
       ]
@@ -920,6 +1593,7 @@
       "code": "EC",
       "name": "Ecuador",
       "count": 41,
+      "directory_count": 216,
       "languages": [
         "spa"
       ],
@@ -931,37 +1605,64 @@
         "legislative",
         "movies",
         "music",
+        "news",
         "religious",
-        "series"
+        "series",
+        "sports"
       ]
     },
     {
       "code": "EG",
       "name": "Egypt",
       "count": 11,
+      "directory_count": 116,
       "languages": [
-        "ara"
+        "ara",
+        "deu",
+        "eng",
+        "fra",
+        "hin",
+        "rus",
+        "spa",
+        "zho"
       ],
       "categories": [
+        "comedy",
+        "cooking",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "family",
         "general",
         "kids",
+        "lifestyle",
         "movies",
         "music",
         "news",
-        "religious"
+        "religious",
+        "series",
+        "sports"
       ]
     },
     {
       "code": "SV",
       "name": "El Salvador",
       "count": 20,
+      "directory_count": 80,
       "languages": [
         "spa"
       ],
       "categories": [
+        "animation",
+        "education",
+        "entertainment",
         "general",
         "legislative",
+        "music",
+        "news",
         "religious",
+        "series",
         "sports"
       ]
     },
@@ -969,17 +1670,25 @@
       "code": "GQ",
       "name": "Equatorial Guinea",
       "count": 1,
+      "directory_count": 10,
       "languages": [
         "spa"
       ],
       "categories": [
-        "entertainment"
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "movies",
+        "music",
+        "series"
       ]
     },
     {
       "code": "ER",
       "name": "Eritrea",
       "count": 1,
+      "directory_count": 2,
       "languages": [
         "ara",
         "eng",
@@ -987,24 +1696,49 @@
         "tir"
       ],
       "categories": [
-        "general"
+        "general",
+        "sports"
       ]
     },
     {
       "code": "EE",
       "name": "Estonia",
       "count": 12,
+      "directory_count": 61,
       "languages": [
         "eng",
         "est",
-        "rus"
+        "kor",
+        "lav",
+        "lit",
+        "rus",
+        "ukr"
       ],
       "categories": [
+        "animation",
         "culture",
+        "education",
         "entertainment",
         "general",
         "kids",
+        "movies",
         "music",
+        "news",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "SZ",
+      "name": "Eswatini",
+      "count": 0,
+      "directory_count": 3,
+      "languages": [
+        "eng",
+        "ssw"
+      ],
+      "categories": [
+        "general",
         "religious"
       ]
     },
@@ -1012,26 +1746,216 @@
       "code": "ET",
       "name": "Ethiopia",
       "count": 3,
+      "directory_count": 107,
       "languages": [
-        "amh"
+        "aar",
+        "amh",
+        "ara",
+        "eng",
+        "fra",
+        "har",
+        "kun",
+        "orm",
+        "som",
+        "ssy",
+        "tir",
+        "wal"
+      ],
+      "categories": [
+        "culture",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "music",
+        "news",
+        "outdoor",
+        "religious"
+      ]
+    },
+    {
+      "code": "FK",
+      "name": "Falkland Islands",
+      "count": 0,
+      "directory_count": 1,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "general"
+      ]
+    },
+    {
+      "code": "FO",
+      "name": "Faroe Islands",
+      "count": 0,
+      "directory_count": 4,
+      "languages": [
+        "dan",
+        "fao"
+      ],
+      "categories": [
+        "general"
+      ]
+    },
+    {
+      "code": "FJ",
+      "name": "Fiji",
+      "count": 0,
+      "directory_count": 9,
+      "languages": [
+        "eng",
+        "fij",
+        "hin"
       ],
       "categories": [
         "general",
-        "news",
-        "religious"
+        "legislative",
+        "music",
+        "religious",
+        "sports"
       ]
     },
     {
       "code": "FI",
       "name": "Finland",
       "count": 17,
+      "directory_count": 63,
       "languages": [
+        "eng",
         "est",
         "fas",
         "fin",
+        "pol",
         "swe"
       ],
       "categories": [
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "FR",
+      "name": "France",
+      "count": 127,
+      "directory_count": 542,
+      "languages": [
+        "ara",
+        "aze",
+        "bul",
+        "cmn",
+        "dan",
+        "deu",
+        "ell",
+        "eng",
+        "eus",
+        "fas",
+        "fin",
+        "fra",
+        "gsw",
+        "hun",
+        "ita",
+        "kab",
+        "kor",
+        "kur",
+        "mya",
+        "nld",
+        "oci",
+        "pol",
+        "por",
+        "prd",
+        "pus",
+        "rom",
+        "rus",
+        "slv",
+        "som",
+        "spa",
+        "srp",
+        "tam",
+        "tur",
+        "ukr"
+      ],
+      "categories": [
+        "animation",
+        "auto",
+        "business",
+        "classic",
+        "comedy",
+        "cooking",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "interactive",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "relax",
+        "religious",
+        "science",
+        "series",
+        "shop",
+        "sports",
+        "weather"
+      ]
+    },
+    {
+      "code": "GF",
+      "name": "French Guiana",
+      "count": 1,
+      "directory_count": 5,
+      "languages": [
+        "fra"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "music"
+      ]
+    },
+    {
+      "code": "PF",
+      "name": "French Polynesia",
+      "count": 1,
+      "directory_count": 4,
+      "languages": [
+        "fra",
+        "tah"
+      ],
+      "categories": [
+        "general",
+        "music"
+      ]
+    },
+    {
+      "code": "GA",
+      "name": "Gabon",
+      "count": 0,
+      "directory_count": 19,
+      "languages": [
+        "eng",
+        "fra"
+      ],
+      "categories": [
+        "culture",
         "entertainment",
         "general",
         "music",
@@ -1040,44 +1964,38 @@
       ]
     },
     {
-      "code": "FR",
-      "name": "France",
-      "count": 127,
+      "code": "GM",
+      "name": "Gambia",
+      "count": 1,
+      "directory_count": 7,
       "languages": [
-        "ara",
-        "bul",
-        "dan",
-        "deu",
-        "ell",
         "eng",
-        "fas",
-        "fin",
-        "fra",
-        "hun",
-        "ita",
-        "kor",
-        "kur",
-        "nld",
-        "pol",
-        "por",
-        "prd",
-        "pus",
-        "rom",
-        "rus",
-        "slv",
-        "spa",
-        "srp",
-        "tur",
-        "ukr"
+        "fuc",
+        "mnk",
+        "wol"
       ],
       "categories": [
-        "animation",
+        "entertainment",
+        "general",
+        "news",
+        "religious"
+      ]
+    },
+    {
+      "code": "GE",
+      "name": "Georgia",
+      "count": 10,
+      "directory_count": 93,
+      "languages": [
+        "abk",
+        "eng",
+        "kat",
+        "rus"
+      ],
+      "categories": [
         "business",
-        "classic",
         "comedy",
-        "cooking",
         "culture",
-        "documentary",
         "education",
         "entertainment",
         "general",
@@ -1087,87 +2005,48 @@
         "movies",
         "music",
         "news",
-        "relax",
+        "outdoor",
         "religious",
-        "series",
-        "sports"
-      ]
-    },
-    {
-      "code": "GF",
-      "name": "French Guiana",
-      "count": 1,
-      "languages": [
-        "fra"
-      ],
-      "categories": [
-        "general"
-      ]
-    },
-    {
-      "code": "PF",
-      "name": "French Polynesia",
-      "count": 1,
-      "languages": [
-        "fra",
-        "tah"
-      ],
-      "categories": [
-        "general"
-      ]
-    },
-    {
-      "code": "GM",
-      "name": "Gambia",
-      "count": 1,
-      "languages": [
-        "eng",
-        "fuc",
-        "mnk",
-        "wol"
-      ],
-      "categories": [
-        "general"
-      ]
-    },
-    {
-      "code": "GE",
-      "name": "Georgia",
-      "count": 10,
-      "languages": [
-        "eng",
-        "kat"
-      ],
-      "categories": [
-        "business",
-        "general",
-        "news",
-        "religious",
-        "sports"
+        "shop",
+        "sports",
+        "weather"
       ]
     },
     {
       "code": "DE",
       "name": "Germany",
       "count": 357,
+      "directory_count": 703,
       "languages": [
         "ara",
+        "aze",
+        "bul",
         "deu",
         "eng",
+        "ewe",
+        "fas",
         "fra",
+        "hrv",
+        "ind",
         "ita",
         "kur",
         "pol",
+        "por",
         "rus",
         "spa",
-        "tur"
+        "sqi",
+        "tha",
+        "tur",
+        "vie"
       ],
       "categories": [
         "animation",
         "auto",
+        "business",
         "classic",
         "comedy",
         "cooking",
+        "culture",
         "documentary",
         "education",
         "entertainment",
@@ -1180,45 +2059,119 @@
         "music",
         "news",
         "outdoor",
+        "relax",
         "religious",
         "science",
         "series",
         "shop",
-        "sports"
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "GH",
       "name": "Ghana",
       "count": 9,
+      "directory_count": 218,
+      "languages": [
+        "afr",
+        "eng",
+        "fra",
+        "hau",
+        "twi"
+      ],
+      "categories": [
+        "culture",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "science",
+        "sports"
+      ]
+    },
+    {
+      "code": "GI",
+      "name": "Gibraltar",
+      "count": 0,
+      "directory_count": 2,
       "languages": [
         "eng"
       ],
       "categories": [
-        "entertainment",
-        "religious"
+        "general",
+        "sports"
       ]
     },
     {
       "code": "GR",
       "name": "Greece",
       "count": 28,
+      "directory_count": 220,
       "languages": [
+        "deu",
         "ell",
+        "eng",
+        "gmy"
+      ],
+      "categories": [
+        "animation",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "series",
+        "shop",
+        "sports"
+      ]
+    },
+    {
+      "code": "GL",
+      "name": "Greenland",
+      "count": 0,
+      "directory_count": 3,
+      "languages": [
+        "dan",
+        "kal"
+      ],
+      "categories": [
+        "general"
+      ]
+    },
+    {
+      "code": "GD",
+      "name": "Grenada",
+      "count": 0,
+      "directory_count": 10,
+      "languages": [
         "eng"
       ],
       "categories": [
-        "culture",
         "entertainment",
         "general",
         "legislative",
-        "news"
+        "music",
+        "religious"
       ]
     },
     {
       "code": "GP",
       "name": "Guadeloupe",
       "count": 3,
+      "directory_count": 12,
       "languages": [
         "fra",
         "gcf"
@@ -1232,78 +2185,36 @@
       "code": "GU",
       "name": "Guam",
       "count": 1,
+      "directory_count": 12,
       "languages": [
         "eng"
       ],
       "categories": [
-        "music"
+        "education",
+        "entertainment",
+        "general",
+        "legislative",
+        "music",
+        "news"
       ]
     },
     {
       "code": "GT",
       "name": "Guatemala",
       "count": 24,
+      "directory_count": 161,
       "languages": [
         "spa",
         "yua"
       ],
       "categories": [
+        "classic",
+        "culture",
         "education",
         "entertainment",
         "general",
-        "news",
-        "religious"
-      ]
-    },
-    {
-      "code": "GN",
-      "name": "Guinea",
-      "count": 1,
-      "languages": [
-        "fra"
-      ],
-      "categories": [
-        "general"
-      ]
-    },
-    {
-      "code": "GY",
-      "name": "Guyana",
-      "count": 4,
-      "languages": [
-        "eng"
-      ],
-      "categories": [
-        "general"
-      ]
-    },
-    {
-      "code": "HT",
-      "name": "Haiti",
-      "count": 9,
-      "languages": [
-        "fra",
-        "hat"
-      ],
-      "categories": [
-        "general",
-        "music",
-        "news",
-        "religious"
-      ]
-    },
-    {
-      "code": "HN",
-      "name": "Honduras",
-      "count": 46,
-      "languages": [
-        "spa"
-      ],
-      "categories": [
-        "education",
-        "entertainment",
-        "family",
-        "general",
+        "legislative",
+        "movies",
         "music",
         "news",
         "religious",
@@ -1311,103 +2222,19 @@
       ]
     },
     {
-      "code": "HK",
-      "name": "Hong Kong SAR China",
-      "count": 8,
+      "code": "GN",
+      "name": "Guinea",
+      "count": 1,
+      "directory_count": 39,
       "languages": [
-        "eng",
-        "ind",
-        "msa",
-        "yue",
-        "zho"
+        "fra"
       ],
       "categories": [
+        "culture",
         "entertainment",
-        "news"
-      ]
-    },
-    {
-      "code": "HU",
-      "name": "Hungary",
-      "count": 28,
-      "languages": [
-        "hun"
-      ],
-      "categories": [
-        "entertainment",
-        "general",
-        "lifestyle",
-        "religious"
-      ]
-    },
-    {
-      "code": "IS",
-      "name": "Iceland",
-      "count": 6,
-      "languages": [
-        "eng",
-        "isl"
-      ],
-      "categories": [
         "general",
         "legislative",
-        "music",
-        "news",
-        "religious"
-      ]
-    },
-    {
-      "code": "ID",
-      "name": "Indonesia",
-      "count": 55,
-      "languages": [
-        "eng",
-        "ind",
-        "jav",
-        "msa",
-        "zho"
-      ],
-      "categories": [
-        "cooking",
-        "culture",
-        "education",
-        "entertainment",
-        "general",
-        "kids",
-        "legislative",
-        "lifestyle",
-        "music",
-        "news",
-        "religious"
-      ]
-    },
-    {
-      "code": "IR",
-      "name": "Iran",
-      "count": 117,
-      "languages": [
-        "ara",
-        "aze",
-        "eng",
-        "far",
-        "fas",
-        "fra",
-        "kmz",
-        "kur",
-        "spa",
-        "tur"
-      ],
-      "categories": [
-        "business",
-        "classic",
-        "culture",
-        "documentary",
-        "entertainment",
-        "family",
-        "general",
-        "kids",
         "movies",
-        "music",
         "news",
         "religious",
         "series",
@@ -1415,22 +2242,287 @@
       ]
     },
     {
-      "code": "IQ",
-      "name": "Iraq",
-      "count": 51,
+      "code": "GW",
+      "name": "Guinea-Bissau",
+      "count": 0,
+      "directory_count": 2,
       "languages": [
-        "acm",
-        "aii",
-        "ara",
+        "por",
+        "pov"
+      ],
+      "categories": [
+        "general",
+        "news"
+      ]
+    },
+    {
+      "code": "GY",
+      "name": "Guyana",
+      "count": 4,
+      "directory_count": 34,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "culture",
+        "education",
+        "entertainment",
+        "general",
+        "legislative",
+        "news",
+        "religious",
+        "science",
+        "sports"
+      ]
+    },
+    {
+      "code": "HT",
+      "name": "Haiti",
+      "count": 9,
+      "directory_count": 53,
+      "languages": [
         "eng",
+        "fra",
+        "hat"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "music",
+        "news",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "HN",
+      "name": "Honduras",
+      "count": 46,
+      "directory_count": 158,
+      "languages": [
+        "eng",
+        "spa"
+      ],
+      "categories": [
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "legislative",
+        "music",
+        "news",
+        "religious",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "HK",
+      "name": "Hong Kong SAR China",
+      "count": 8,
+      "directory_count": 125,
+      "languages": [
+        "cmn",
+        "eng",
+        "ind",
+        "kor",
+        "msa",
+        "tgl",
+        "tha",
+        "yue",
+        "zho"
+      ],
+      "categories": [
+        "animation",
+        "business",
+        "classic",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "shop",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "HU",
+      "name": "Hungary",
+      "count": 28,
+      "directory_count": 185,
+      "languages": [
+        "bul",
+        "ces",
+        "cze",
+        "eng",
+        "hrv",
+        "hun",
+        "pol",
+        "rom",
+        "ron",
+        "srp"
+      ],
+      "categories": [
+        "comedy",
+        "cooking",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "science",
+        "series",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "IS",
+      "name": "Iceland",
+      "count": 6,
+      "directory_count": 25,
+      "languages": [
+        "eng",
+        "isl"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "legislative",
+        "music",
+        "news",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "ID",
+      "name": "Indonesia",
+      "count": 55,
+      "directory_count": 346,
+      "languages": [
+        "ara",
+        "bya",
+        "eng",
+        "gay",
+        "ind",
+        "jav",
+        "kor",
+        "msa",
+        "sun",
+        "zho"
+      ],
+      "categories": [
+        "animation",
+        "business",
+        "cooking",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "interactive",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "series",
+        "shop",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "IR",
+      "name": "Iran",
+      "count": 117,
+      "directory_count": 191,
+      "languages": [
+        "ara",
+        "aze",
+        "bos",
+        "eng",
+        "far",
         "fas",
+        "fra",
+        "hau",
+        "kmz",
         "kur",
+        "pus",
+        "spa",
         "tur",
         "urd"
       ],
       "categories": [
+        "animation",
+        "business",
+        "classic",
         "culture",
         "documentary",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "legislative",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "series",
+        "shop",
+        "sports"
+      ]
+    },
+    {
+      "code": "IQ",
+      "name": "Iraq",
+      "count": 51,
+      "directory_count": 139,
+      "languages": [
+        "acm",
+        "aii",
+        "ara",
+        "aze",
+        "ckb",
+        "eng",
+        "fas",
+        "fra",
+        "hau",
+        "ind",
+        "kmr",
+        "kur",
+        "prs",
+        "pus",
+        "rus",
+        "tha",
+        "tur",
+        "urd"
+      ],
+      "categories": [
+        "business",
+        "culture",
+        "documentary",
+        "education",
         "entertainment",
         "family",
         "general",
@@ -1445,12 +2537,28 @@
       "code": "IE",
       "name": "Ireland",
       "count": 9,
+      "directory_count": 82,
       "languages": [
         "eng",
-        "gle"
+        "gla",
+        "gle",
+        "mal",
+        "msa",
+        "rus"
       ],
       "categories": [
+        "comedy",
+        "cooking",
+        "documentary",
+        "entertainment",
+        "general",
+        "kids",
         "legislative",
+        "lifestyle",
+        "movies",
+        "news",
+        "religious",
+        "series",
         "sports"
       ]
     },
@@ -1458,25 +2566,41 @@
       "code": "IL",
       "name": "Israel",
       "count": 18,
+      "directory_count": 129,
       "languages": [
         "ara",
         "eng",
+        "fas",
         "fra",
         "heb",
-        "rus"
+        "her",
+        "rus",
+        "spa"
       ],
       "categories": [
+        "comedy",
+        "cooking",
+        "documentary",
+        "education",
         "entertainment",
         "general",
+        "kids",
         "legislative",
+        "lifestyle",
+        "movies",
+        "music",
         "news",
-        "religious"
+        "religious",
+        "series",
+        "shop",
+        "sports"
       ]
     },
     {
       "code": "IT",
       "name": "Italy",
       "count": 198,
+      "directory_count": 613,
       "languages": [
         "deu",
         "eng",
@@ -1484,12 +2608,19 @@
         "ita",
         "its",
         "jpn",
-        "slv"
+        "lld",
+        "scn",
+        "slv",
+        "sqi"
       ],
       "categories": [
+        "animation",
+        "auto",
         "business",
+        "comedy",
         "cooking",
         "culture",
+        "documentary",
         "education",
         "entertainment",
         "general",
@@ -1500,24 +2631,36 @@
         "music",
         "news",
         "outdoor",
+        "relax",
         "religious",
+        "science",
         "series",
         "shop",
         "sports",
-        "travel"
+        "travel",
+        "weather"
       ]
     },
     {
       "code": "JM",
       "name": "Jamaica",
       "count": 6,
+      "directory_count": 36,
       "languages": [
-        "eng"
+        "eng",
+        "spa"
       ],
       "categories": [
+        "business",
+        "culture",
+        "education",
+        "entertainment",
         "general",
+        "legislative",
         "music",
+        "news",
         "religious",
+        "sports",
         "travel"
       ]
     },
@@ -1525,17 +2668,41 @@
       "code": "JP",
       "name": "Japan",
       "count": 6,
+      "directory_count": 261,
       "languages": [
         "eng",
         "jpn",
-        "spa"
+        "kor",
+        "por",
+        "spa",
+        "tgl",
+        "zho"
       ],
       "categories": [
+        "animation",
+        "auto",
+        "business",
+        "classic",
+        "comedy",
         "culture",
+        "documentary",
+        "education",
         "entertainment",
+        "family",
         "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
         "news",
+        "outdoor",
+        "religious",
+        "science",
+        "series",
         "shop",
+        "sports",
+        "travel",
         "weather"
       ]
     },
@@ -1543,15 +2710,20 @@
       "code": "JO",
       "name": "Jordan",
       "count": 13,
+      "directory_count": 62,
       "languages": [
         "ara"
       ],
       "categories": [
         "comedy",
         "cooking",
+        "education",
         "general",
+        "kids",
         "music",
         "news",
+        "religious",
+        "series",
         "sports"
       ]
     },
@@ -1559,17 +2731,25 @@
       "code": "KZ",
       "name": "Kazakhstan",
       "count": 29,
+      "directory_count": 87,
       "languages": [
         "eng",
         "kaz",
         "rus"
       ],
       "categories": [
+        "animation",
+        "business",
         "culture",
         "entertainment",
         "general",
         "kids",
+        "legislative",
         "movies",
+        "music",
+        "news",
+        "religious",
+        "series",
         "sports"
       ]
     },
@@ -1577,40 +2757,81 @@
       "code": "KE",
       "name": "Kenya",
       "count": 5,
+      "directory_count": 161,
       "languages": [
+        "ara",
         "eng",
-        "swa"
+        "kam",
+        "kik",
+        "luo",
+        "som",
+        "swa",
+        "swh",
+        "xki"
       ],
       "categories": [
+        "business",
+        "culture",
+        "education",
+        "entertainment",
+        "family",
         "general",
         "kids",
+        "legislative",
+        "movies",
+        "music",
+        "news",
         "religious"
+      ]
+    },
+    {
+      "code": "KI",
+      "name": "Kiribati",
+      "count": 0,
+      "directory_count": 2,
+      "languages": [
+        "eng",
+        "gil"
+      ],
+      "categories": [
+        "general"
       ]
     },
     {
       "code": "XK",
       "name": "Kosovo",
       "count": 9,
+      "directory_count": 72,
       "languages": [
         "sqi",
         "srp"
       ],
       "categories": [
+        "documentary",
+        "entertainment",
+        "general",
         "kids",
+        "movies",
         "music",
-        "news"
+        "news",
+        "religious",
+        "series",
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "KW",
       "name": "Kuwait",
       "count": 10,
+      "directory_count": 26,
       "languages": [
         "ara",
         "eng"
       ],
       "categories": [
         "culture",
+        "entertainment",
         "general",
         "music",
         "news",
@@ -1622,14 +2843,24 @@
       "code": "KG",
       "name": "Kyrgyzstan",
       "count": 3,
+      "directory_count": 28,
       "languages": [
         "eng",
         "kir",
-        "rus"
+        "rus",
+        "tur"
       ],
       "categories": [
+        "culture",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "movies",
         "music",
         "news",
+        "science",
         "sports"
       ]
     },
@@ -1637,37 +2868,52 @@
       "code": "LA",
       "name": "Laos",
       "count": 9,
+      "directory_count": 26,
       "languages": [
         "lao",
+        "tha",
         "vie"
       ],
       "categories": [
+        "culture",
+        "education",
         "entertainment",
         "general",
         "music",
         "news",
-        "shop"
+        "shop",
+        "sports"
       ]
     },
     {
       "code": "LV",
       "name": "Latvia",
       "count": 8,
+      "directory_count": 39,
       "languages": [
-        "lav"
+        "eng",
+        "lat",
+        "lav",
+        "rus"
       ],
       "categories": [
         "animation",
+        "classic",
         "entertainment",
         "general",
         "kids",
-        "music"
+        "lifestyle",
+        "movies",
+        "music",
+        "religious",
+        "sports"
       ]
     },
     {
       "code": "LB",
       "name": "Lebanon",
       "count": 24,
+      "directory_count": 48,
       "languages": [
         "ara",
         "eng",
@@ -1675,39 +2921,102 @@
         "hye"
       ],
       "categories": [
+        "animation",
+        "entertainment",
         "general",
         "kids",
         "music",
         "news",
-        "religious"
+        "religious",
+        "shop"
+      ]
+    },
+    {
+      "code": "LS",
+      "name": "Lesotho",
+      "count": 0,
+      "directory_count": 1,
+      "languages": [
+        "eng",
+        "sot"
+      ],
+      "categories": [
+        "general"
+      ]
+    },
+    {
+      "code": "LR",
+      "name": "Liberia",
+      "count": 0,
+      "directory_count": 20,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "music",
+        "news",
+        "religious",
+        "sports"
       ]
     },
     {
       "code": "LY",
       "name": "Libya",
       "count": 3,
+      "directory_count": 26,
       "languages": [
         "ara"
       ],
       "categories": [
+        "education",
+        "entertainment",
         "general",
-        "news"
+        "kids",
+        "news",
+        "shop",
+        "sports"
+      ]
+    },
+    {
+      "code": "LI",
+      "name": "Liechtenstein",
+      "count": 0,
+      "directory_count": 5,
+      "languages": [
+        "deu",
+        "eng"
+      ],
+      "categories": [
+        "culture",
+        "general",
+        "legislative",
+        "shop"
       ]
     },
     {
       "code": "LT",
       "name": "Lithuania",
       "count": 10,
+      "directory_count": 44,
       "languages": [
+        "eng",
         "est",
-        "lit"
+        "lav",
+        "lit",
+        "rus"
       ],
       "categories": [
+        "animation",
         "culture",
         "entertainment",
         "general",
+        "kids",
+        "legislative",
         "music",
         "news",
+        "shop",
         "sports"
       ]
     },
@@ -1715,25 +3024,32 @@
       "code": "LU",
       "name": "Luxembourg",
       "count": 9,
+      "directory_count": 23,
       "languages": [
         "deu",
         "eng",
         "fra",
-        "ltz"
+        "hun",
+        "ltz",
+        "rus",
+        "zho"
       ],
       "categories": [
         "business",
         "culture",
         "entertainment",
         "general",
+        "legislative",
         "lifestyle",
-        "music"
+        "music",
+        "sports"
       ]
     },
     {
       "code": "MO",
       "name": "Macao SAR China",
       "count": 7,
+      "directory_count": 15,
       "languages": [
         "eng",
         "por",
@@ -1748,22 +3064,89 @@
       ]
     },
     {
+      "code": "MG",
+      "name": "Madagascar",
+      "count": 0,
+      "directory_count": 49,
+      "languages": [
+        "eng",
+        "fra",
+        "mlg"
+      ],
+      "categories": [
+        "business",
+        "culture",
+        "entertainment",
+        "general",
+        "movies",
+        "news",
+        "religious",
+        "series",
+        "sports"
+      ]
+    },
+    {
+      "code": "MW",
+      "name": "Malawi",
+      "count": 0,
+      "directory_count": 18,
+      "languages": [
+        "eng",
+        "nya",
+        "tum"
+      ],
+      "categories": [
+        "culture",
+        "education",
+        "entertainment",
+        "general",
+        "music",
+        "religious",
+        "sports"
+      ]
+    },
+    {
       "code": "MY",
       "name": "Malaysia",
       "count": 2,
+      "directory_count": 93,
       "languages": [
+        "eng",
         "fas",
-        "msa"
+        "hin",
+        "ind",
+        "mal",
+        "msa",
+        "pan",
+        "tam",
+        "vie",
+        "yue",
+        "zho"
       ],
       "categories": [
+        "business",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
         "general",
-        "movies"
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "series",
+        "shop",
+        "sports"
       ]
     },
     {
       "code": "MV",
       "name": "Maldives",
       "count": 10,
+      "directory_count": 25,
       "languages": [
         "div",
         "eng"
@@ -1772,6 +3155,7 @@
         "culture",
         "entertainment",
         "general",
+        "legislative",
         "news",
         "religious",
         "sports",
@@ -1782,36 +3166,59 @@
       "code": "ML",
       "name": "Mali",
       "count": 2,
+      "directory_count": 48,
       "languages": [
         "bam",
-        "fra"
+        "fra",
+        "fre",
+        "ful",
+        "man",
+        "snk"
       ],
       "categories": [
+        "culture",
+        "education",
         "entertainment",
-        "general"
+        "general",
+        "news",
+        "religious",
+        "series"
       ]
     },
     {
       "code": "MT",
       "name": "Malta",
       "count": 2,
+      "directory_count": 24,
       "languages": [
         "eng",
         "mlt"
       ],
       "categories": [
         "culture",
-        "general"
+        "documentary",
+        "entertainment",
+        "general",
+        "legislative",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "series",
+        "shop",
+        "sports"
       ]
     },
     {
       "code": "MQ",
       "name": "Martinique",
       "count": 4,
+      "directory_count": 15,
       "languages": [
         "fra"
       ],
       "categories": [
+        "entertainment",
         "family",
         "general",
         "music",
@@ -1819,16 +3226,135 @@
       ]
     },
     {
+      "code": "MR",
+      "name": "Mauritania",
+      "count": 0,
+      "directory_count": 16,
+      "languages": [
+        "ara",
+        "fra",
+        "fuf",
+        "snk",
+        "wol"
+      ],
+      "categories": [
+        "culture",
+        "family",
+        "general",
+        "legislative",
+        "movies",
+        "news",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "MU",
+      "name": "Mauritius",
+      "count": 0,
+      "directory_count": 13,
+      "languages": [
+        "bho",
+        "cmn",
+        "eng",
+        "fra",
+        "hin",
+        "mar",
+        "mfe",
+        "tel",
+        "urd"
+      ],
+      "categories": [
+        "culture",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "movies",
+        "sports"
+      ]
+    },
+    {
+      "code": "YT",
+      "name": "Mayotte",
+      "count": 0,
+      "directory_count": 6,
+      "languages": [
+        "eng",
+        "fra",
+        "mlg",
+        "swb"
+      ],
+      "categories": [
+        "culture",
+        "general",
+        "music"
+      ]
+    },
+    {
       "code": "MX",
       "name": "Mexico",
       "count": 107,
+      "directory_count": 510,
       "languages": [
+        "eng",
+        "por",
         "spa"
       ],
       "categories": [
         "animation",
+        "auto",
+        "business",
+        "classic",
+        "comedy",
         "culture",
+        "documentary",
         "education",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "public",
+        "religious",
+        "science",
+        "series",
+        "shop",
+        "sports",
+        "travel",
+        "weather"
+      ]
+    },
+    {
+      "code": "FM",
+      "name": "Micronesia",
+      "count": 0,
+      "directory_count": 2,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "general",
+        "legislative"
+      ]
+    },
+    {
+      "code": "MD",
+      "name": "Moldova",
+      "count": 15,
+      "directory_count": 62,
+      "languages": [
+        "eng",
+        "gag",
+        "ron",
+        "rus",
+        "ukr"
+      ],
+      "categories": [
+        "documentary",
         "entertainment",
         "general",
         "kids",
@@ -1836,38 +3362,25 @@
         "movies",
         "music",
         "news",
-        "public",
-        "religious",
-        "sports",
-        "travel",
-        "weather"
-      ]
-    },
-    {
-      "code": "MD",
-      "name": "Moldova",
-      "count": 15,
-      "languages": [
-        "ron",
-        "rus"
-      ],
-      "categories": [
-        "general",
-        "legislative",
-        "music",
-        "news"
+        "outdoor",
+        "sports"
       ]
     },
     {
       "code": "MC",
       "name": "Monaco",
       "count": 3,
+      "directory_count": 5,
       "languages": [
         "eng",
-        "fra"
+        "fra",
+        "ita"
       ],
       "categories": [
+        "education",
+        "entertainment",
         "general",
+        "kids",
         "lifestyle",
         "news"
       ]
@@ -1876,13 +3389,28 @@
       "code": "MN",
       "name": "Mongolia",
       "count": 5,
+      "directory_count": 130,
       "languages": [
         "eng",
         "mon"
       ],
       "categories": [
+        "business",
+        "classic",
+        "culture",
+        "documentary",
+        "education",
         "entertainment",
+        "family",
         "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "shop",
         "sports"
       ]
     },
@@ -1890,11 +3418,30 @@
       "code": "ME",
       "name": "Montenegro",
       "count": 6,
+      "directory_count": 32,
       "languages": [
+        "cnr",
+        "mne",
+        "sqi",
         "srp"
       ],
       "categories": [
         "general",
+        "legislative",
+        "news",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "MS",
+      "name": "Montserrat",
+      "count": 0,
+      "directory_count": 1,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
         "legislative"
       ]
     },
@@ -1902,6 +3449,7 @@
       "code": "MA",
       "name": "Morocco",
       "count": 6,
+      "directory_count": 30,
       "languages": [
         "ara",
         "asp",
@@ -1911,28 +3459,39 @@
         "rif",
         "shi",
         "shy",
+        "spa",
         "taq",
         "tzm",
         "xms"
       ],
       "categories": [
         "culture",
+        "education",
+        "entertainment",
         "general",
-        "news"
+        "movies",
+        "news",
+        "religious",
+        "sports"
       ]
     },
     {
       "code": "MZ",
       "name": "Mozambique",
       "count": 5,
+      "directory_count": 51,
       "languages": [
         "por"
       ],
       "categories": [
         "business",
+        "culture",
+        "education",
         "entertainment",
         "general",
         "kids",
+        "movies",
+        "news",
         "religious"
       ]
     },
@@ -1940,18 +3499,28 @@
       "code": "MM",
       "name": "Myanmar (Burma)",
       "count": 13,
+      "directory_count": 66,
       "languages": [
         "eng",
         "mya"
       ],
       "categories": [
+        "animation",
+        "business",
         "culture",
         "documentary",
+        "education",
         "entertainment",
         "general",
+        "kids",
         "legislative",
         "lifestyle",
+        "movies",
+        "music",
         "news",
+        "religious",
+        "series",
+        "shop",
         "sports"
       ]
     },
@@ -1959,97 +3528,125 @@
       "code": "NA",
       "name": "Namibia",
       "count": 2,
+      "directory_count": 13,
       "languages": [
         "afr",
         "deu",
         "eng"
       ],
       "categories": [
+        "culture",
+        "entertainment",
         "general",
-        "music"
+        "music",
+        "news",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "NR",
+      "name": "Nauru",
+      "count": 0,
+      "directory_count": 1,
+      "languages": [
+        "eng",
+        "nau"
+      ],
+      "categories": [
+        "general"
       ]
     },
     {
       "code": "NP",
       "name": "Nepal",
       "count": 3,
+      "directory_count": 118,
       "languages": [
+        "bho",
+        "dhw",
         "eng",
+        "hin",
         "mai",
-        "nep"
+        "nep",
+        "thr"
       ],
       "categories": [
+        "business",
+        "comedy",
+        "culture",
+        "education",
         "entertainment",
         "general",
-        "religious"
+        "kids",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "sports"
       ]
     },
     {
       "code": "NL",
       "name": "Netherlands",
       "count": 126,
+      "directory_count": 339,
       "languages": [
+        "cze",
         "deu",
+        "dut",
         "eng",
         "fry",
+        "ger",
+        "hrv",
+        "hun",
         "kur",
         "nld",
+        "pan",
+        "pap",
         "pol",
-        "rus"
+        "rus",
+        "slk",
+        "slv",
+        "srp",
+        "urd"
       ],
       "categories": [
         "auto",
+        "business",
         "classic",
+        "comedy",
         "culture",
         "documentary",
         "entertainment",
+        "family",
         "general",
+        "kids",
         "legislative",
         "lifestyle",
+        "movies",
         "music",
+        "news",
         "outdoor",
+        "public",
+        "relax",
+        "religious",
         "science",
+        "series",
+        "shop",
         "sports",
         "travel"
       ]
     },
     {
-      "code": "NZ",
-      "name": "New Zealand",
-      "count": 11,
+      "code": "NC",
+      "name": "New Caledonia",
+      "count": 0,
+      "directory_count": 4,
       "languages": [
-        "eng",
-        "mri"
-      ],
-      "categories": [
-        "entertainment",
-        "general",
-        "legislative",
-        "music",
-        "religious"
-      ]
-    },
-    {
-      "code": "NI",
-      "name": "Nicaragua",
-      "count": 7,
-      "languages": [
-        "spa"
-      ],
-      "categories": [
-        "general",
-        "religious"
-      ]
-    },
-    {
-      "code": "NE",
-      "name": "Niger",
-      "count": 4,
-      "languages": [
-        "dje",
-        "fra",
-        "hau",
-        "tmh"
+        "fra"
       ],
       "categories": [
         "entertainment",
@@ -2057,35 +3654,144 @@
       ]
     },
     {
-      "code": "NG",
-      "name": "Nigeria",
-      "count": 46,
+      "code": "NZ",
+      "name": "New Zealand",
+      "count": 11,
+      "directory_count": 72,
       "languages": [
-        "ara",
+        "cmn",
         "eng",
-        "fas",
-        "hau",
-        "yor"
+        "hin",
+        "jpn",
+        "kor",
+        "mri",
+        "yue"
       ],
       "categories": [
+        "comedy",
         "culture",
+        "documentary",
+        "education",
         "entertainment",
         "general",
+        "legislative",
+        "lifestyle",
         "movies",
         "music",
         "news",
-        "religious"
+        "outdoor",
+        "religious",
+        "shop",
+        "sports"
+      ]
+    },
+    {
+      "code": "NI",
+      "name": "Nicaragua",
+      "count": 7,
+      "directory_count": 114,
+      "languages": [
+        "spa"
+      ],
+      "categories": [
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "music",
+        "news",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "NE",
+      "name": "Niger",
+      "count": 4,
+      "directory_count": 19,
+      "languages": [
+        "ara",
+        "dje",
+        "fra",
+        "fuh",
+        "hau",
+        "tmh"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "music",
+        "news",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "NG",
+      "name": "Nigeria",
+      "count": 46,
+      "directory_count": 302,
+      "languages": [
+        "afr",
+        "ara",
+        "eng",
+        "fas",
+        "fra",
+        "hau",
+        "heb",
+        "ibo",
+        "ita",
+        "nup",
+        "yor"
+      ],
+      "categories": [
+        "animation",
+        "business",
+        "cooking",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "series",
+        "shop",
+        "sports"
+      ]
+    },
+    {
+      "code": "NU",
+      "name": "Niue",
+      "count": 0,
+      "directory_count": 1,
+      "languages": [
+        "eng",
+        "niu"
+      ],
+      "categories": [
+        "general"
       ]
     },
     {
       "code": "KP",
       "name": "North Korea",
       "count": 3,
+      "directory_count": 4,
       "languages": [
         "kor"
       ],
       "categories": [
         "education",
+        "entertainment",
         "general",
         "sports"
       ]
@@ -2094,7 +3800,9 @@
       "code": "MK",
       "name": "North Macedonia",
       "count": 21,
+      "directory_count": 69,
       "languages": [
+        "mak",
         "mkd",
         "sqi"
       ],
@@ -2102,6 +3810,7 @@
         "culture",
         "entertainment",
         "general",
+        "kids",
         "legislative",
         "music",
         "news",
@@ -2109,24 +3818,52 @@
       ]
     },
     {
+      "code": "MP",
+      "name": "Northern Mariana Islands",
+      "count": 0,
+      "directory_count": 3,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "general",
+        "legislative",
+        "travel"
+      ]
+    },
+    {
       "code": "NO",
       "name": "Norway",
       "count": 8,
+      "directory_count": 72,
       "languages": [
+        "deu",
         "eng",
-        "nor"
+        "nob",
+        "nor",
+        "som"
       ],
       "categories": [
         "auto",
+        "business",
+        "cooking",
+        "documentary",
+        "education",
         "entertainment",
         "general",
-        "kids"
+        "kids",
+        "legislative",
+        "lifestyle",
+        "outdoor",
+        "religious",
+        "sports"
       ]
     },
     {
       "code": "OM",
       "name": "Oman",
       "count": 5,
+      "directory_count": 6,
       "languages": [
         "ara",
         "eng"
@@ -2143,73 +3880,65 @@
       "code": "PK",
       "name": "Pakistan",
       "count": 28,
+      "directory_count": 201,
       "languages": [
+        "ara",
         "eng",
+        "hin",
+        "lah",
+        "mai",
+        "nep",
         "pan",
-        "urd"
+        "pus",
+        "snd",
+        "tgl",
+        "urd",
+        "zho"
       ],
       "categories": [
+        "animation",
+        "cooking",
         "culture",
+        "education",
         "entertainment",
+        "family",
         "general",
+        "kids",
+        "lifestyle",
         "movies",
         "music",
         "news",
         "religious",
+        "shop",
         "sports",
         "travel"
       ]
     },
     {
-      "code": "PS",
-      "name": "Palestinian Territories",
-      "count": 7,
-      "languages": [
-        "ara"
-      ],
-      "categories": [
-        "education",
-        "general",
-        "music",
-        "news"
-      ]
-    },
-    {
-      "code": "PA",
-      "name": "Panama",
-      "count": 13,
-      "languages": [
-        "spa"
-      ],
-      "categories": [
-        "entertainment",
-        "general",
-        "music",
-        "religious"
-      ]
-    },
-    {
-      "code": "PG",
-      "name": "Papua New Guinea",
-      "count": 1,
+      "code": "PW",
+      "name": "Palau",
+      "count": 0,
+      "directory_count": 3,
       "languages": [
         "eng",
-        "hmo",
-        "tpi"
+        "pau"
       ],
       "categories": [
         "general"
       ]
     },
     {
-      "code": "PY",
-      "name": "Paraguay",
-      "count": 20,
+      "code": "PS",
+      "name": "Palestinian Territories",
+      "count": 7,
+      "directory_count": 39,
       "languages": [
-        "gug",
-        "spa"
+        "ara",
+        "eng",
+        "heb"
       ],
       "categories": [
+        "education",
         "entertainment",
         "general",
         "music",
@@ -2219,13 +3948,16 @@
       ]
     },
     {
-      "code": "PE",
-      "name": "Peru",
-      "count": 120,
+      "code": "PA",
+      "name": "Panama",
+      "count": 13,
+      "directory_count": 62,
       "languages": [
         "spa"
       ],
       "categories": [
+        "animation",
+        "classic",
         "culture",
         "entertainment",
         "general",
@@ -2233,9 +3965,83 @@
         "legislative",
         "music",
         "news",
+        "religious",
+        "science",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "PG",
+      "name": "Papua New Guinea",
+      "count": 1,
+      "directory_count": 12,
+      "languages": [
+        "eng",
+        "hmo",
+        "tpi"
+      ],
+      "categories": [
+        "general",
+        "movies",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "PY",
+      "name": "Paraguay",
+      "count": 20,
+      "directory_count": 160,
+      "languages": [
+        "grn",
+        "gug",
+        "por",
+        "spa",
+        "ssp"
+      ],
+      "categories": [
+        "auto",
+        "business",
+        "education",
+        "entertainment",
+        "general",
+        "legislative",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "science",
+        "sports"
+      ]
+    },
+    {
+      "code": "PE",
+      "name": "Peru",
+      "count": 120,
+      "directory_count": 415,
+      "languages": [
+        "aym",
+        "que",
+        "spa"
+      ],
+      "categories": [
+        "business",
+        "culture",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "legislative",
+        "movies",
+        "music",
+        "news",
         "outdoor",
         "religious",
         "series",
+        "shop",
         "sports"
       ]
     },
@@ -2243,16 +4049,36 @@
       "code": "PH",
       "name": "Philippines",
       "count": 10,
+      "directory_count": 128,
       "languages": [
         "ceb",
         "eng",
         "fil",
-        "tgl"
+        "kor",
+        "pam",
+        "por",
+        "spa",
+        "tag",
+        "tgl",
+        "war"
       ],
       "categories": [
+        "animation",
+        "classic",
+        "documentary",
+        "education",
+        "entertainment",
+        "family",
         "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
         "news",
         "religious",
+        "series",
+        "shop",
         "sports",
         "travel"
       ]
@@ -2261,39 +4087,56 @@
       "code": "PL",
       "name": "Poland",
       "count": 52,
+      "directory_count": 351,
       "languages": [
+        "bel",
         "bul",
         "cze",
+        "ell",
         "eng",
         "hun",
         "nld",
         "pol",
         "ron",
-        "rus"
+        "rus",
+        "spa",
+        "tur",
+        "ukr"
       ],
       "categories": [
         "animation",
         "auto",
         "business",
+        "comedy",
+        "cooking",
+        "culture",
         "documentary",
+        "education",
         "entertainment",
+        "family",
         "general",
         "kids",
+        "legislative",
+        "lifestyle",
         "movies",
         "music",
         "news",
         "religious",
+        "series",
         "shop",
-        "sports"
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "PT",
       "name": "Portugal",
       "count": 30,
+      "directory_count": 139,
       "languages": [
         "eng",
         "fra",
+        "hin",
         "por",
         "rus",
         "slk",
@@ -2301,72 +4144,14 @@
       ],
       "categories": [
         "animation",
+        "comedy",
+        "cooking",
+        "culture",
+        "documentary",
         "entertainment",
         "general",
         "kids",
         "legislative",
-        "movies",
-        "music",
-        "news",
-        "religious",
-        "series",
-        "sports"
-      ]
-    },
-    {
-      "code": "PR",
-      "name": "Puerto Rico",
-      "count": 15,
-      "languages": [
-        "eng",
-        "spa"
-      ],
-      "categories": [
-        "business",
-        "entertainment",
-        "general",
-        "music",
-        "news",
-        "religious"
-      ]
-    },
-    {
-      "code": "QA",
-      "name": "Qatar",
-      "count": 15,
-      "languages": [
-        "ara",
-        "eng"
-      ],
-      "categories": [
-        "business",
-        "documentary",
-        "general",
-        "news",
-        "religious"
-      ]
-    },
-    {
-      "code": "RO",
-      "name": "Romania",
-      "count": 104,
-      "languages": [
-        "eng",
-        "hin",
-        "rom",
-        "ron",
-        "rus"
-      ],
-      "categories": [
-        "business",
-        "classic",
-        "comedy",
-        "cooking",
-        "culture",
-        "education",
-        "entertainment",
-        "general",
-        "kids",
         "lifestyle",
         "movies",
         "music",
@@ -2378,25 +4163,300 @@
       ]
     },
     {
+      "code": "PR",
+      "name": "Puerto Rico",
+      "count": 15,
+      "directory_count": 70,
+      "languages": [
+        "eng",
+        "spa"
+      ],
+      "categories": [
+        "business",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "music",
+        "news",
+        "religious",
+        "shop",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "QA",
+      "name": "Qatar",
+      "count": 15,
+      "directory_count": 86,
+      "languages": [
+        "ara",
+        "eng",
+        "fra",
+        "msa",
+        "spa",
+        "tur"
+      ],
+      "categories": [
+        "animation",
+        "business",
+        "cooking",
+        "documentary",
+        "general",
+        "kids",
+        "movies",
+        "news",
+        "religious",
+        "series",
+        "sports"
+      ]
+    },
+    {
+      "code": "RE",
+      "name": "Réunion",
+      "count": 0,
+      "directory_count": 11,
+      "languages": [
+        "fra",
+        "rcf"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "music"
+      ]
+    },
+    {
+      "code": "RO",
+      "name": "Romania",
+      "count": 104,
+      "directory_count": 228,
+      "languages": [
+        "eng",
+        "hin",
+        "hun",
+        "rom",
+        "ron",
+        "rus"
+      ],
+      "categories": [
+        "animation",
+        "business",
+        "classic",
+        "comedy",
+        "cooking",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "series",
+        "shop",
+        "sports",
+        "travel",
+        "weather"
+      ]
+    },
+    {
       "code": "RU",
       "name": "Russia",
       "count": 247,
+      "directory_count": 782,
       "languages": [
         "ara",
         "bak",
         "bel",
         "eng",
+        "fra",
         "hin",
         "kaz",
         "rus",
         "sah",
         "spa",
         "tat",
-        "ukr"
+        "tur",
+        "ukr",
+        "zho"
       ],
       "categories": [
         "animation",
         "auto",
+        "business",
+        "classic",
+        "comedy",
+        "cooking",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "relax",
+        "religious",
+        "science",
+        "series",
+        "shop",
+        "sports",
+        "travel",
+        "xxx"
+      ]
+    },
+    {
+      "code": "RW",
+      "name": "Rwanda",
+      "count": 5,
+      "directory_count": 24,
+      "languages": [
+        "eng",
+        "fra",
+        "kin"
+      ],
+      "categories": [
+        "business",
+        "culture",
+        "entertainment",
+        "general",
+        "music",
+        "religious",
+        "science",
+        "sports"
+      ]
+    },
+    {
+      "code": "WS",
+      "name": "Samoa",
+      "count": 1,
+      "directory_count": 9,
+      "languages": [
+        "eng",
+        "smo"
+      ],
+      "categories": [
+        "education",
+        "entertainment",
+        "general",
+        "religious"
+      ]
+    },
+    {
+      "code": "SM",
+      "name": "San Marino",
+      "count": 2,
+      "directory_count": 2,
+      "languages": [
+        "ita"
+      ],
+      "categories": [
+        "sports"
+      ]
+    },
+    {
+      "code": "ST",
+      "name": "São Tomé & Príncipe",
+      "count": 0,
+      "directory_count": 1,
+      "languages": [
+        "por"
+      ],
+      "categories": [
+        "general"
+      ]
+    },
+    {
+      "code": "SA",
+      "name": "Saudi Arabia",
+      "count": 45,
+      "directory_count": 164,
+      "languages": [
+        "afb",
+        "ara",
+        "arz",
+        "eng",
+        "fra",
+        "jpn"
+      ],
+      "categories": [
+        "animation",
+        "business",
+        "classic",
+        "comedy",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "series",
+        "sports"
+      ]
+    },
+    {
+      "code": "SN",
+      "name": "Senegal",
+      "count": 11,
+      "directory_count": 101,
+      "languages": [
+        "ara",
+        "eng",
+        "fra",
+        "fuc",
+        "man",
+        "por",
+        "snk",
+        "wol"
+      ],
+      "categories": [
+        "business",
+        "culture",
+        "education",
+        "entertainment",
+        "general",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "series",
+        "sports"
+      ]
+    },
+    {
+      "code": "RS",
+      "name": "Serbia",
+      "count": 30,
+      "directory_count": 354,
+      "languages": [
+        "bos",
+        "eng",
+        "hrv",
+        "mkd",
+        "slv",
+        "sqi",
+        "srp",
+        "swe"
+      ],
+      "categories": [
         "business",
         "classic",
         "comedy",
@@ -2413,113 +4473,40 @@
         "music",
         "news",
         "outdoor",
-        "religious",
+        "science",
         "series",
         "shop",
-        "sports",
-        "travel"
+        "sports"
       ]
     },
     {
-      "code": "RW",
-      "name": "Rwanda",
-      "count": 5,
+      "code": "SC",
+      "name": "Seychelles",
+      "count": 0,
+      "directory_count": 6,
       "languages": [
+        "crs",
         "eng",
         "fra",
-        "kin"
+        "hin"
       ],
       "categories": [
         "entertainment",
-        "general"
-      ]
-    },
-    {
-      "code": "WS",
-      "name": "Samoa",
-      "count": 1,
-      "languages": [
-        "eng",
-        "smo"
-      ],
-      "categories": [
-        "general"
-      ]
-    },
-    {
-      "code": "SM",
-      "name": "San Marino",
-      "count": 2,
-      "languages": [
-        "ita"
-      ],
-      "categories": [
-        "sports"
-      ]
-    },
-    {
-      "code": "SA",
-      "name": "Saudi Arabia",
-      "count": 45,
-      "languages": [
-        "ara",
-        "arz",
-        "eng",
-        "fra"
-      ],
-      "categories": [
-        "business",
-        "classic",
-        "culture",
-        "documentary",
-        "education",
         "general",
-        "kids",
-        "movies",
-        "music",
-        "news",
-        "religious",
-        "series"
-      ]
-    },
-    {
-      "code": "SN",
-      "name": "Senegal",
-      "count": 11,
-      "languages": [
-        "fra",
-        "wol"
-      ],
-      "categories": [
-        "culture",
-        "education",
-        "general",
-        "music",
-        "religious"
-      ]
-    },
-    {
-      "code": "RS",
-      "name": "Serbia",
-      "count": 30,
-      "languages": [
-        "sqi",
-        "srp"
-      ],
-      "categories": [
-        "music",
-        "series",
-        "sports"
+        "music"
       ]
     },
     {
       "code": "SL",
       "name": "Sierra Leone",
       "count": 1,
+      "directory_count": 16,
       "languages": [
         "eng"
       ],
       "categories": [
+        "entertainment",
+        "general",
         "religious"
       ]
     },
@@ -2527,29 +4514,51 @@
       "code": "SG",
       "name": "Singapore",
       "count": 11,
+      "directory_count": 84,
       "languages": [
+        "cmn",
         "eng",
         "fil",
+        "hin",
         "ind",
         "jpn",
+        "kor",
+        "mai",
+        "mal",
+        "mon",
         "msa",
+        "nep",
+        "tam",
         "tha",
+        "vie",
         "yue",
         "zho"
       ],
       "categories": [
         "animation",
+        "business",
+        "cooking",
+        "culture",
         "documentary",
         "entertainment",
+        "family",
+        "general",
         "kids",
+        "lifestyle",
         "movies",
-        "news"
+        "news",
+        "religious",
+        "science",
+        "series",
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "SX",
       "name": "Sint Maarten",
       "count": 6,
+      "directory_count": 14,
       "languages": [
         "eng",
         "fra",
@@ -2558,6 +4567,7 @@
       ],
       "categories": [
         "entertainment",
+        "general",
         "kids",
         "movies",
         "music",
@@ -2568,7 +4578,9 @@
       "code": "SK",
       "name": "Slovakia",
       "count": 25,
+      "directory_count": 121,
       "languages": [
+        "ces",
         "eng",
         "hun",
         "slk"
@@ -2576,94 +4588,217 @@
       "categories": [
         "comedy",
         "culture",
+        "documentary",
+        "entertainment",
+        "family",
         "general",
         "kids",
         "legislative",
+        "lifestyle",
+        "movies",
+        "music",
         "news",
-        "religious"
+        "religious",
+        "sports"
       ]
     },
     {
       "code": "SI",
       "name": "Slovenia",
       "count": 5,
+      "directory_count": 113,
       "languages": [
+        "bos",
         "deu",
+        "eng",
+        "ita",
         "slv"
       ],
       "categories": [
+        "animation",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "lifestyle",
+        "movies",
         "music",
-        "religious"
+        "news",
+        "religious",
+        "science",
+        "series",
+        "shop",
+        "sports"
+      ]
+    },
+    {
+      "code": "SB",
+      "name": "Solomon Islands",
+      "count": 0,
+      "directory_count": 4,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "general"
+      ]
+    },
+    {
+      "code": "SO",
+      "name": "Somalia",
+      "count": 0,
+      "directory_count": 25,
+      "languages": [
+        "som"
+      ],
+      "categories": [
+        "general",
+        "legislative",
+        "news",
+        "sports"
       ]
     },
     {
       "code": "ZA",
       "name": "South Africa",
       "count": 23,
+      "directory_count": 221,
       "languages": [
         "afr",
+        "amh",
         "eng",
+        "fra",
+        "hin",
+        "lug",
         "nbl",
+        "nso",
+        "por",
         "sfs",
+        "sot",
+        "spa",
+        "sso",
         "ssw",
+        "swa",
+        "tsn",
         "tso",
         "ven",
         "xho",
         "zul"
       ],
       "categories": [
+        "animation",
+        "auto",
+        "business",
+        "comedy",
+        "culture",
         "documentary",
         "education",
         "entertainment",
         "family",
         "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
         "music",
         "news",
         "outdoor",
         "relax",
-        "religious"
+        "religious",
+        "series",
+        "shop",
+        "sports",
+        "travel",
+        "weather"
       ]
     },
     {
       "code": "KR",
       "name": "South Korea",
       "count": 47,
+      "directory_count": 291,
       "languages": [
+        "ara",
+        "cmn",
         "eng",
-        "kor"
+        "ind",
+        "kor",
+        "rus",
+        "spa",
+        "zho"
       ],
       "categories": [
+        "animation",
+        "business",
+        "cooking",
+        "culture",
+        "documentary",
         "education",
         "entertainment",
         "general",
         "kids",
         "legislative",
+        "lifestyle",
+        "movies",
         "music",
         "news",
+        "outdoor",
         "religious",
-        "shop"
+        "science",
+        "series",
+        "shop",
+        "sports"
+      ]
+    },
+    {
+      "code": "SS",
+      "name": "South Sudan",
+      "count": 0,
+      "directory_count": 10,
+      "languages": [
+        "ara",
+        "eng",
+        "pga"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "sports"
       ]
     },
     {
       "code": "ES",
       "name": "Spain",
       "count": 160,
+      "directory_count": 643,
       "languages": [
+        "ara",
+        "bul",
         "cat",
+        "ces",
         "deu",
         "eng",
         "eus",
         "fin",
         "fra",
         "glg",
+        "hun",
         "ita",
-        "spa"
+        "pol",
+        "por",
+        "ron",
+        "spa",
+        "ukr"
       ],
       "categories": [
         "animation",
+        "auto",
         "business",
         "classic",
         "comedy",
+        "cooking",
         "culture",
         "documentary",
         "education",
@@ -2688,27 +4823,83 @@
       "code": "LK",
       "name": "Sri Lanka",
       "count": 12,
+      "directory_count": 92,
       "languages": [
+        "ara",
         "eng",
+        "fra",
         "sin",
         "tam"
       ],
       "categories": [
+        "comedy",
         "culture",
         "education",
         "entertainment",
         "family",
         "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
         "religious",
         "sports"
+      ]
+    },
+    {
+      "code": "SH",
+      "name": "St. Helena",
+      "count": 0,
+      "directory_count": 1,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "general"
+      ]
+    },
+    {
+      "code": "KN",
+      "name": "St. Kitts & Nevis",
+      "count": 0,
+      "directory_count": 5,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "travel"
       ]
     },
     {
       "code": "LC",
       "name": "St. Lucia",
       "count": 2,
+      "directory_count": 15,
       "languages": [
         "eng"
+      ],
+      "categories": [
+        "education",
+        "entertainment",
+        "general",
+        "legislative",
+        "music",
+        "news",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "PM",
+      "name": "St. Pierre & Miquelon",
+      "count": 0,
+      "directory_count": 1,
+      "languages": [
+        "fra"
       ],
       "categories": [
         "general"
@@ -2718,44 +4909,73 @@
       "code": "VC",
       "name": "St. Vincent & Grenadines",
       "count": 1,
+      "directory_count": 4,
       "languages": [
         "eng",
         "svc"
       ],
       "categories": [
-        "general"
+        "culture",
+        "general",
+        "legislative",
+        "music"
       ]
     },
     {
       "code": "SD",
       "name": "Sudan",
       "count": 2,
+      "directory_count": 31,
       "languages": [
         "ara"
       ],
       "categories": [
         "education",
-        "news"
+        "general",
+        "music",
+        "news",
+        "religious",
+        "series",
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "SR",
       "name": "Suriname",
       "count": 1,
+      "directory_count": 56,
       "languages": [
+        "cmn",
         "eng",
         "hin",
-        "nld"
+        "nld",
+        "por",
+        "srn",
+        "urd",
+        "yue"
       ],
       "categories": [
-        "culture"
+        "animation",
+        "culture",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "legislative",
+        "movies",
+        "music",
+        "news",
+        "religious"
       ]
     },
     {
       "code": "SE",
       "name": "Sweden",
       "count": 193,
+      "directory_count": 335,
       "languages": [
+        "amh",
         "ara",
         "aze",
         "dan",
@@ -2763,7 +4983,9 @@
         "fin",
         "kur",
         "nor",
-        "swe"
+        "sqi",
+        "swe",
+        "syr"
       ],
       "categories": [
         "animation",
@@ -2773,15 +4995,18 @@
         "cooking",
         "culture",
         "documentary",
+        "education",
         "entertainment",
         "general",
         "kids",
         "lifestyle",
         "movies",
+        "music",
         "news",
         "outdoor",
         "religious",
         "series",
+        "shop",
         "sports"
       ]
     },
@@ -2789,21 +5014,38 @@
       "code": "CH",
       "name": "Switzerland",
       "count": 26,
+      "directory_count": 157,
       "languages": [
+        "ara",
+        "dan",
         "deu",
         "eng",
+        "fas",
+        "fin",
         "fra",
-        "ita"
+        "ita",
+        "nor",
+        "ron",
+        "spa",
+        "sqi",
+        "swe",
+        "tam",
+        "tir",
+        "tur"
       ],
       "categories": [
+        "culture",
         "documentary",
         "entertainment",
         "general",
+        "kids",
+        "lifestyle",
         "movies",
         "music",
         "news",
         "outdoor",
         "religious",
+        "shop",
         "sports",
         "weather"
       ]
@@ -2812,14 +5054,22 @@
       "code": "SY",
       "name": "Syria",
       "count": 8,
+      "directory_count": 30,
       "languages": [
         "ara",
         "kur"
       ],
       "categories": [
+        "culture",
+        "education",
         "family",
         "general",
+        "lifestyle",
+        "movies",
+        "music",
         "news",
+        "religious",
+        "series",
         "sports"
       ]
     },
@@ -2827,24 +5077,47 @@
       "code": "TW",
       "name": "Taiwan",
       "count": 11,
+      "directory_count": 132,
       "languages": [
+        "cmn",
         "eng",
+        "nan",
+        "yue",
         "zho"
       ],
       "categories": [
+        "animation",
+        "business",
+        "classic",
+        "cooking",
         "culture",
+        "documentary",
+        "education",
+        "entertainment",
         "general",
-        "religious"
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "news",
+        "religious",
+        "series",
+        "shop",
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "TJ",
       "name": "Tajikistan",
       "count": 14,
+      "directory_count": 16,
       "languages": [
+        "rus",
         "tgk"
       ],
       "categories": [
+        "culture",
         "general",
         "kids",
         "science",
@@ -2856,14 +5129,25 @@
       "code": "TZ",
       "name": "Tanzania",
       "count": 4,
+      "directory_count": 93,
       "languages": [
         "eng",
         "swa"
       ],
       "categories": [
+        "comedy",
+        "culture",
+        "education",
         "entertainment",
         "general",
+        "kids",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
         "religious",
+        "sports",
         "travel"
       ]
     },
@@ -2871,35 +5155,86 @@
       "code": "TH",
       "name": "Thailand",
       "count": 56,
+      "directory_count": 256,
       "languages": [
         "eng",
+        "kor",
+        "mya",
         "tha"
       ],
       "categories": [
+        "animation",
+        "documentary",
         "education",
         "entertainment",
         "general",
+        "kids",
         "legislative",
+        "lifestyle",
+        "movies",
+        "music",
         "news",
         "religious",
         "series",
-        "sports"
+        "shop",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "TL",
+      "name": "Timor-Leste",
+      "count": 0,
+      "directory_count": 5,
+      "languages": [
+        "ind",
+        "por",
+        "tet"
+      ],
+      "categories": [
+        "education",
+        "general",
+        "news"
       ]
     },
     {
       "code": "TG",
       "name": "Togo",
       "count": 9,
+      "directory_count": 41,
       "languages": [
         "eng",
-        "fra"
+        "ewe",
+        "fra",
+        "kbp",
+        "spa"
       ],
       "categories": [
         "business",
         "entertainment",
         "general",
+        "kids",
         "lifestyle",
+        "movies",
+        "music",
         "news",
+        "outdoor",
+        "religious",
+        "science",
+        "sports"
+      ]
+    },
+    {
+      "code": "TO",
+      "name": "Tonga",
+      "count": 0,
+      "directory_count": 4,
+      "languages": [
+        "eng",
+        "ton"
+      ],
+      "categories": [
+        "general",
         "religious"
       ]
     },
@@ -2907,30 +5242,52 @@
       "code": "TT",
       "name": "Trinidad & Tobago",
       "count": 5,
+      "directory_count": 41,
       "languages": [
-        "eng"
+        "eng",
+        "hin",
+        "spa"
       ],
       "categories": [
+        "culture",
+        "education",
+        "entertainment",
+        "general",
+        "legislative",
         "lifestyle",
         "music",
-        "religious"
+        "news",
+        "religious",
+        "sports"
       ]
     },
     {
       "code": "TN",
       "name": "Tunisia",
       "count": 1,
+      "directory_count": 27,
       "languages": [
-        "ara"
+        "ara",
+        "fra"
       ],
       "categories": [
-        "general"
+        "business",
+        "culture",
+        "education",
+        "entertainment",
+        "general",
+        "music",
+        "religious",
+        "shop",
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "TR",
       "name": "Türkiye",
       "count": 148,
+      "directory_count": 415,
       "languages": [
         "ara",
         "bul",
@@ -2938,17 +5295,24 @@
         "eng",
         "fas",
         "fra",
+        "hin",
         "hye",
         "kur",
+        "rus",
         "spa",
         "sqi",
+        "tig",
         "tur",
+        "uzb",
         "zho",
         "zza"
       ],
       "categories": [
         "animation",
         "business",
+        "classic",
+        "comedy",
+        "cooking",
         "culture",
         "documentary",
         "education",
@@ -2959,15 +5323,19 @@
         "movies",
         "music",
         "news",
+        "outdoor",
         "religious",
         "series",
-        "sports"
+        "sports",
+        "travel",
+        "weather"
       ]
     },
     {
       "code": "TM",
       "name": "Turkmenistan",
       "count": 8,
+      "directory_count": 8,
       "languages": [
         "ara",
         "cmn",
@@ -2985,114 +5353,108 @@
       ]
     },
     {
+      "code": "TC",
+      "name": "Turks & Caicos Islands",
+      "count": 0,
+      "directory_count": 3,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "business",
+        "culture",
+        "general"
+      ]
+    },
+    {
+      "code": "TV",
+      "name": "Tuvalu",
+      "count": 0,
+      "directory_count": 2,
+      "languages": [
+        "eng",
+        "tvl"
+      ],
+      "categories": [
+        "general",
+        "religious"
+      ]
+    },
+    {
+      "code": "VI",
+      "name": "U.S. Virgin Islands",
+      "count": 0,
+      "directory_count": 9,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "culture",
+        "general",
+        "legislative",
+        "religious",
+        "weather"
+      ]
+    },
+    {
       "code": "UG",
       "name": "Uganda",
       "count": 15,
+      "directory_count": 105,
       "languages": [
         "ach",
         "adh",
         "alz",
+        "ara",
         "cgg",
         "eng",
         "kdi",
+        "koo",
         "laj",
+        "lse",
         "lug",
         "luo",
+        "myx",
         "nyn",
         "nyo",
+        "swa",
+        "teo",
         "ttj"
       ],
       "categories": [
+        "business",
+        "culture",
+        "education",
         "entertainment",
+        "family",
         "general",
+        "lifestyle",
+        "movies",
         "music",
-        "religious"
+        "news",
+        "religious",
+        "series",
+        "sports"
       ]
     },
     {
       "code": "UA",
       "name": "Ukraine",
       "count": 52,
+      "directory_count": 375,
       "languages": [
+        "bul",
         "eng",
-        "rus",
-        "ukr"
-      ],
-      "categories": [
-        "entertainment",
-        "general",
-        "kids",
-        "legislative",
-        "lifestyle",
-        "movies",
-        "music",
-        "news",
-        "outdoor",
-        "religious",
-        "series"
-      ]
-    },
-    {
-      "code": "AE",
-      "name": "United Arab Emirates",
-      "count": 33,
-      "languages": [
-        "ara",
-        "ben",
-        "eng",
-        "fas",
-        "hin",
-        "urd",
-        "zho"
-      ],
-      "categories": [
-        "business",
-        "documentary",
-        "entertainment",
-        "family",
-        "general",
-        "movies",
-        "music",
-        "news",
-        "religious",
-        "sports"
-      ]
-    },
-    {
-      "code": "GB",
-      "name": "United Kingdom",
-      "count": 132,
-      "languages": [
-        "ara",
-        "ben",
-        "cym",
-        "cze",
-        "deu",
-        "ell",
-        "eng",
-        "fas",
-        "fra",
-        "gla",
-        "hin",
         "hun",
-        "ind",
-        "ita",
-        "jpn",
-        "mal",
-        "pan",
+        "lat",
+        "lav",
         "por",
-        "prd",
-        "pus",
-        "slv",
-        "spa",
-        "swa",
-        "tam",
-        "tuk",
-        "urd",
-        "vie"
+        "ron",
+        "rus",
+        "ukr",
+        "urk"
       ],
       "categories": [
-        "animation",
         "auto",
         "business",
         "comedy",
@@ -3101,8 +5463,10 @@
         "documentary",
         "education",
         "entertainment",
+        "family",
         "general",
         "kids",
+        "legislative",
         "lifestyle",
         "movies",
         "music",
@@ -3114,35 +5478,82 @@
         "series",
         "shop",
         "sports",
-        "travel",
-        "weather"
+        "travel"
       ]
     },
     {
-      "code": "US",
-      "name": "United States",
-      "count": 1385,
+      "code": "AE",
+      "name": "United Arab Emirates",
+      "count": 33,
+      "directory_count": 134,
+      "languages": [
+        "ara",
+        "ben",
+        "eng",
+        "fas",
+        "hin",
+        "mal",
+        "tur",
+        "urd",
+        "zho"
+      ],
+      "categories": [
+        "animation",
+        "business",
+        "classic",
+        "comedy",
+        "cooking",
+        "culture",
+        "documentary",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "religious",
+        "series",
+        "shop",
+        "sports"
+      ]
+    },
+    {
+      "code": "GB",
+      "name": "United Kingdom",
+      "count": 132,
+      "directory_count": 592,
       "languages": [
         "amh",
         "ara",
-        "aze",
+        "ben",
+        "bul",
+        "ces",
+        "cym",
+        "cze",
         "dan",
         "deu",
+        "ell",
         "eng",
         "fas",
+        "fin",
         "fra",
-        "hat",
+        "gla",
+        "hau",
         "heb",
         "hin",
-        "hmn",
         "hun",
-        "hye",
+        "ind",
+        "isl",
         "ita",
-        "jap",
         "jpn",
-        "kor",
+        "kur",
         "mal",
-        "man",
+        "mlt",
+        "msa",
+        "nep",
+        "nld",
         "nor",
         "pan",
         "pol",
@@ -3151,12 +5562,21 @@
         "pus",
         "ron",
         "rus",
+        "sin",
+        "slk",
+        "slv",
         "som",
         "spa",
+        "sqi",
+        "swa",
         "swe",
-        "tgl",
+        "swh",
+        "tam",
         "tha",
+        "tir",
+        "tuk",
         "tur",
+        "ukr",
         "urd",
         "vie",
         "zho"
@@ -3192,75 +5612,250 @@
       ]
     },
     {
-      "code": "UY",
-      "name": "Uruguay",
-      "count": 2,
+      "code": "US",
+      "name": "United States",
+      "count": 1385,
+      "directory_count": 4932,
       "languages": [
-        "spa"
-      ],
-      "categories": [
-        "culture",
-        "religious"
-      ]
-    },
-    {
-      "code": "UZ",
-      "name": "Uzbekistan",
-      "count": 32,
-      "languages": [
+        "acf",
+        "aii",
+        "amh",
+        "ara",
+        "aze",
+        "ben",
+        "bul",
+        "ces",
+        "czh",
+        "dan",
+        "deu",
+        "ell",
         "eng",
+        "fas",
+        "fin",
+        "fra",
+        "hat",
+        "heb",
+        "hin",
+        "hmn",
+        "hrv",
+        "hun",
+        "hye",
+        "ind",
+        "ita",
+        "jap",
+        "jpn",
+        "kaz",
+        "kor",
+        "kur",
+        "lao",
+        "mal",
+        "man",
+        "nld",
+        "nor",
+        "orm",
+        "pan",
+        "pol",
+        "por",
+        "prd",
+        "pus",
+        "ron",
         "rus",
-        "uzb"
+        "sin",
+        "slv",
+        "som",
+        "spa",
+        "sqi",
+        "srp",
+        "swa",
+        "swe",
+        "tag",
+        "tam",
+        "tgl",
+        "tha",
+        "tig",
+        "tir",
+        "tur",
+        "urd",
+        "vie",
+        "yor",
+        "yue",
+        "zho",
+        "zul"
       ],
       "categories": [
+        "animation",
+        "auto",
+        "business",
+        "classic",
+        "comedy",
+        "cooking",
+        "culture",
         "documentary",
+        "education",
         "entertainment",
         "family",
         "general",
+        "interactive",
         "kids",
+        "legislative",
+        "lifestyle",
         "movies",
         "music",
         "news",
-        "sports"
+        "outdoor",
+        "relax",
+        "religious",
+        "science",
+        "series",
+        "shop",
+        "sports",
+        "travel",
+        "weather",
+        "xxx"
       ]
     },
     {
-      "code": "VE",
-      "name": "Venezuela",
-      "count": 42,
+      "code": "UY",
+      "name": "Uruguay",
+      "count": 2,
+      "directory_count": 153,
       "languages": [
         "eng",
+        "por",
         "spa"
       ],
       "categories": [
         "animation",
         "culture",
         "entertainment",
+        "general",
+        "legislative",
+        "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "sports",
+        "travel"
+      ]
+    },
+    {
+      "code": "UZ",
+      "name": "Uzbekistan",
+      "count": 32,
+      "directory_count": 72,
+      "languages": [
+        "eng",
+        "kaa",
+        "rus",
+        "tgk",
+        "uzb"
+      ],
+      "categories": [
+        "comedy",
+        "documentary",
+        "education",
+        "entertainment",
         "family",
         "general",
+        "kids",
         "lifestyle",
+        "movies",
+        "music",
+        "news",
+        "outdoor",
+        "religious",
+        "sports"
+      ]
+    },
+    {
+      "code": "VU",
+      "name": "Vanuatu",
+      "count": 0,
+      "directory_count": 3,
+      "languages": [
+        "bis",
+        "eng",
+        "fra"
+      ],
+      "categories": [
+        "entertainment",
+        "general",
+        "religious"
+      ]
+    },
+    {
+      "code": "VA",
+      "name": "Vatican City",
+      "count": 0,
+      "directory_count": 7,
+      "languages": [
+        "deu",
+        "eng",
+        "fra",
+        "ita",
+        "por",
+        "spa"
+      ],
+      "categories": [
+        "news",
+        "religious"
+      ]
+    },
+    {
+      "code": "VE",
+      "name": "Venezuela",
+      "count": 42,
+      "directory_count": 194,
+      "languages": [
+        "eng",
+        "spa"
+      ],
+      "categories": [
+        "animation",
+        "business",
+        "comedy",
+        "culture",
+        "documentary",
+        "education",
+        "entertainment",
+        "family",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "movies",
         "music",
         "news",
         "religious",
-        "science"
+        "science",
+        "sports",
+        "travel"
       ]
     },
     {
       "code": "VN",
       "name": "Vietnam",
       "count": 71,
+      "directory_count": 187,
       "languages": [
         "eng",
+        "khm",
         "vie"
       ],
       "categories": [
         "culture",
         "education",
         "entertainment",
+        "family",
         "general",
+        "kids",
+        "lifestyle",
         "movies",
         "music",
         "news",
+        "religious",
         "science",
         "series",
         "shop",
@@ -3269,9 +5864,24 @@
       ]
     },
     {
+      "code": "WF",
+      "name": "Wallis & Futuna",
+      "count": 0,
+      "directory_count": 1,
+      "languages": [
+        "fra",
+        "fud",
+        "wls"
+      ],
+      "categories": [
+        "general"
+      ]
+    },
+    {
       "code": "EH",
       "name": "Western Sahara",
       "count": 1,
+      "directory_count": 1,
       "languages": [
         "ara",
         "spa"
@@ -3284,27 +5894,76 @@
       "code": "YE",
       "name": "Yemen",
       "count": 4,
+      "directory_count": 22,
       "languages": [
         "ara"
       ],
       "categories": [
+        "culture",
+        "documentary",
+        "education",
+        "general",
         "news",
         "religious"
+      ]
+    },
+    {
+      "code": "ZM",
+      "name": "Zambia",
+      "count": 0,
+      "directory_count": 56,
+      "languages": [
+        "eng"
+      ],
+      "categories": [
+        "business",
+        "education",
+        "entertainment",
+        "general",
+        "kids",
+        "legislative",
+        "lifestyle",
+        "music",
+        "news",
+        "religious",
+        "science",
+        "sports"
       ]
     },
     {
       "code": "ZW",
       "name": "Zimbabwe",
       "count": 1,
+      "directory_count": 20,
       "languages": [
-        "eng"
+        "eng",
+        "nde",
+        "sna"
       ],
       "categories": [
+        "comedy",
+        "culture",
+        "entertainment",
+        "general",
+        "music",
+        "news",
         "religious"
       ]
     }
   ],
   "languages": [
+    {
+      "code": "aar",
+      "name": "Afar"
+    },
+    {
+      "code": "abk",
+      "name": "Abkhazian"
+    },
+    {
+      "code": "acf",
+      "name": "acf"
+    },
     {
       "code": "ach",
       "name": "Acoli"
@@ -3318,8 +5977,16 @@
       "name": "adh"
     },
     {
+      "code": "afb",
+      "name": "afb"
+    },
+    {
       "code": "afr",
       "name": "Afrikaans"
+    },
+    {
+      "code": "aho",
+      "name": "aho"
     },
     {
       "code": "aii",
@@ -3338,8 +6005,16 @@
       "name": "Arabic"
     },
     {
+      "code": "arb",
+      "name": "Arabic"
+    },
+    {
       "code": "arm",
       "name": "Armenian"
+    },
+    {
+      "code": "arr",
+      "name": "arr"
     },
     {
       "code": "arz",
@@ -3358,6 +6033,10 @@
       "name": "ayb"
     },
     {
+      "code": "aym",
+      "name": "Aymara"
+    },
+    {
       "code": "aze",
       "name": "Azerbaijani"
     },
@@ -3368,6 +6047,10 @@
     {
       "code": "bam",
       "name": "Bambara"
+    },
+    {
+      "code": "bba",
+      "name": "bba"
     },
     {
       "code": "bbo",
@@ -3382,12 +6065,24 @@
       "name": "Bangla"
     },
     {
+      "code": "bgc",
+      "name": "Haryanvi"
+    },
+    {
       "code": "bho",
       "name": "Bhojpuri"
     },
     {
       "code": "bib",
       "name": "bib"
+    },
+    {
+      "code": "bis",
+      "name": "Bislama"
+    },
+    {
+      "code": "bod",
+      "name": "Tibetan"
     },
     {
       "code": "bos",
@@ -3400,6 +6095,10 @@
     {
       "code": "bul",
       "name": "Bulgarian"
+    },
+    {
+      "code": "bya",
+      "name": "bya"
     },
     {
       "code": "cat",
@@ -3418,8 +6117,24 @@
       "name": "Chiga"
     },
     {
+      "code": "ckb",
+      "name": "Central Kurdish"
+    },
+    {
       "code": "cmn",
       "name": "Chinese"
+    },
+    {
+      "code": "cnr",
+      "name": "Montenegrin"
+    },
+    {
+      "code": "cnu",
+      "name": "cnu"
+    },
+    {
+      "code": "crs",
+      "name": "Seselwa Creole French"
     },
     {
       "code": "cym",
@@ -3430,8 +6145,16 @@
       "name": "Czech"
     },
     {
+      "code": "czh",
+      "name": "czh"
+    },
+    {
       "code": "dan",
       "name": "Danish"
+    },
+    {
+      "code": "ddn",
+      "name": "ddn"
     },
     {
       "code": "deu",
@@ -3442,6 +6165,10 @@
       "name": "dgi"
     },
     {
+      "code": "dhw",
+      "name": "dhw"
+    },
+    {
       "code": "div",
       "name": "Divehi"
     },
@@ -3450,8 +6177,24 @@
       "name": "Zarma"
     },
     {
+      "code": "dsl",
+      "name": "dsl"
+    },
+    {
+      "code": "dut",
+      "name": "Dutch"
+    },
+    {
       "code": "dyu",
       "name": "Dyula"
+    },
+    {
+      "code": "dzo",
+      "name": "Dzongkha"
+    },
+    {
+      "code": "eli",
+      "name": "eli"
     },
     {
       "code": "ell",
@@ -3470,12 +6213,24 @@
       "name": "Basque"
     },
     {
+      "code": "ewe",
+      "name": "Ewe"
+    },
+    {
+      "code": "fao",
+      "name": "Faroese"
+    },
+    {
       "code": "far",
       "name": "far"
     },
     {
       "code": "fas",
       "name": "Persian"
+    },
+    {
+      "code": "fij",
+      "name": "Fijian"
     },
     {
       "code": "fil",
@@ -3506,12 +6261,48 @@
       "name": "Fula"
     },
     {
+      "code": "fud",
+      "name": "fud"
+    },
+    {
+      "code": "fuf",
+      "name": "fuf"
+    },
+    {
+      "code": "fuh",
+      "name": "fuh"
+    },
+    {
       "code": "ful",
       "name": "Fula"
     },
     {
+      "code": "gag",
+      "name": "Gagauz"
+    },
+    {
+      "code": "gay",
+      "name": "Gayo"
+    },
+    {
       "code": "gcf",
       "name": "gcf"
+    },
+    {
+      "code": "gej",
+      "name": "gej"
+    },
+    {
+      "code": "ger",
+      "name": "German"
+    },
+    {
+      "code": "gey",
+      "name": "gey"
+    },
+    {
+      "code": "gil",
+      "name": "Gilbertese"
     },
     {
       "code": "gla",
@@ -3526,8 +6317,20 @@
       "name": "Galician"
     },
     {
+      "code": "gmy",
+      "name": "gmy"
+    },
+    {
       "code": "gom",
       "name": "Konkani"
+    },
+    {
+      "code": "grn",
+      "name": "Guarani"
+    },
+    {
+      "code": "gsw",
+      "name": "Swiss German"
     },
     {
       "code": "gug",
@@ -3538,8 +6341,16 @@
       "name": "Gujarati"
     },
     {
+      "code": "guw",
+      "name": "guw"
+    },
+    {
       "code": "gux",
       "name": "gux"
+    },
+    {
+      "code": "har",
+      "name": "har"
     },
     {
       "code": "hat",
@@ -3552,6 +6363,10 @@
     {
       "code": "heb",
       "name": "Hebrew"
+    },
+    {
+      "code": "her",
+      "name": "Herero"
     },
     {
       "code": "hin",
@@ -3574,6 +6389,10 @@
       "name": "Croatian"
     },
     {
+      "code": "hue",
+      "name": "hue"
+    },
+    {
       "code": "hun",
       "name": "Hungarian"
     },
@@ -3582,8 +6401,16 @@
       "name": "Armenian"
     },
     {
+      "code": "ibo",
+      "name": "Igbo"
+    },
+    {
       "code": "icr",
       "name": "icr"
+    },
+    {
+      "code": "iku",
+      "name": "Inuktitut"
     },
     {
       "code": "ind",
@@ -3614,8 +6441,20 @@
       "name": "Japanese"
     },
     {
+      "code": "kaa",
+      "name": "Kara-Kalpak"
+    },
+    {
       "code": "kab",
       "name": "Kabyle"
+    },
+    {
+      "code": "kal",
+      "name": "Kalaallisut"
+    },
+    {
+      "code": "kam",
+      "name": "Kamba"
     },
     {
       "code": "kan",
@@ -3630,12 +6469,24 @@
       "name": "Kazakh"
     },
     {
+      "code": "kbp",
+      "name": "kbp"
+    },
+    {
       "code": "kdi",
       "name": "kdi"
     },
     {
       "code": "khm",
       "name": "Khmer"
+    },
+    {
+      "code": "khy",
+      "name": "khy"
+    },
+    {
+      "code": "kik",
+      "name": "Kikuyu"
     },
     {
       "code": "kin",
@@ -3646,6 +6497,10 @@
       "name": "Kyrgyz"
     },
     {
+      "code": "kmr",
+      "name": "Kurdish"
+    },
+    {
       "code": "kmz",
       "name": "kmz"
     },
@@ -3654,12 +6509,28 @@
       "name": "Konkani"
     },
     {
+      "code": "kon",
+      "name": "Kongo"
+    },
+    {
+      "code": "koo",
+      "name": "koo"
+    },
+    {
       "code": "kor",
       "name": "Korean"
     },
     {
+      "code": "kun",
+      "name": "kun"
+    },
+    {
       "code": "kur",
       "name": "Kurdish"
+    },
+    {
+      "code": "lah",
+      "name": "Western Panjabi"
     },
     {
       "code": "laj",
@@ -3670,6 +6541,10 @@
       "name": "Lao"
     },
     {
+      "code": "lat",
+      "name": "Latin"
+    },
+    {
       "code": "lav",
       "name": "Latvian"
     },
@@ -3678,16 +6553,32 @@
       "name": "lee"
     },
     {
+      "code": "lin",
+      "name": "Lingala"
+    },
+    {
       "code": "lit",
       "name": "Lithuanian"
+    },
+    {
+      "code": "lld",
+      "name": "lld"
     },
     {
       "code": "lob",
       "name": "lob"
     },
     {
+      "code": "lse",
+      "name": "lse"
+    },
+    {
       "code": "ltz",
       "name": "Luxembourgish"
+    },
+    {
+      "code": "lua",
+      "name": "Luba-Lulua"
     },
     {
       "code": "lug",
@@ -3706,6 +6597,10 @@
       "name": "Maithili"
     },
     {
+      "code": "mak",
+      "name": "Makasar"
+    },
+    {
       "code": "mal",
       "name": "Malayalam"
     },
@@ -3718,12 +6613,32 @@
       "name": "Marathi"
     },
     {
+      "code": "mdq",
+      "name": "mdq"
+    },
+    {
+      "code": "mfe",
+      "name": "Morisyen"
+    },
+    {
       "code": "mkd",
       "name": "Macedonian"
     },
     {
+      "code": "mkw",
+      "name": "mkw"
+    },
+    {
+      "code": "mlg",
+      "name": "Malagasy"
+    },
+    {
       "code": "mlt",
       "name": "Maltese"
+    },
+    {
+      "code": "mne",
+      "name": "mne"
     },
     {
       "code": "mnk",
@@ -3750,20 +6665,60 @@
       "name": "Burmese"
     },
     {
+      "code": "myx",
+      "name": "myx"
+    },
+    {
+      "code": "mzb",
+      "name": "mzb"
+    },
+    {
+      "code": "nan",
+      "name": "Min Nan Chinese"
+    },
+    {
+      "code": "nau",
+      "name": "Nauru"
+    },
+    {
       "code": "nbl",
       "name": "South Ndebele"
+    },
+    {
+      "code": "nde",
+      "name": "North Ndebele"
     },
     {
       "code": "nep",
       "name": "Nepali"
     },
     {
+      "code": "niu",
+      "name": "Niuean"
+    },
+    {
       "code": "nld",
       "name": "Dutch"
     },
     {
+      "code": "nob",
+      "name": "Norwegian Bokmål"
+    },
+    {
       "code": "nor",
       "name": "Norwegian"
+    },
+    {
+      "code": "nso",
+      "name": "Northern Sotho"
+    },
+    {
+      "code": "nup",
+      "name": "nup"
+    },
+    {
+      "code": "nya",
+      "name": "Nyanja"
     },
     {
       "code": "nyn",
@@ -3774,12 +6729,24 @@
       "name": "Nyoro"
     },
     {
+      "code": "oci",
+      "name": "Occitan"
+    },
+    {
       "code": "ori",
       "name": "Odia"
     },
     {
+      "code": "orm",
+      "name": "Oromo"
+    },
+    {
       "code": "ory",
       "name": "Odia"
+    },
+    {
+      "code": "pam",
+      "name": "Pampanga"
     },
     {
       "code": "pan",
@@ -3790,6 +6757,18 @@
       "name": "Papiamento"
     },
     {
+      "code": "pau",
+      "name": "Palauan"
+    },
+    {
+      "code": "pga",
+      "name": "pga"
+    },
+    {
+      "code": "pof",
+      "name": "pof"
+    },
+    {
       "code": "pol",
       "name": "Polish"
     },
@@ -3798,12 +6777,32 @@
       "name": "Portuguese"
     },
     {
+      "code": "pov",
+      "name": "pov"
+    },
+    {
       "code": "prd",
       "name": "prd"
     },
     {
+      "code": "prs",
+      "name": "Dari"
+    },
+    {
       "code": "pus",
       "name": "Pashto"
+    },
+    {
+      "code": "que",
+      "name": "Quechua"
+    },
+    {
+      "code": "rap",
+      "name": "Rapanui"
+    },
+    {
+      "code": "rcf",
+      "name": "rcf"
     },
     {
       "code": "rif",
@@ -3822,16 +6821,32 @@
       "name": "Romanian"
     },
     {
+      "code": "run",
+      "name": "Rundi"
+    },
+    {
       "code": "rus",
       "name": "Russian"
+    },
+    {
+      "code": "sag",
+      "name": "Sango"
     },
     {
       "code": "sah",
       "name": "Yakut"
     },
     {
+      "code": "sat",
+      "name": "Santali"
+    },
+    {
       "code": "sbd",
       "name": "sbd"
+    },
+    {
+      "code": "scn",
+      "name": "Sicilian"
     },
     {
       "code": "sfs",
@@ -3866,8 +6881,24 @@
       "name": "Samoan"
     },
     {
+      "code": "sna",
+      "name": "Shona"
+    },
+    {
+      "code": "snd",
+      "name": "Sindhi"
+    },
+    {
+      "code": "snk",
+      "name": "Soninke"
+    },
+    {
       "code": "som",
       "name": "Somali"
+    },
+    {
+      "code": "sot",
+      "name": "Southern Sotho"
     },
     {
       "code": "spa",
@@ -3878,16 +6909,40 @@
       "name": "Albanian"
     },
     {
+      "code": "srb",
+      "name": "srb"
+    },
+    {
+      "code": "srn",
+      "name": "Sranan Tongo"
+    },
+    {
       "code": "srp",
       "name": "Serbian"
+    },
+    {
+      "code": "sso",
+      "name": "sso"
+    },
+    {
+      "code": "ssp",
+      "name": "ssp"
     },
     {
       "code": "ssw",
       "name": "Swati"
     },
     {
+      "code": "ssy",
+      "name": "Saho"
+    },
+    {
       "code": "stj",
       "name": "stj"
+    },
+    {
+      "code": "sun",
+      "name": "Sundanese"
     },
     {
       "code": "svc",
@@ -3898,12 +6953,28 @@
       "name": "Swahili"
     },
     {
+      "code": "swb",
+      "name": "Comorian"
+    },
+    {
       "code": "swe",
       "name": "Swedish"
     },
     {
+      "code": "swh",
+      "name": "Swahili"
+    },
+    {
       "code": "sym",
       "name": "sym"
+    },
+    {
+      "code": "syr",
+      "name": "Syriac"
+    },
+    {
+      "code": "tag",
+      "name": "tag"
     },
     {
       "code": "tah",
@@ -3922,8 +6993,20 @@
       "name": "Tatar"
     },
     {
+      "code": "tbz",
+      "name": "tbz"
+    },
+    {
       "code": "tel",
       "name": "Telugu"
+    },
+    {
+      "code": "teo",
+      "name": "Teso"
+    },
+    {
+      "code": "tet",
+      "name": "Tetum"
     },
     {
       "code": "tgk",
@@ -3938,6 +7021,10 @@
       "name": "Thai"
     },
     {
+      "code": "thr",
+      "name": "thr"
+    },
+    {
       "code": "tig",
       "name": "Tigre"
     },
@@ -3950,8 +7037,16 @@
       "name": "Tamashek"
     },
     {
+      "code": "ton",
+      "name": "Tongan"
+    },
+    {
       "code": "tpi",
       "name": "Tok Pisin"
+    },
+    {
+      "code": "tsn",
+      "name": "Tswana"
     },
     {
       "code": "tso",
@@ -3966,12 +7061,28 @@
       "name": "Turkmen"
     },
     {
+      "code": "tum",
+      "name": "Tumbuka"
+    },
+    {
       "code": "tur",
       "name": "Turkish"
     },
     {
+      "code": "tvl",
+      "name": "Tuvalu"
+    },
+    {
+      "code": "twi",
+      "name": "Akan"
+    },
+    {
       "code": "tzm",
       "name": "Central Atlas Tamazight"
+    },
+    {
+      "code": "uig",
+      "name": "Uyghur"
     },
     {
       "code": "ukr",
@@ -3980,6 +7091,10 @@
     {
       "code": "urd",
       "name": "Urdu"
+    },
+    {
+      "code": "urk",
+      "name": "urk"
     },
     {
       "code": "uzb",
@@ -3994,12 +7109,28 @@
       "name": "Vietnamese"
     },
     {
+      "code": "wal",
+      "name": "Wolaytta"
+    },
+    {
+      "code": "war",
+      "name": "Waray"
+    },
+    {
+      "code": "wls",
+      "name": "wls"
+    },
+    {
       "code": "wol",
       "name": "Wolof"
     },
     {
       "code": "xho",
       "name": "Xhosa"
+    },
+    {
+      "code": "xki",
+      "name": "xki"
     },
     {
       "code": "xms",
@@ -4030,5 +7161,6 @@
       "name": "Zaza"
     }
   ],
-  "total": 6891
+  "total": 6891,
+  "directory_total": 29744
 }

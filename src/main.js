@@ -16,7 +16,7 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const categories = ['all', 'news', 'sports', 'movies', 'music', 'kids', 'documentary', 'entertainment', 'education', 'cooking', 'travel', 'religious', 'business', 'culture', 'general', 'classic', 'comedy', 'legislative', 'lifestyle', 'outdoor', 'science', 'weather'];
 const quickCategories = categories.slice(0, 6);
 const state = {
-  channels: [], countries: [], languages: [], results: [], selected: null, hls: null,
+  channels: [], directory: [], directoryView: false, countries: [], languages: [], results: [], selected: null, hls: null,
   privateChannels: [], privateOnly: false,
   search: '', category: 'all', country: 'all', language: 'all', favoritesOnly: false,
   favorites: new Set(readStore('openwave-favorites', [])),
@@ -103,6 +103,7 @@ app.innerHTML = `
         <div class="guide-heading"><div><h2 id="guide-title">Explore live</h2><p id="result-summary" aria-live="polite">Loading channels…</p></div><button id="favorites-filter" class="favorites-filter" aria-pressed="false" title="Show saved channels">${glyph('heart', 17)}<span>My channels</span><span class="favorite-count"></span></button></div>
         <form id="search-form" class="search-box"><label class="sr-only" for="search-input">Search channels</label>${glyph('search', 19)}<input id="search-input" type="search" placeholder="Find a channel, mood, or place" autocomplete="off"><button type="submit" aria-label="Smart search using on-device MiniLM" title="Smart search using on-device MiniLM"><span class="ai-star">✦</span> Smart</button></form>
         <p class="ai-hint" id="ai-hint">Smart search uses MiniLM on this device. First use downloads the model.</p>
+        <div id="guide-modes" class="guide-modes" role="group" aria-label="Guide view" ${WEB_MODE ? '' : 'hidden'}><button id="watch-mode" type="button" class="selected" aria-pressed="true">Watch</button><button id="directory-mode" type="button" aria-pressed="false">All channels <span id="directory-total"></span></button></div>
         <div class="quick-categories" id="quick-categories" role="group" aria-label="Quick category filters"></div>
         <div class="filter-area"><button id="filter-toggle" class="filter-toggle" aria-expanded="false" aria-controls="advanced-filters">${glyph('sliders', 17)}<span>Refine channels</span><span id="filter-count" class="filter-count"></span>${glyph('chevron', 15)}</button>
           <div id="advanced-filters" class="advanced-filters" hidden><div class="filters"><div><span class="filter-label">Country</span><button id="country-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">Everywhere ${glyph('chevron', 15)}</button></div><div><span class="filter-label">Language</span><button id="language-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">Any language ${glyph('chevron', 15)}</button></div></div><div class="category-field"><span class="filter-label">Browse category</span><button id="category-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">All categories ${glyph('chevron', 15)}</button></div></div></div>
@@ -170,6 +171,7 @@ function onboardingOptions() {
 }
 const onboarding = createOnboarding(preferences => {
   state.preferences = preferences;
+  state.directoryView = false;
   if (!WEB_MODE) state.country = preferences.country || 'all';
   state.language = preferences.language || 'all';
   state.category = 'all';
@@ -184,6 +186,7 @@ const onboarding = createOnboarding(preferences => {
   radioMode.hide();
   setNavActive('nav-home');
   radioMode.applyPreferences(preferences);
+  updateGuideMode();
   if (WEB_MODE) activateWebCountry(preferences.country || 'IN');
   else { filterChannels(true); renderRail(); }
   if (window.matchMedia('(max-width: 860px)').matches) document.querySelector('#guide').scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'start' });
@@ -221,7 +224,8 @@ function renderClock() {
 renderClock(); setInterval(renderClock, 60_000);
 
 function renderCategories() {
-  const visibleCategories = WEB_MODE ? quickCategories.filter(c => c === 'all' || state.channels.some(ch => ch.categories.includes(c))) : quickCategories;
+  const categoryPool = WEB_MODE && state.directoryView ? [...state.channels, ...state.directory] : state.channels;
+  const visibleCategories = WEB_MODE ? quickCategories.filter(c => c === 'all' || categoryPool.some(ch => ch.categories.includes(c))) : quickCategories;
   els.quick.innerHTML = visibleCategories.map(c => `<button class="quick-chip ${state.category === c ? 'selected' : ''}" data-category="${c}" aria-pressed="${state.category === c}">${titleCase(c)}</button>`).join('');
   els.countryTrigger.innerHTML = `${escapeHTML(state.country === 'all' ? 'Everywhere' : countryName(state.country))} ${glyph('chevron', 15)}`;
   els.languageTrigger.innerHTML = `${escapeHTML(state.language === 'all' ? 'Any language' : languageName(state.language))} ${glyph('chevron', 15)}`;
@@ -231,6 +235,7 @@ function renderCategories() {
 function channelMarkup(ch, index) {
   const selected = state.selected?.id === ch.id;
   if (ch.private) return `<div class="channel-row ${selected ? 'playing' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="Play ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}><span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo private-logo">${glyph('tv', 20)}</span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>Private playlist · This tab only</small></span><span class="row-arrow">${glyph('arrow', 17)}</span></button></div>`;
+  if (!ch.url) return `<div class="channel-row directory-only"><span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo"><span>${escapeHTML(ch.name.slice(0, 2).toUpperCase())}</span></span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>${escapeHTML(channelMeta(ch))} · No direct stream</small></span>${ch.website ? `<a class="official-link" href="${escapeHTML(ch.website)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${escapeHTML(ch.name)} official site">Official site ↗</a>` : ''}</div>`;
   const favorite = state.favorites.has(ch.id);
   const unavailable = isUnavailable(ch) || failedBrowserCheck(ch);
   return `<div class="channel-row ${selected ? 'playing' : ''} ${unavailable ? 'unavailable' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="${unavailable ? 'Retry' : 'Play'} ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}>
@@ -243,10 +248,12 @@ function channelMarkup(ch, index) {
 let shown = 60;
 function renderList(withMotion = false) {
   const displayed = state.results.slice(0, shown);
-  els.list.innerHTML = displayed.length ? displayed.map(channelMarkup).join('') : `<div class="empty-list">${glyph(state.favoritesOnly ? 'heart' : 'search', 25)}<strong>${state.favoritesOnly ? 'Your shortlist starts here' : 'No channels here yet'}</strong><p>${state.favoritesOnly ? 'Tap a heart beside any channel to save it here.' : 'Try a broader search or clear a filter.'}</p></div>`;
+  const directoryAvailable = WEB_MODE && !state.directoryView && !state.search && !state.favoritesOnly && state.channels.length === 0 && state.directory.length > 0;
+  els.list.innerHTML = displayed.length ? displayed.map(channelMarkup).join('') : `<div class="empty-list">${glyph(state.favoritesOnly ? 'heart' : 'search', 25)}<strong>${state.favoritesOnly ? 'Your shortlist starts here' : directoryAvailable ? 'No direct stream indexed' : 'No channels here yet'}</strong><p>${state.favoritesOnly ? 'Tap a heart beside any channel to save it here.' : directoryAvailable ? 'Open All channels to browse this country’s directory.' : 'Try a broader search or clear a filter.'}</p></div>`;
   const count = state.results.length.toLocaleString();
+  const channelWord = state.results.length === 1 ? 'channel' : 'channels';
   els.count.textContent = count;
-  els.result.textContent = state.privateOnly ? `${count} channel${state.results.length === 1 ? '' : 's'} from your file` : WEB_MODE && state.favoritesOnly ? `${count} saved channels` : WEB_MODE && !state.search && state.category === 'all' && state.language === 'all' ? `${count} to try · ${state.channels.length.toLocaleString()} indexed in ${countryName(state.country)}` : WEB_MODE ? `${count} matching channels · playback varies` : `${count} channels ready to explore`;
+  els.result.textContent = state.privateOnly ? `${count} ${channelWord} from your file` : WEB_MODE && state.favoritesOnly ? `${count} saved ${channelWord}` : WEB_MODE && state.directoryView ? `${count} indexed ${channelWord} · ${state.channels.length.toLocaleString()} have stream links` : WEB_MODE && !state.search && state.category === 'all' && state.language === 'all' ? `${count} to try · ${state.channels.length.toLocaleString()} stream links indexed in ${countryName(state.country)}` : WEB_MODE ? `${count} matching streams · playback varies` : `${count} channels ready to explore`;
   els.more.hidden = state.results.length <= shown;
   document.querySelector('.favorite-count').textContent = state.favorites.size || '';
   if (withMotion && !reduceMotion.matches) {
@@ -279,6 +286,7 @@ function filterChannels(withMotion = false) {
   if (WEB_MODE) {
     els.quick.hidden = state.privateOnly || state.favoritesOnly;
     document.querySelector('.filter-area').hidden = state.privateOnly || state.favoritesOnly;
+    document.querySelector('#guide-modes').hidden = state.privateOnly || state.favoritesOnly;
   }
   if (state.privateOnly) {
     const query = state.search.trim().toLocaleLowerCase();
@@ -287,14 +295,15 @@ function filterChannels(withMotion = false) {
     els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>PRIVATE CHANNELS</small>`;
     return;
   }
-  let pool = WEB_MODE && state.favoritesOnly ? state.favoriteChannels : state.channels;
+  let pool = WEB_MODE && state.favoritesOnly ? state.favoriteChannels : WEB_MODE && state.directoryView ? [...state.channels, ...state.directory] : state.channels;
   if (state.favoritesOnly) pool = pool.filter(ch => state.favorites.has(ch.id));
-  else if (!state.search.trim()) pool = pool.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch));
+  else if (!state.search.trim() && !state.directoryView) pool = pool.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch));
   if (!(WEB_MODE && state.favoritesOnly) && state.country !== 'all') pool = pool.filter(ch => ch.country === state.country);
   if (!(WEB_MODE && state.favoritesOnly) && state.language !== 'all') pool = pool.filter(ch => ch.languages?.includes(state.language));
   if (state.category !== 'all') pool = pool.filter(ch => ch.categories.includes(state.category));
   state.results = rankChannels(pool, state.search, state.countries, state.languages, state.aiCategory);
   state.results.sort((a, b) => Number(isUnavailable(a) || failedBrowserCheck(a)) - Number(isUnavailable(b) || failedBrowserCheck(b)));
+  if (WEB_MODE && state.directoryView && !state.search.trim()) state.results.sort((a, b) => a.name.localeCompare(b.name));
   if (WEB_MODE && !state.favoritesOnly && !state.search.trim() && state.category === 'all' && state.preferences?.interests?.length) {
     const preferred = new Set(state.preferences.interests);
     state.results.sort((a, b) => Number(b.categories.some(category => preferred.has(category))) - Number(a.categories.some(category => preferred.has(category))));
@@ -304,7 +313,7 @@ function filterChannels(withMotion = false) {
     state.results = pool.filter(ch => (!parsed.countryCode || ch.country === parsed.countryCode) && (!parsed.languageCode || ch.languages?.includes(parsed.languageCode)) && ch.categories.includes(state.aiCategory));
   }
   renderCategories(); renderList(withMotion);
-  els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>${WEB_MODE && state.favoritesOnly ? 'SAVED CHANNELS' : WEB_MODE ? 'CHANNELS TO TRY' : 'CHANNELS TO EXPLORE'}</small>`;
+  els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>${WEB_MODE && state.favoritesOnly ? 'SAVED CHANNELS' : WEB_MODE && state.directoryView ? 'CHANNELS INDEXED' : WEB_MODE ? 'CHANNELS TO TRY' : 'CHANNELS TO EXPLORE'}</small>`;
   const activeFilters = [state.country !== 'all', state.language !== 'all', state.category !== 'all'].filter(Boolean).length;
   els.filterCount.textContent = activeFilters ? String(activeFilters) : '';
 }
@@ -541,7 +550,7 @@ document.querySelector('#header-guide').addEventListener('click', jumpToGuide);
 function setNavActive(id) { document.querySelectorAll('.top-nav button').forEach(button => button.classList.toggle('active', button.id === id)); }
 document.querySelector('#nav-home').addEventListener('click', () => { radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
 document.querySelector('#nav-guide').addEventListener('click', () => { setPrivateView(false); setNavActive('nav-guide'); jumpToGuide(); });
-document.querySelector('#nav-favorites').addEventListener('click', () => { setPrivateView(false); state.favoritesOnly = true; if (WEB_MODE) { state.search = ''; els.search.value = ''; state.category = 'all'; } els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); if (WEB_MODE) loadFavoriteChannels(); jumpToGuide(); });
+document.querySelector('#nav-favorites').addEventListener('click', () => { setPrivateView(false); state.favoritesOnly = true; if (WEB_MODE) { state.search = ''; els.search.value = ''; state.category = 'all'; state.directoryView = false; updateGuideMode(); } els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); if (WEB_MODE) loadFavoriteChannels(); jumpToGuide(); });
 function showRadio() { els.video.pause(); setNavActive('nav-radio'); radioMode.show(); }
 document.querySelector('#nav-radio').addEventListener('click', showRadio);
 document.querySelector('#mobile-radio').addEventListener('click', showRadio);
@@ -569,6 +578,31 @@ els.list.addEventListener('keydown', event => {
   event.preventDefault();
 });
 els.quick.addEventListener('click', event => { const button = event.target.closest('[data-category]'); if (!button) return; state.category = button.dataset.category; shown = 60; filterChannels(true); });
+function updateGuideMode() {
+  if (!WEB_MODE) return;
+  for (const [id, selected] of [['watch-mode', !state.directoryView], ['directory-mode', state.directoryView]]) {
+    const button = document.querySelector(`#${id}`);
+    button.classList.toggle('selected', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  }
+  document.querySelector('#directory-total').textContent = webCatalogIndex?.countries.find(country => country.code === state.country)?.directory_count?.toLocaleString() || '';
+}
+function setDirectoryView(on) {
+  if (!WEB_MODE || state.directoryView === on) return;
+  state.directoryView = on;
+  state.favoritesOnly = false;
+  state.search = '';
+  state.category = 'all';
+  state.aiCategory = null;
+  els.search.value = '';
+  els.favoritesFilter.classList.remove('active');
+  els.favoritesFilter.setAttribute('aria-pressed', 'false');
+  shown = 60;
+  updateGuideMode();
+  filterChannels(true);
+}
+document.querySelector('#watch-mode').addEventListener('click', () => setDirectoryView(false));
+document.querySelector('#directory-mode').addEventListener('click', () => setDirectoryView(true));
 function setFiltersOpen(open) {
   els.advanced.hidden = !open;
   els.filterToggle.setAttribute('aria-expanded', String(open));
@@ -592,9 +626,10 @@ function setPickerBackgroundInert(inert) {
   }
 }
 function pickerOptions() {
-  if (activePicker === 'country') return [...(WEB_MODE ? [] : [{ value: 'all', label: 'Everywhere' }]), ...state.countries.map(c => ({ value: c.code, label: `${c.name}${WEB_MODE ? ` · ${c.count.toLocaleString()}` : ''}` }))];
+  if (activePicker === 'country') return [...(WEB_MODE ? [] : [{ value: 'all', label: 'Everywhere' }]), ...state.countries.map(c => ({ value: c.code, label: WEB_MODE ? `${c.name} · ${c.count ? `${c.count.toLocaleString()} stream links` : `${c.directory_count.toLocaleString()} in directory`}` : c.name }))];
   if (activePicker === 'language') return [{ value: 'all', label: 'Any language' }, ...state.languages.map(l => ({ value: l.code, label: l.name }))];
-  return (WEB_MODE ? categories.filter(c => c === 'all' || state.channels.some(ch => ch.categories.includes(c))) : categories).map(c => ({ value: c, label: c === 'all' ? 'All categories' : titleCase(c) }));
+  const categoryPool = WEB_MODE && state.directoryView ? [...state.channels, ...state.directory] : state.channels;
+  return (WEB_MODE ? categories.filter(c => c === 'all' || categoryPool.some(ch => ch.categories.includes(c))) : categories).map(c => ({ value: c, label: c === 'all' ? 'All categories' : titleCase(c) }));
 }
 function renderPickerOptions() {
   const query = els.pickerSearch.value.trim().toLowerCase();
@@ -695,7 +730,7 @@ document.querySelector('#search-form').addEventListener('submit', async event =>
 els.favoritesFilter.addEventListener('click', () => {
   if (state.privateOnly) setPrivateView(false);
   state.favoritesOnly = !state.favoritesOnly;
-  if (WEB_MODE && state.favoritesOnly) { state.search = ''; els.search.value = ''; state.category = 'all'; }
+  if (WEB_MODE && state.favoritesOnly) { state.search = ''; els.search.value = ''; state.category = 'all'; state.directoryView = false; updateGuideMode(); }
   els.favoritesFilter.classList.toggle('active', state.favoritesOnly);
   els.favoritesFilter.setAttribute('aria-pressed', String(state.favoritesOnly));
   setNavActive(state.favoritesOnly ? 'nav-favorites' : 'nav-guide');
@@ -707,7 +742,7 @@ async function loadFavoriteChannels() {
   const codes = [...new Set(ids.map(id => state.favoriteCountries[id] || (id.startsWith('in-') ? 'IN' : state.country)))]
     .filter(code => webCatalogIndex?.countries.some(country => country.code === code));
   const results = await Promise.allSettled(codes.map(code => webCatalog.country(code)));
-  const channels = results.flatMap(result => result.status === 'fulfilled' ? result.value : []);
+  const channels = results.flatMap(result => result.status === 'fulfilled' ? result.value.channels : []);
   state.favoriteChannels = channels.filter(channel => state.favorites.has(channel.id));
   if (state.favoritesOnly) filterChannels(true);
   renderRail();
@@ -754,9 +789,10 @@ async function activateWebCountry(code, { loading = true } = {}) {
     els.more.hidden = true;
   }
   try {
-    const channels = await webCatalog.country(code);
+    const catalog = await webCatalog.country(code);
     if (ticket !== webCountryLoad) return;
-    state.channels = channels.filter(channel => webStreamURLs(channel).length);
+    state.channels = catalog.channels.filter(channel => webStreamURLs(channel).length);
+    state.directory = catalog.directory;
     state.country = code;
     const countryLanguages = new Set(country.languages || []);
     state.languages = (webCatalogIndex.languages || []).filter(language => countryLanguages.has(language.code));
@@ -775,7 +811,7 @@ async function activateWebCountry(code, { loading = true } = {}) {
       localStorage.setItem('openwave-preferences', JSON.stringify(state.preferences));
       radioMode.applyPreferences(state.preferences);
     }
-    renderRail(); filterChannels(true);
+    updateGuideMode(); renderRail(); filterChannels(true);
   } catch {
     if (ticket !== webCountryLoad) return;
     els.result.textContent = `${country.name} guide could not load`;

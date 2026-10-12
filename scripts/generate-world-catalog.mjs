@@ -136,7 +136,7 @@ function main() {
 
   const byCountry = new Map();
   const ensureCountry = code => {
-    if (!byCountry.has(code)) byCountry.set(code, { name: displayCountry(code), channels: [], ids: new Set(), urls: new Set() });
+    if (!byCountry.has(code)) byCountry.set(code, { name: displayCountry(code), channels: [], directory: [], ids: new Set(), urls: new Set() });
     return byCountry.get(code);
   };
   const add = (code, channel, urls, options) => {
@@ -184,6 +184,30 @@ function main() {
     add(code, { ...channel, languages }, urls);
   }
 
+  // Keep identities without a direct browser feed in a separate directory.
+  // They are discoverable, but never represented as playable rows.
+  for (const channel of upstreamChannels) {
+    if (channel?.is_nsfw || channel?.closed) continue;
+    const code = normalizeCode(channel?.country);
+    if (!code || !displayCountry(code) || typeof channel.id !== 'string' || typeof channel.name !== 'string' || !channel.name.trim()) continue;
+    const record = ensureCountry(code);
+    if (record.ids.has(channel.id)) continue;
+    const normalizedName = channel.name.normalize('NFKC').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    if (record.channels.some(entry => entry.name.normalize('NFKC').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]+/gu, ' ').trim() === normalizedName)) continue;
+    const website = safeHttpsUrl(channel.website);
+    const languages = [...(feedLanguages.get(channel.id) || [])].sort();
+    const categories = Array.isArray(channel.categories) ? [...new Set(channel.categories.filter(value => typeof value === 'string' && value.trim()))].sort() : [];
+    record.directory.push({
+      id: channel.id,
+      name: channel.name.trim(),
+      country: code,
+      languages,
+      categories,
+      ...(website ? { website } : {}),
+    });
+    record.ids.add(channel.id);
+  }
+
   if (indiaChecks.version !== 1 || !indiaChecks.results || typeof indiaChecks.results !== 'object') {
     throw new Error('Expected an India browser-check map.');
   }
@@ -200,14 +224,16 @@ function main() {
   }
 
   const countryRows = [...byCountry.entries()]
-    .filter(([, value]) => value.name && value.channels.length)
+    .filter(([, value]) => value.name && (value.channels.length || value.directory.length))
     .map(([code, value]) => ({
       code,
       name: value.name,
       count: value.channels.length,
-      languages: [...new Set(value.channels.flatMap(channel => channel.languages))].sort(),
-      categories: [...new Set(value.channels.flatMap(channel => channel.categories))].sort(),
+      directory_count: value.channels.length + value.directory.length,
+      languages: [...new Set([...value.channels, ...value.directory].flatMap(channel => channel.languages))].sort(),
+      categories: [...new Set([...value.channels, ...value.directory].flatMap(channel => channel.categories))].sort(),
       channels: value.channels,
+      directory: value.directory,
     }))
     .sort((a, b) => (a.code === 'IN' ? -1 : b.code === 'IN' ? 1 : a.name.localeCompare(b.name, 'en') || a.code.localeCompare(b.code)));
   if (!countryRows.some(country => country.code === 'IN')) throw new Error('India has no eligible curated channels.');
@@ -222,12 +248,13 @@ function main() {
   const index = {
     version: 1,
     sources: SOURCE_URLS,
-    countries: countryRows.map(({ code, name, count, languages, categories }) => ({ code, name, count, languages, categories })),
-    languages: languageDictionary(countryRows.flatMap(row => row.channels)),
+    countries: countryRows.map(({ code, name, count, directory_count, languages, categories }) => ({ code, name, count, directory_count, languages, categories })),
+    languages: languageDictionary(countryRows.flatMap(row => [...row.channels, ...row.directory])),
     total: countryRows.reduce((sum, country) => sum + country.count, 0),
+    directory_total: countryRows.reduce((sum, country) => sum + country.directory_count, 0),
   };
   for (const row of countryRows) {
-    const document = { version: 1, country: { code: row.code, name: row.name }, channels: row.channels };
+    const document = { version: 1, country: { code: row.code, name: row.name }, channels: row.channels, directory: row.directory };
     const content = `${JSON.stringify(document)}\n`;
     const bytes = Buffer.byteLength(content);
     if (bytes > MAX_FILE_BYTES) throw new Error(`${row.code} catalog is ${bytes} bytes, over 25 MiB.`);
