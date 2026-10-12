@@ -1,5 +1,7 @@
 # India web beta
 
+**Live beta:** https://openwave-india-beta.pages.dev/
+
 This is a small, browser-only OpenWave build for direct playback on ordinary phones and computers. It does not run the desktop Go server or relay video through our hosting account. The first India guide currently contains **49 candidate channels** across news, music, local TV, culture, education, business, entertainment, and faith. Sources can change or block a viewer's region or browser; the guide count is not a promise that every feed is live.
 
 ## How it differs from the desktop preview
@@ -26,4 +28,4 @@ The build outputs `dist-web/` and checks every asset against Cloudflare Pages' 2
 
 ## Beta gates still open
 
-Root Chromium checks confirmed direct playback reaching readyState 4 for NDTV India, 9XM, DD Bharati, CNBC TV18, Aakaash Aath, and Gyandarshan. B4U Music was removed after it failed browser CORS despite passing a network-header probe. The web build and static shell have not been deployed. Physical iPhone Safari and Android Chrome playback, background audio, Home Screen installation, and offline recovery still need tests. This beta should be expanded or narrowed from those results, not from playlist size alone.
+Root Chromium checks confirmed direct playback reaching readyState 4 for NDTV India, 9XM, DD Bharati, CNBC TV18, Aakaash Aath, and Gyandarshan. B4U Music was removed after it failed browser CORS despite passing a network-header probe. The hosted beta also played 9XM over HTTPS, and its cached shell and guide reopened offline with a connection notice. Physical iPhone Safari and Android Chrome playback, background audio, and Home Screen installation still need tests. This beta should be expanded or narrowed from those results, not from playlist size alone.

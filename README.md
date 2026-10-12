@@ -41,7 +41,7 @@ For interface development, run `go run . -no-browser -addr 127.0.0.1:8765` and `
 
 ## India web beta
 
-The separate `npm run build:web` output is a static India guide that plays a small set of direct HTTPS HLS feeds without the Go server. It is intended for a free-hosted Home Screen beta; it does not relay video or include the desktop AI runtime. See [India web beta](docs/web-beta.md) for build, import, installation, and testing limits.
+The [India web beta](https://openwave-india-beta.pages.dev/) is live with 49 candidate channels. The separate `npm run build:web` output plays direct HTTPS HLS feeds without the Go server; it does not relay video or include the desktop AI runtime. See [India web beta notes](docs/web-beta.md) for build, import, installation, and testing limits.
 
 ## How playback works
 
