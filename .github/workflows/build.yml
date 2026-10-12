@@ -118,7 +118,9 @@ jobs:
           curl -fsS http://127.0.0.1:8769/ -o /dev/null
           curl -fsS -X POST -H 'X-OpenWave-Action: quit' http://127.0.0.1:8769/api/quit -o /dev/null
           wait "$app_pid"
-          lipo -verify_arch arm64 x86_64 "work/macos-package/dmg-stage/OpenWave TV.app/Contents/MacOS/OpenWave TV"
+          launcher_archs="$(lipo -archs "work/macos-package/dmg-stage/OpenWave TV.app/Contents/MacOS/OpenWave TV")"
+          [[ " $launcher_archs " == *" arm64 "* ]]
+          [[ " $launcher_archs " == *" x86_64 "* ]]
           (cd release-mac && shasum -a 256 -c *.dmg.sha256)
       - uses: actions/upload-artifact@v7
         with:
