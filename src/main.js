@@ -26,7 +26,7 @@ const categories = CATEGORIES;
 const quickCategories = categories.slice(0, 6);
 const state = {
   channels: [], directory: [], directoryView: false, sportsCatalog: null, sportsWorldwide: false, sportsCountry: 'all', nativeSportsReturn: null, countries: [], languages: [], results: [], selected: null, hls: null,
-  privateChannels: [], privateOnly: false,
+  privateChannels: [], privateOnly: false, customSources: new Map(),
   search: '', category: 'all', country: 'all', language: 'all', favoritesOnly: false,
   favorites: new Set(readStore('openwave-favorites', [])),
   favoriteCountries: readStore('openwave-favorite-countries', {}), favoriteChannels: [],
@@ -143,6 +143,7 @@ app.innerHTML = `
       </aside>
     </main>
     <nav class="mobile-tabs" aria-label="App navigation"><button type="button" data-nav-target="nav-home" aria-pressed="true">${glyph('tv', 19)}<span>Live</span></button><button type="button" data-nav-target="nav-guide" aria-pressed="false">${glyph('search', 19)}<span>Channels</span></button><button type="button" data-nav-target="nav-radio" aria-pressed="false">${glyph('signal', 19)}<span>Radio</span></button><button type="button" data-nav-target="nav-favorites" aria-pressed="false">${glyph('heart', 19)}<span>Saved</span></button></nav>
+    <dialog id="stream-dialog" class="stream-dialog" aria-labelledby="stream-dialog-title"><form id="stream-form" method="dialog"><div class="stream-dialog-top"><span>YOUR LIVE SOURCE</span><button id="stream-close" type="button" aria-label="Close">×</button></div><h2 id="stream-dialog-title">Connect a channel</h2><p id="stream-dialog-copy">Add an HLS stream to play it here. The address stays in this tab.</p><label for="stream-url">Stream URL</label><input id="stream-url" type="url" inputmode="url" placeholder="https://example.com/live.m3u8" autocomplete="off" spellcheck="false" required><p id="stream-dialog-error" class="stream-dialog-error" role="alert" hidden></p><div class="stream-dialog-actions"><button id="stream-remove" type="button" hidden>Remove feed</button><button id="stream-submit" type="submit">Play in OpenWave ${glyph('arrow', 16)}</button></div><small>Use an HLS .m3u8 address you can access. Browser playback also requires HTTPS and permission from the stream host.</small></form></dialog>
   </div>`;
 
 const els = {
@@ -238,7 +239,7 @@ const onboarding = createOnboarding(preferences => {
 
 function countryName(code) { return state.countries.find(c => c.code === code)?.name || code || 'Worldwide'; }
 function languageName(code) { return state.languages.find(l => l.code === code)?.name || webCatalogIndex?.languages?.find(l => l.code === code)?.name || code; }
-function channelMeta(ch) { return ch.private ? 'Private playlist · This tab only' : `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0, 2).join(', ') || titleCase(ch.categories[0] || 'TV')}`; }
+function channelMeta(ch) { return ch.custom ? 'Your stream · This tab only' : ch.private ? 'Private playlist · This tab only' : `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0, 2).join(', ') || titleCase(ch.categories[0] || 'TV')}`; }
 function findChannel(id) { return id.startsWith('private:') ? state.privateChannels.find(ch => ch.id === id) : state.channels.find(ch => ch.id === id) || state.directory.find(ch => ch.id === id) || state.sportsCatalog?.channels.find(ch => ch.id === id) || state.favoriteChannels.find(ch => ch.id === id); }
 function isUnavailable(ch) { return Date.now() - (state.unavailable[ch.id] || 0) < 30 * 60 * 1000; }
 function failedBrowserCheck(ch) { return WEB_MODE && ch.browser_check === 'failed' && !state.recovered.has(ch.id); }
@@ -257,6 +258,7 @@ function clearUnavailable(ch) {
   filterChannels(); renderRail();
 }
 function suggestAlternative(ch) {
+  if (ch.custom) return null;
   if (ch.private) return state.privateChannels.find(candidate => candidate.id !== ch.id);
   return state.channels.filter(candidate => candidate.id !== ch.id && !isUnavailable(candidate) && !failedBrowserCheck(candidate) && candidate.country === ch.country && candidate.categories.some(category => ch.categories.includes(category)))
     .sort((a, b) => (Number(b.languages?.some(language => ch.languages?.includes(language))) - Number(a.languages?.some(language => ch.languages?.includes(language)))) || (b.health_score || 0) - (a.health_score || 0))[0];
@@ -281,7 +283,8 @@ function channelMarkup(ch, index) {
   if (ch.private) return `<div class="channel-row ${selected ? 'playing' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="Play ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}><span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo private-logo">${glyph('tv', 20)}</span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>Private playlist · This tab only</small></span><span class="row-arrow">${glyph('arrow', 17)}</span></button></div>`;
   if (ch.directoryOnly || (WEB_MODE && !ch.url)) {
     const saved = state.favorites.has(ch.id);
-    return `<div class="channel-row directory-only"><span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo"><span>${escapeHTML(ch.name.slice(0, 2).toUpperCase())}</span></span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>${escapeHTML(channelMeta(ch))} · ${ch.provider ? `${ch.provider} viewing page` : 'No direct stream'}</small></span>${ch.website ? `<a class="official-link" href="${escapeHTML(ch.website)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${escapeHTML(ch.name)} ${ch.provider ? 'on Sun NXT' : 'official site'}">${ch.provider ? 'Sun NXT' : 'Official site'} ↗</a>` : ''}<button class="row-save ${saved ? 'saved' : ''}" data-save-id="${escapeHTML(ch.id)}" aria-label="${saved ? 'Remove' : 'Save'} ${escapeHTML(ch.name)} ${saved ? 'from' : 'to'} My channels" aria-pressed="${saved}" title="${saved ? 'Remove from' : 'Save to'} My channels">${glyph('heart', 17)}</button></div>`;
+    const connected = state.customSources.has(ch.id);
+    return `<div class="channel-row directory-only ${selected ? 'playing' : ''}">${connected ? `<button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="Play ${escapeHTML(ch.name)} from your stream" ${selected ? 'aria-current="true"' : ''}>` : ''}<span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo"><span>${escapeHTML(ch.name.slice(0, 2).toUpperCase())}</span></span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>${connected ? 'Your stream · This tab only' : `${escapeHTML(channelMeta(ch))} · No direct feed`}</small></span>${connected ? `<span class="row-arrow">${glyph('arrow', 17)}</span></button>` : ''}<button class="row-connect" data-connect-id="${escapeHTML(ch.id)}" aria-label="${connected ? 'Change' : 'Connect'} a stream for ${escapeHTML(ch.name)}">${connected ? 'Edit' : 'Connect feed'}</button><button class="row-save ${saved ? 'saved' : ''}" data-save-id="${escapeHTML(ch.id)}" aria-label="${saved ? 'Remove' : 'Save'} ${escapeHTML(ch.name)} ${saved ? 'from' : 'to'} My channels" aria-pressed="${saved}" title="${saved ? 'Remove from' : 'Save to'} My channels">${glyph('heart', 17)}</button></div>`;
   }
   const favorite = state.favorites.has(ch.id);
   const unavailable = isUnavailable(ch) || failedBrowserCheck(ch);
@@ -324,7 +327,7 @@ function renderList(withMotion = false) {
 }
 
 function renderRail() {
-  const favorites = [...state.favorites].map(id => findChannel(id)).filter(channel => channel && !channel.directoryOnly && (channel.url || !WEB_MODE));
+  const favorites = [...state.favorites].map(id => findChannel(id)).filter(channel => channel && (!channel.directoryOnly || state.customSources.has(channel.id)) && (channel.url || state.customSources.has(channel.id) || !WEB_MODE));
   const recent = state.recent.map(id => state.channels.find(ch => ch.id === id)).filter(Boolean).slice(0, 5);
   const picks = ['BBC News', 'France 24', 'ABC News Live', 'Euronews English', 'Bloomberg TV']
     .map(name => state.channels.find(ch => ch.name === name)).filter(Boolean);
@@ -460,7 +463,9 @@ function rememberChannel(id) {
 }
 
 async function playChannel(id, attempt = 0, preferredLanguage = null) {
-  const ch = findChannel(id);
+  const base = findChannel(id);
+  const customURL = state.customSources.get(id);
+  const ch = customURL && base ? { ...base, url: customURL, urls: [], streams: [], private: true, custom: true } : base;
   if (!ch) return;
   const serial = ++state.playSerial;
   if (preferredLanguage === null) preferredLanguage = state.language !== 'all' ? state.language : (parseQuery(state.search, state.countries, state.languages).languageCode || '');
@@ -473,7 +478,7 @@ async function playChannel(id, attempt = 0, preferredLanguage = null) {
   els.video.classList.add('visible');
   els.title.textContent = ch.name;
   els.meta.textContent = attempt ? `Trying another feed · ${attempt + 1}` : channelMeta(ch);
-  els.favorite.hidden = Boolean(ch.private); els.fullscreen.hidden = false;
+  els.favorite.hidden = id.startsWith('private:'); els.fullscreen.hidden = false;
   els.favorite.classList.toggle('is-favorite', state.favorites.has(id));
   els.favorite.setAttribute('aria-label', state.favorites.has(id) ? 'Remove from favorites' : 'Add to favorites');
   renderList(); rememberChannel(id);
@@ -624,6 +629,50 @@ function jumpToPlayer() {
   els.shell.scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'center' });
   els.shell.focus({ preventScroll: true });
 }
+const streamDialog = document.querySelector('#stream-dialog');
+const streamForm = document.querySelector('#stream-form');
+const streamInput = document.querySelector('#stream-url');
+const streamError = document.querySelector('#stream-dialog-error');
+const streamRemove = document.querySelector('#stream-remove');
+let streamChannelId = '';
+function openStreamDialog(id) {
+  const channel = findChannel(id);
+  if (!channel || !(channel.directoryOnly || (WEB_MODE && !channel.url))) return;
+  streamChannelId = id;
+  document.querySelector('#stream-dialog-title').textContent = `Connect ${channel.name}`;
+  document.querySelector('#stream-dialog-copy').textContent = `Play ${channel.name} in OpenWave using a stream you can access.`;
+  streamInput.value = state.customSources.get(id) || '';
+  streamError.hidden = true;
+  streamRemove.hidden = !state.customSources.has(id);
+  streamDialog.showModal();
+  streamInput.focus();
+}
+document.querySelector('#stream-close').addEventListener('click', () => streamDialog.close());
+streamDialog.addEventListener('click', event => { if (event.target === streamDialog) streamDialog.close(); });
+streamForm.addEventListener('submit', event => {
+  event.preventDefault();
+  let url;
+  try {
+    url = new URL(streamInput.value.trim());
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || !/\.m3u8$/i.test(url.pathname) || (WEB_MODE && url.protocol !== 'https:')) throw new Error();
+  } catch {
+    streamError.textContent = WEB_MODE ? 'Enter an HTTPS HLS URL ending in .m3u8.' : 'Enter an HTTP or HTTPS HLS URL ending in .m3u8.';
+    streamError.hidden = false;
+    return;
+  }
+  const id = streamChannelId;
+  state.customSources.set(id, url.href);
+  streamDialog.close();
+  filterChannels(); renderRail();
+  jumpToPlayer(); playChannel(id);
+});
+streamRemove.addEventListener('click', () => {
+  const id = streamChannelId;
+  state.customSources.delete(id);
+  streamDialog.close();
+  if (state.selected?.id === id) stopPrivatePlayback();
+  filterChannels(); renderRail();
+});
 document.querySelector('#cover-browse').addEventListener('click', () => { setNavActive('nav-guide'); jumpToGuide(); });
 document.querySelector('#header-guide').addEventListener('click', () => { setNavActive('nav-guide'); jumpToGuide(); });
 function setNavActive(id) {
@@ -656,6 +705,8 @@ document.querySelector('.brand').addEventListener('click', event => { event.prev
 els.list.addEventListener('click', event => {
   const save = event.target.closest('[data-save-id]');
   if (save) { toggleFavorite(save.dataset.saveId, save); return; }
+  const connect = event.target.closest('[data-connect-id]');
+  if (connect) { openStreamDialog(connect.dataset.connectId); return; }
   const row = event.target.closest('[data-id]'); if (row) { jumpToPlayer(); playChannel(row.dataset.id); }
 });
 els.rail.addEventListener('click', event => { const card = event.target.closest('[data-id]'); if (card) { jumpToPlayer(); playChannel(card.dataset.id); } });
