@@ -1,0 +1,33 @@
+export const CATEGORY_PHRASES = {
+  news: 'news current events headlines journalism politics world updates',
+  sports: 'sports live games football soccer cricket basketball athletics',
+  movies: 'movies cinema films drama actors',
+  music: 'music songs concerts artists radio',
+  kids: 'kids children cartoons family animation',
+  documentary: 'documentary nature science history learning',
+  entertainment: 'entertainment shows comedy celebrity variety',
+  education: 'education learning lectures school university',
+  cooking: 'cooking recipes food kitchen chefs',
+  travel: 'travel destinations places tourism',
+  religious: 'religious faith worship spiritual',
+  business: 'business finance markets economy',
+  culture: 'culture arts theater literature',
+  general: 'general television local programming mixed shows',
+  classic: 'classic television vintage shows',
+  comedy: 'comedy jokes standup humorous shows',
+  legislative: 'legislative parliament government public affairs',
+  lifestyle: 'lifestyle home wellness fashion',
+  outdoor: 'outdoor adventure recreation',
+  science: 'science technology research',
+  weather: 'weather forecasts climate',
+  animation: 'animation animated cartoons',
+  auto: 'auto cars vehicles motors',
+  family: 'family shows parents children',
+  interactive: 'interactive participatory television',
+  public: 'public community access television',
+  relax: 'relax calming ambient programs',
+  series: 'series episodic shows',
+  shop: 'shopping products home retail'
+};
+
+export const CATEGORIES = ['all', ...Object.keys(CATEGORY_PHRASES)];

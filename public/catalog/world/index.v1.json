@@ -4270,7 +4270,7 @@
       "code": "RU",
       "name": "Russia",
       "count": 247,
-      "directory_count": 782,
+      "directory_count": 781,
       "languages": [
         "ara",
         "bak",
@@ -4313,8 +4313,7 @@
         "series",
         "shop",
         "sports",
-        "travel",
-        "xxx"
+        "travel"
       ]
     },
     {
@@ -5615,7 +5614,7 @@
       "code": "US",
       "name": "United States",
       "count": 1385,
-      "directory_count": 4932,
+      "directory_count": 4931,
       "languages": [
         "acf",
         "aii",
@@ -5710,8 +5709,7 @@
         "shop",
         "sports",
         "travel",
-        "weather",
-        "xxx"
+        "weather"
       ]
     },
     {
@@ -7162,5 +7160,5 @@
     }
   ],
   "total": 6891,
-  "directory_total": 29744
+  "directory_total": 29742
 }

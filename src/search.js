@@ -1,26 +1,4 @@
-const CATEGORY_PHRASES = {
-  news: 'news current events headlines journalism politics world updates',
-  sports: 'sports live games football soccer cricket basketball athletics',
-  movies: 'movies cinema films drama actors',
-  music: 'music songs concerts artists radio',
-  kids: 'kids children cartoons family animation',
-  documentary: 'documentary nature science history learning',
-  entertainment: 'entertainment shows comedy celebrity variety',
-  education: 'education learning lectures school university',
-  cooking: 'cooking recipes food kitchen chefs',
-  travel: 'travel destinations places tourism',
-  religious: 'religious faith worship spiritual',
-  business: 'business finance markets economy',
-  culture: 'culture arts theater literature',
-  general: 'general television local programming mixed shows',
-  classic: 'classic television vintage shows',
-  comedy: 'comedy jokes standup humorous shows',
-  legislative: 'legislative parliament government public affairs',
-  lifestyle: 'lifestyle home wellness fashion',
-  outdoor: 'outdoor adventure recreation',
-  science: 'science technology research',
-  weather: 'weather forecasts climate'
-};
+import { CATEGORY_PHRASES } from './catalog-categories.js';
 
 const STOP = new Set(['show','shows','me','find','some','something','a','an','the','tv','channel','channels','from','in','for','with','about','watch','live','please','i','want','to','relaxing','calming','interesting','informative']);
 const SYNONYMS = {

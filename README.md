@@ -41,7 +41,7 @@ For interface development, run `go run . -no-browser -addr 127.0.0.1:8765` and `
 
 ## Worldwide web beta, India first
 
-The [worldwide web beta](https://openwave-world-beta.pages.dev/) starts with India. **Watch** indexes 6,891 direct-stream candidates in 174 countries. **All channels** includes 29,744 active channel identities across 231 countries and regions, with an official-site link where the source supplies a usable one. India has 620 stream-linked channels among 1,447 indexed identities; 587 passed a limited browser-origin check and appear in the default Watch guide. These are candidate links, not guaranteed live channels. The web build plays direct HTTPS HLS without the Go server; it does not relay video or include the desktop AI runtime. See [web beta notes](docs/web-beta.md) for installation, build, and testing limits.
+The [worldwide web beta](https://openwave-world-beta.pages.dev/) starts with India. **Watch** indexes 6,891 direct-stream candidates in 174 countries. **All channels** includes 29,742 active channel identities across 231 countries and regions, with an official-site link where the source supplies a usable one. India has 620 stream-linked channels among 1,447 indexed identities; 587 passed a limited browser-origin check and appear in the default Watch guide. These are candidate links, not guaranteed live channels. The web build plays direct HTTPS HLS without the Go server; it does not relay video or include the desktop AI runtime. See [web beta notes](docs/web-beta.md) for installation, build, and testing limits.
 
 ## How playback works
 

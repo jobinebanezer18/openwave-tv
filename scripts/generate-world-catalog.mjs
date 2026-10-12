@@ -160,7 +160,7 @@ function main() {
     add('IN', channel, [channel.url, ...(Array.isArray(channel.urls) ? channel.urls : [])], { curated: true });
   }
   for (const channel of upstreamChannels) {
-    if (channel?.is_nsfw || channel?.closed) continue;
+    if (channel?.is_nsfw || channel?.closed || channel?.categories?.includes('xxx')) continue;
     const code = normalizeCode(channel?.country);
     if (!code || !displayCountry(code)) continue;
     const urls = streamsById.get(channel.id) || [];
@@ -187,7 +187,7 @@ function main() {
   // Keep identities without a direct browser feed in a separate directory.
   // They are discoverable, but never represented as playable rows.
   for (const channel of upstreamChannels) {
-    if (channel?.is_nsfw || channel?.closed) continue;
+    if (channel?.is_nsfw || channel?.closed || channel?.categories?.includes('xxx')) continue;
     const code = normalizeCode(channel?.country);
     if (!code || !displayCountry(code) || typeof channel.id !== 'string' || typeof channel.name !== 'string' || !channel.name.trim()) continue;
     const record = ensureCountry(code);

@@ -1,12 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { CATEGORIES } from '../src/catalog-categories.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../public/catalog/world');
 const index = JSON.parse(fs.readFileSync(path.join(root, 'index.v1.json'), 'utf8'));
 const errors = [];
 const seenIds = new Set();
 const seenCountries = new Set();
+const supportedCategories = new Set(CATEGORIES);
 let total = 0;
 let directoryTotal = 0;
 
@@ -48,7 +50,7 @@ for (const country of index.countries || []) {
     if (typeof channel.id !== 'string' || !channel.id || seenIds.has(channel.id)) errors.push(`${code} has a missing or repeated channel ID.`);
     seenIds.add(channel.id);
     if (typeof channel.name !== 'string' || !channel.name.trim() || channel.country !== code) errors.push(`${code} has invalid channel metadata.`);
-    if (!Array.isArray(channel.languages) || !Array.isArray(channel.categories)) errors.push(`${code}:${channel.id} has invalid labels.`);
+    if (!Array.isArray(channel.languages) || !Array.isArray(channel.categories) || channel.categories.some(category => !supportedCategories.has(category))) errors.push(`${code}:${channel.id} has invalid labels.`);
     const urls = channel.urls || [channel.url];
     if (!Array.isArray(urls) || !urls.length || urls[0] !== channel.url || urls.some(url => !hlsUrl(url))) errors.push(`${code}:${channel.id} has invalid HLS URLs.`);
     for (const url of urls) {
@@ -60,7 +62,7 @@ for (const country of index.countries || []) {
     if (typeof channel.id !== 'string' || !channel.id || seenIds.has(channel.id)) errors.push(`${code} has a missing or repeated directory ID.`);
     seenIds.add(channel.id);
     if (typeof channel.name !== 'string' || !channel.name.trim() || channel.country !== code) errors.push(`${code} has invalid directory metadata.`);
-    if (!Array.isArray(channel.languages) || !Array.isArray(channel.categories)) errors.push(`${code}:${channel.id} has invalid directory labels.`);
+    if (!Array.isArray(channel.languages) || !Array.isArray(channel.categories) || channel.categories.some(category => !supportedCategories.has(category))) errors.push(`${code}:${channel.id} has invalid directory labels.`);
     if (channel.url || (channel.website && !websiteUrl(channel.website))) errors.push(`${code}:${channel.id} has an invalid directory link.`);
   }
 }

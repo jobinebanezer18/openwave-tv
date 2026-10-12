@@ -2,7 +2,7 @@
 
 **Live beta:** https://openwave-world-beta.pages.dev/
 
-OpenWave's browser build starts with India and lets viewers switch to other countries in Preferences or Refine channels. **Watch** has **6,891 direct-stream candidates in 174 countries**. **All channels** has **29,744 active channel identities across 231 countries and regions**, including channels with no direct browser feed. India has **620 stream-linked channels within 1,447 indexed identities**. On 12 October 2026, a bounded manifest and first-child CORS check found 587 India entries with a candidate direct browser feed; 33 failed that check or a follow-up Chromium playback check. The default India Watch guide starts with those 587, while search still exposes failed entries for retry. These checks are point-in-time signals, not proof of continuous playback or media rights.
+OpenWave's browser build starts with India and lets viewers switch to other countries in Preferences or Refine channels. **Watch** has **6,891 direct-stream candidates in 174 countries**. **All channels** has **29,742 active channel identities across 231 countries and regions**, including channels with no direct browser feed. India has **620 stream-linked channels within 1,447 indexed identities**. On 12 October 2026, a bounded manifest and first-child CORS check found 587 India entries with a candidate direct browser feed; 33 failed that check or a follow-up Chromium playback check. The default India Watch guide starts with those 587, while search still exposes failed entries for retry. These checks are point-in-time signals, not proof of continuous playback or media rights.
 
 ## Catalog and playback
 

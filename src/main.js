@@ -6,6 +6,7 @@ import { createOnboarding } from './onboarding.js';
 import { parsePrivatePlaylist, PRIVATE_PLAYLIST_MAX_BYTES } from './private-playlist.js';
 import { registerPwa } from './pwa.js';
 import { createWebCatalog } from './web-catalog.js';
+import { CATEGORIES } from './catalog-categories.js';
 import './style.css';
 
 const app = document.querySelector('#app');
@@ -13,7 +14,7 @@ const WEB_MODE = import.meta.env.VITE_WEB_MODE === true;
 const webCatalog = WEB_MODE ? createWebCatalog() : null;
 if (WEB_MODE) registerPwa();
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const categories = ['all', 'news', 'sports', 'movies', 'music', 'kids', 'documentary', 'entertainment', 'education', 'cooking', 'travel', 'religious', 'business', 'culture', 'general', 'classic', 'comedy', 'legislative', 'lifestyle', 'outdoor', 'science', 'weather'];
+const categories = CATEGORIES;
 const quickCategories = categories.slice(0, 6);
 const state = {
   channels: [], directory: [], directoryView: false, countries: [], languages: [], results: [], selected: null, hls: null,
