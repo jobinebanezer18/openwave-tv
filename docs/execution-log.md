@@ -19,7 +19,7 @@ Date: 12 October 2026. This records verified work against the [launch plan](laun
 - Go tests, race tests, vet, and diff whitespace checks passed locally.
 - Local packaged macOS arm64 smoke verified archive hash, loopback startup, HTML, favicon, and embedded JS asset.
 - Local browser test verified first-run preferences and bundled radio catalog on the development server.
-- Linux/Windows GitHub smoke and the complete changed-workflow run: **pending until the commit is pushed and CI completes**.
+- First changed-workflow run: Linux and Windows packaged smoke passed; the macOS runner failed before smoke execution because the CI-selected Go 1.22 toolchain's `go run` binary lacked an `LC_UUID` load command required by that runner. CI is now pinned to [Go 1.27.2](https://go.dev/doc/devel/release), a current supported release; the rerun is pending. This is a toolchain compatibility issue, not a passed macOS install test.
 - Physical iOS/Android playback, direct APK install, signed desktop install/update, rights review, multi-region stream reliability, accessibility audit: **not yet performed**.
 
 ## What is still blocked from a production claim
