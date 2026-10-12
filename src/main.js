@@ -25,8 +25,8 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const categories = CATEGORIES;
 const quickCategories = categories.slice(0, 6);
 const state = {
-  channels: [], directory: [], directoryView: false, sportsCatalog: null, sportsWorldwide: false, sportsCountry: 'all', nativeSportsReturn: null, countries: [], languages: [], results: [], selected: null, hls: null,
-  privateChannels: [], privateOnly: false, customSources: new Map(),
+  channels: [], sportsCatalog: null, sportsWorldwide: false, sportsCountry: 'all', nativeSportsReturn: null, countries: [], languages: [], results: [], selected: null, hls: null,
+  privateChannels: [], privateOnly: false,
   search: '', category: 'all', country: 'all', language: 'all', favoritesOnly: false,
   favorites: new Set(readStore('openwave-favorites', [])),
   favoriteCountries: readStore('openwave-favorite-countries', {}), favoriteChannels: [],
@@ -124,7 +124,6 @@ app.innerHTML = `
         <div class="guide-heading"><div><h2 id="guide-title">Explore live</h2><p id="result-summary" aria-live="polite">Loading channels…</p></div><button id="favorites-filter" class="favorites-filter" aria-pressed="false" title="Show saved channels">${glyph('heart', 17)}<span>My channels</span><span class="favorite-count"></span></button></div>
         <form id="search-form" class="search-box"><label class="sr-only" for="search-input">Search channels</label>${glyph('search', 19)}<input id="search-input" type="search" placeholder="Find a channel, mood, or place" autocomplete="off"><button type="submit" aria-label="Smart search using on-device MiniLM" title="Smart search using on-device MiniLM"><span class="ai-star">✦</span> Smart</button></form>
         <p class="ai-hint" id="ai-hint">Smart search uses MiniLM on this device. First use downloads the model.</p>
-        <div id="guide-modes" class="guide-modes" role="group" aria-label="Guide view" ${WEB_MODE ? '' : 'hidden'}><button id="watch-mode" type="button" class="selected" aria-pressed="true">Watch</button><button id="directory-mode" type="button" aria-pressed="false">All channels <span id="directory-total"></span></button></div>
         <div class="quick-categories" id="quick-categories" role="group" aria-label="Quick category filters"></div>
         <div class="filter-area"><button id="filter-toggle" class="filter-toggle" aria-expanded="false" aria-controls="advanced-filters">${glyph('sliders', 17)}<span>Refine channels</span><span id="filter-count" class="filter-count"></span>${glyph('chevron', 15)}</button>
           <div id="advanced-filters" class="advanced-filters" hidden><div class="filters"><div><span class="filter-label">Country</span><button id="country-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">Everywhere ${glyph('chevron', 15)}</button></div><div><span class="filter-label">Language</span><button id="language-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">Any language ${glyph('chevron', 15)}</button></div></div><div class="category-field"><span class="filter-label">Browse category</span><button id="category-trigger" class="filter-choice" aria-haspopup="dialog" aria-controls="filter-picker" aria-expanded="false">All categories ${glyph('chevron', 15)}</button></div></div></div>
@@ -143,7 +142,6 @@ app.innerHTML = `
       </aside>
     </main>
     <nav class="mobile-tabs" aria-label="App navigation"><button type="button" data-nav-target="nav-home" aria-pressed="true">${glyph('tv', 19)}<span>Live</span></button><button type="button" data-nav-target="nav-guide" aria-pressed="false">${glyph('search', 19)}<span>Channels</span></button><button type="button" data-nav-target="nav-radio" aria-pressed="false">${glyph('signal', 19)}<span>Radio</span></button><button type="button" data-nav-target="nav-favorites" aria-pressed="false">${glyph('heart', 19)}<span>Saved</span></button></nav>
-    <dialog id="stream-dialog" class="stream-dialog" aria-labelledby="stream-dialog-title"><form id="stream-form" method="dialog"><div class="stream-dialog-top"><span>YOUR LIVE SOURCE</span><button id="stream-close" type="button" aria-label="Close">×</button></div><h2 id="stream-dialog-title">Connect a channel</h2><p id="stream-dialog-copy">Add an HLS stream to play it here. The address stays in this tab.</p><label for="stream-url">Stream URL</label><input id="stream-url" type="url" inputmode="url" placeholder="https://example.com/live.m3u8" autocomplete="off" spellcheck="false" required><p id="stream-dialog-error" class="stream-dialog-error" role="alert" hidden></p><div class="stream-dialog-actions"><button id="stream-remove" type="button" hidden>Remove feed</button><button id="stream-submit" type="submit">Play in OpenWave ${glyph('arrow', 16)}</button></div><small>Use an HLS .m3u8 address you can access. Browser playback also requires HTTPS and permission from the stream host.</small></form></dialog>
   </div>`;
 
 const els = {
@@ -216,7 +214,6 @@ function onboardingOptions() {
 }
 const onboarding = createOnboarding(preferences => {
   state.preferences = preferences;
-  state.directoryView = false;
   if (!WEB_MODE) state.country = preferences.country || 'all';
   state.language = preferences.language || 'all';
   state.category = 'all';
@@ -231,7 +228,6 @@ const onboarding = createOnboarding(preferences => {
   radioMode.hide();
   setNavActive('nav-home');
   radioMode.applyPreferences(preferences);
-  updateGuideMode();
   if (WEB_MODE) activateWebCountry(preferences.country || 'IN');
   else { filterChannels(true); renderRail(); }
   if (window.matchMedia('(max-width: 860px)').matches) document.querySelector('#guide').scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'start' });
@@ -239,8 +235,8 @@ const onboarding = createOnboarding(preferences => {
 
 function countryName(code) { return state.countries.find(c => c.code === code)?.name || code || 'Worldwide'; }
 function languageName(code) { return state.languages.find(l => l.code === code)?.name || webCatalogIndex?.languages?.find(l => l.code === code)?.name || code; }
-function channelMeta(ch) { return ch.custom ? 'Your stream · This tab only' : ch.private ? 'Private playlist · This tab only' : `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0, 2).join(', ') || titleCase(ch.categories[0] || 'TV')}`; }
-function findChannel(id) { return id.startsWith('private:') ? state.privateChannels.find(ch => ch.id === id) : state.channels.find(ch => ch.id === id) || state.directory.find(ch => ch.id === id) || state.sportsCatalog?.channels.find(ch => ch.id === id) || state.favoriteChannels.find(ch => ch.id === id); }
+function channelMeta(ch) { return ch.private ? 'Private playlist · This tab only' : `${countryName(ch.country)} · ${(ch.languages || []).map(languageName).slice(0, 2).join(', ') || titleCase(ch.categories[0] || 'TV')}`; }
+function findChannel(id) { return id.startsWith('private:') ? state.privateChannels.find(ch => ch.id === id) : state.channels.find(ch => ch.id === id) || state.sportsCatalog?.channels.find(ch => ch.id === id) || state.favoriteChannels.find(ch => ch.id === id); }
 function isUnavailable(ch) { return Date.now() - (state.unavailable[ch.id] || 0) < 30 * 60 * 1000; }
 function failedBrowserCheck(ch) { return WEB_MODE && ch.browser_check === 'failed' && !state.recovered.has(ch.id); }
 function rememberUnavailable(ch) {
@@ -258,7 +254,6 @@ function clearUnavailable(ch) {
   filterChannels(); renderRail();
 }
 function suggestAlternative(ch) {
-  if (ch.custom) return null;
   if (ch.private) return state.privateChannels.find(candidate => candidate.id !== ch.id);
   return state.channels.filter(candidate => candidate.id !== ch.id && !isUnavailable(candidate) && !failedBrowserCheck(candidate) && candidate.country === ch.country && candidate.categories.some(category => ch.categories.includes(category)))
     .sort((a, b) => (Number(b.languages?.some(language => ch.languages?.includes(language))) - Number(a.languages?.some(language => ch.languages?.includes(language)))) || (b.health_score || 0) - (a.health_score || 0))[0];
@@ -270,8 +265,7 @@ function renderClock() {
 renderClock(); setInterval(renderClock, 60_000);
 
 function renderCategories() {
-  const categoryPool = WEB_MODE && state.directoryView ? [...state.channels, ...state.directory] : state.channels;
-  const visibleCategories = WEB_MODE ? quickCategories.filter(c => c === 'all' || categoryPool.some(ch => ch.categories.includes(c))) : quickCategories;
+  const visibleCategories = WEB_MODE ? quickCategories.filter(c => c === 'all' || state.channels.some(ch => ch.categories.includes(c))) : quickCategories;
   els.quick.innerHTML = visibleCategories.map(c => `<button class="quick-chip ${state.category === c ? 'selected' : ''}" data-category="${c}" aria-pressed="${state.category === c}">${titleCase(c)}</button>`).join('');
   els.countryTrigger.innerHTML = `${escapeHTML(state.sportsWorldwide ? state.sportsCountry === 'all' ? 'Worldwide' : countryName(state.sportsCountry) : state.country === 'all' ? 'Everywhere' : countryName(state.country))} ${glyph('chevron', 15)}`;
   els.languageTrigger.innerHTML = `${escapeHTML(state.language === 'all' ? 'Any language' : languageName(state.language))} ${glyph('chevron', 15)}`;
@@ -281,11 +275,6 @@ function renderCategories() {
 function channelMarkup(ch, index) {
   const selected = state.selected?.id === ch.id;
   if (ch.private) return `<div class="channel-row ${selected ? 'playing' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="Play ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}><span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo private-logo">${glyph('tv', 20)}</span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>Private playlist · This tab only</small></span><span class="row-arrow">${glyph('arrow', 17)}</span></button></div>`;
-  if (ch.directoryOnly || (WEB_MODE && !ch.url)) {
-    const saved = state.favorites.has(ch.id);
-    const connected = state.customSources.has(ch.id);
-    return `<div class="channel-row directory-only ${selected ? 'playing' : ''}">${connected ? `<button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="Play ${escapeHTML(ch.name)} from your stream" ${selected ? 'aria-current="true"' : ''}>` : ''}<span class="row-index">${String(index + 1).padStart(2, '0')}</span><span class="channel-logo"><span>${escapeHTML(ch.name.slice(0, 2).toUpperCase())}</span></span><span class="channel-info"><strong>${escapeHTML(ch.name)}</strong><small>${connected ? 'Your stream · This tab only' : `${escapeHTML(channelMeta(ch))} · No direct feed`}</small></span>${connected ? `<span class="row-arrow">${glyph('arrow', 17)}</span></button>` : ''}<button class="row-connect" data-connect-id="${escapeHTML(ch.id)}" aria-label="${connected ? 'Change' : 'Connect'} a stream for ${escapeHTML(ch.name)}">${connected ? 'Edit' : 'Connect feed'}</button><button class="row-save ${saved ? 'saved' : ''}" data-save-id="${escapeHTML(ch.id)}" aria-label="${saved ? 'Remove' : 'Save'} ${escapeHTML(ch.name)} ${saved ? 'from' : 'to'} My channels" aria-pressed="${saved}" title="${saved ? 'Remove from' : 'Save to'} My channels">${glyph('heart', 17)}</button></div>`;
-  }
   const favorite = state.favorites.has(ch.id);
   const unavailable = isUnavailable(ch) || failedBrowserCheck(ch);
   return `<div class="channel-row ${selected ? 'playing' : ''} ${unavailable ? 'unavailable' : ''}"><button class="row-main" data-id="${escapeHTML(ch.id)}" aria-label="${unavailable ? 'Retry' : 'Play'} ${escapeHTML(ch.name)}" ${selected ? 'aria-current="true"' : ''}>
@@ -304,14 +293,11 @@ function renderList(withMotion = false) {
   if (NATIVE_MODE) nativePage = Math.min(nativePage, pageCount - 1);
   const first = NATIVE_MODE ? nativePage * nativePageSize : 0;
   const displayed = state.results.slice(first, NATIVE_MODE ? first + nativePageSize : shown);
-  const directoryAvailable = WEB_MODE && !state.directoryView && !state.search && !state.favoritesOnly && state.channels.length === 0 && state.directory.length > 0;
-  els.list.innerHTML = displayed.length ? displayed.map((channel, index) => channelMarkup(channel, first + index)).join('') : `<div class="empty-list">${glyph(state.favoritesOnly ? 'heart' : 'search', 25)}<strong>${state.favoritesOnly ? 'Your shortlist starts here' : directoryAvailable ? 'No direct stream indexed' : 'No channels here yet'}</strong><p>${state.favoritesOnly ? 'Tap a heart beside any channel to save it here.' : directoryAvailable ? 'Open All channels to browse this country’s directory.' : 'Try a broader search or clear a filter.'}</p></div>`;
+  els.list.innerHTML = displayed.length ? displayed.map((channel, index) => channelMarkup(channel, first + index)).join('') : `<div class="empty-list">${glyph(state.favoritesOnly ? 'heart' : 'search', 25)}<strong>${state.favoritesOnly ? 'Your shortlist starts here' : 'No streams found'}</strong><p>${state.favoritesOnly ? 'Tap a heart beside any channel to save it here.' : 'Try a broader search or clear a filter.'}</p></div>`;
   const count = state.results.length.toLocaleString();
   const channelWord = state.results.length === 1 ? 'channel' : 'channels';
   els.count.textContent = count;
-  const directCount = state.results.filter(channel => Boolean(channel.url)).length;
-  const includesDirectory = WEB_MODE && !state.favoritesOnly && (state.directoryView || Boolean(state.search.trim()) || state.language !== 'all' || state.category === 'sports');
-  els.result.textContent = state.privateOnly ? `${count} ${channelWord} from your file` : state.favoritesOnly ? `${count} saved ${channelWord}` : state.sportsWorldwide ? `${count} sports channels worldwide · ${directCount.toLocaleString()} with stream links` : includesDirectory ? `${count} ${channelWord} found · ${directCount.toLocaleString()} with stream links` : WEB_MODE && !state.search && state.category === 'all' && state.language === 'all' ? `${count} to try · ${state.channels.length.toLocaleString()} stream links indexed in ${countryName(state.country)}` : WEB_MODE ? `${count} matching streams · playback varies` : state.results.some(channel => channel.directoryOnly) ? `${count} ${channelWord} found · ${state.results.filter(channel => !channel.directoryOnly).length.toLocaleString()} to try here` : `${count} ${channelWord} ready to explore`;
+  els.result.textContent = state.privateOnly ? `${count} ${channelWord} from your file` : state.favoritesOnly ? `${count} saved ${channelWord}` : state.sportsWorldwide ? `${count} sports streams worldwide · playback varies` : WEB_MODE && !state.search && state.category === 'all' && state.language === 'all' ? `${count} to try in ${countryName(state.country)} · playback varies` : WEB_MODE ? `${count} matching streams · playback varies` : `${count} ${channelWord} ready to explore`;
   els.more.hidden = NATIVE_MODE || state.results.length <= shown;
   els.pager.hidden = !NATIVE_MODE;
   if (NATIVE_MODE) {
@@ -327,7 +313,7 @@ function renderList(withMotion = false) {
 }
 
 function renderRail() {
-  const favorites = [...state.favorites].map(id => findChannel(id)).filter(channel => channel && (!channel.directoryOnly || state.customSources.has(channel.id)) && (channel.url || state.customSources.has(channel.id) || !WEB_MODE));
+  const favorites = [...state.favorites].map(id => findChannel(id)).filter(channel => channel && !channel.directoryOnly && (channel.url || !WEB_MODE));
   const recent = state.recent.map(id => state.channels.find(ch => ch.id === id)).filter(Boolean).slice(0, 5);
   const picks = ['BBC News', 'France 24', 'ABC News Live', 'Euronews English', 'Bloomberg TV']
     .map(name => state.channels.find(ch => ch.name === name)).filter(Boolean);
@@ -354,11 +340,9 @@ function filterChannels(withMotion = false) {
   if (WEB_MODE) {
     els.quick.hidden = state.privateOnly || state.favoritesOnly;
     document.querySelector('.filter-area').hidden = state.privateOnly || state.favoritesOnly;
-    document.querySelector('#guide-modes').hidden = state.privateOnly || state.favoritesOnly;
     document.querySelector('.cover-content p').textContent = state.sportsWorldwide
       ? 'Sports from around the world. Pick a channel to try its direct stream.'
-      : `${countryName(state.country)} channels are indexed here. Pick one to try its direct stream.`;
-    updateGuideMode();
+      : `${countryName(state.country)} streams are indexed here. Pick one to tune in.`;
   }
   if (state.privateOnly) {
     const query = state.search.trim().toLocaleLowerCase();
@@ -367,17 +351,15 @@ function filterChannels(withMotion = false) {
     els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>PRIVATE CHANNELS</small>`;
     return;
   }
-  const discoverDirectory = !state.favoritesOnly && state.directory.length > 0 && (WEB_MODE && state.directoryView || Boolean(state.search.trim()) || state.language !== 'all' || state.category === 'sports');
-  let pool = WEB_MODE && state.favoritesOnly ? state.favoriteChannels : state.favoritesOnly ? [...state.channels, ...state.directory] : state.sportsWorldwide ? [...state.sportsCatalog.channels, ...state.sportsCatalog.directory] : discoverDirectory ? [...state.channels, ...state.directory] : state.channels;
+  let pool = WEB_MODE && state.favoritesOnly ? state.favoriteChannels : state.sportsWorldwide ? state.sportsCatalog.channels.filter(channel => webStreamURLs(channel).length) : state.channels;
   if (state.favoritesOnly) pool = pool.filter(ch => state.favorites.has(ch.id));
-  else if (!state.search.trim() && !state.directoryView) pool = pool.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch));
+  else if (!state.search.trim()) pool = pool.filter(ch => !isUnavailable(ch) && !failedBrowserCheck(ch));
   if (state.sportsWorldwide && state.sportsCountry !== 'all') pool = pool.filter(ch => ch.country === state.sportsCountry);
   else if (!state.sportsWorldwide && !(WEB_MODE && state.favoritesOnly) && state.country !== 'all') pool = pool.filter(ch => ch.country === state.country);
   if (!(WEB_MODE && state.favoritesOnly) && state.language !== 'all') pool = pool.filter(ch => ch.languages?.includes(state.language));
   if (state.category !== 'all') pool = pool.filter(ch => ch.categories.includes(state.category));
   state.results = rankChannels(pool, state.search, state.countries, state.sportsWorldwide ? webCatalogIndex.languages : state.languages, state.aiCategory);
   state.results.sort((a, b) => Number(isUnavailable(a) || failedBrowserCheck(a)) - Number(isUnavailable(b) || failedBrowserCheck(b)));
-  if (WEB_MODE && state.directoryView && !state.search.trim()) state.results.sort((a, b) => a.name.localeCompare(b.name));
   if (WEB_MODE && !state.favoritesOnly && !state.search.trim() && state.category === 'all' && state.preferences?.interests?.length) {
     const preferred = new Set(state.preferences.interests);
     state.results.sort((a, b) => Number(b.categories.some(category => preferred.has(category))) - Number(a.categories.some(category => preferred.has(category))));
@@ -386,15 +368,12 @@ function filterChannels(withMotion = false) {
     const priorityLanguages = new Set(['tam', 'hin', 'mal', 'kan', 'eng']);
     state.results.sort((a, b) => Number(Boolean(b.url)) - Number(Boolean(a.url)) || Number(b.country === 'IN') - Number(a.country === 'IN') || Number(b.languages?.some(code => priorityLanguages.has(code))) - Number(a.languages?.some(code => priorityLanguages.has(code))) || a.name.localeCompare(b.name));
   }
-  if (state.country === 'IN' && state.language === 'tam' && !state.search.trim() && state.category === 'all' && !state.sportsWorldwide) {
-    state.results.sort((a, b) => Number(b.id === 'SunTV.in') - Number(a.id === 'SunTV.in'));
-  }
   if (state.search && !state.results.length && state.aiCategory) {
     const parsed = parseQuery(state.search, state.countries, state.languages);
     state.results = pool.filter(ch => (!parsed.countryCode || ch.country === parsed.countryCode) && (!parsed.languageCode || ch.languages?.includes(parsed.languageCode)) && ch.categories.includes(state.aiCategory));
   }
   renderCategories(); renderList(withMotion);
-  els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>${state.sportsWorldwide ? 'WORLD SPORTS' : state.favoritesOnly ? 'SAVED CHANNELS' : WEB_MODE && (state.directoryView || discoverDirectory) ? 'CHANNELS FOUND' : WEB_MODE ? 'CHANNELS TO TRY' : 'CHANNELS TO EXPLORE'}</small>`;
+  els.stageCount.innerHTML = `<strong>${state.results.length.toLocaleString()}</strong><small>${state.sportsWorldwide ? 'WORLD SPORTS' : state.favoritesOnly ? 'SAVED CHANNELS' : WEB_MODE ? 'CHANNELS TO TRY' : 'CHANNELS TO EXPLORE'}</small>`;
   const activeFilters = [state.sportsWorldwide ? state.sportsCountry !== 'all' : state.country !== 'all', state.language !== 'all', state.category !== 'all'].filter(Boolean).length;
   els.filterCount.textContent = activeFilters ? String(activeFilters) : '';
 }
@@ -463,9 +442,7 @@ function rememberChannel(id) {
 }
 
 async function playChannel(id, attempt = 0, preferredLanguage = null) {
-  const base = findChannel(id);
-  const customURL = state.customSources.get(id);
-  const ch = customURL && base ? { ...base, url: customURL, urls: [], streams: [], private: true, custom: true } : base;
+  const ch = findChannel(id);
   if (!ch) return;
   const serial = ++state.playSerial;
   if (preferredLanguage === null) preferredLanguage = state.language !== 'all' ? state.language : (parseQuery(state.search, state.countries, state.languages).languageCode || '');
@@ -478,7 +455,7 @@ async function playChannel(id, attempt = 0, preferredLanguage = null) {
   els.video.classList.add('visible');
   els.title.textContent = ch.name;
   els.meta.textContent = attempt ? `Trying another feed · ${attempt + 1}` : channelMeta(ch);
-  els.favorite.hidden = id.startsWith('private:'); els.fullscreen.hidden = false;
+  els.favorite.hidden = Boolean(ch.private); els.fullscreen.hidden = false;
   els.favorite.classList.toggle('is-favorite', state.favorites.has(id));
   els.favorite.setAttribute('aria-label', state.favorites.has(id) ? 'Remove from favorites' : 'Add to favorites');
   renderList(); rememberChannel(id);
@@ -629,50 +606,6 @@ function jumpToPlayer() {
   els.shell.scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'center' });
   els.shell.focus({ preventScroll: true });
 }
-const streamDialog = document.querySelector('#stream-dialog');
-const streamForm = document.querySelector('#stream-form');
-const streamInput = document.querySelector('#stream-url');
-const streamError = document.querySelector('#stream-dialog-error');
-const streamRemove = document.querySelector('#stream-remove');
-let streamChannelId = '';
-function openStreamDialog(id) {
-  const channel = findChannel(id);
-  if (!channel || !(channel.directoryOnly || (WEB_MODE && !channel.url))) return;
-  streamChannelId = id;
-  document.querySelector('#stream-dialog-title').textContent = `Connect ${channel.name}`;
-  document.querySelector('#stream-dialog-copy').textContent = `Play ${channel.name} in OpenWave using a stream you can access.`;
-  streamInput.value = state.customSources.get(id) || '';
-  streamError.hidden = true;
-  streamRemove.hidden = !state.customSources.has(id);
-  streamDialog.showModal();
-  streamInput.focus();
-}
-document.querySelector('#stream-close').addEventListener('click', () => streamDialog.close());
-streamDialog.addEventListener('click', event => { if (event.target === streamDialog) streamDialog.close(); });
-streamForm.addEventListener('submit', event => {
-  event.preventDefault();
-  let url;
-  try {
-    url = new URL(streamInput.value.trim());
-    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || !/\.m3u8$/i.test(url.pathname) || (WEB_MODE && url.protocol !== 'https:')) throw new Error();
-  } catch {
-    streamError.textContent = WEB_MODE ? 'Enter an HTTPS HLS URL ending in .m3u8.' : 'Enter an HTTP or HTTPS HLS URL ending in .m3u8.';
-    streamError.hidden = false;
-    return;
-  }
-  const id = streamChannelId;
-  state.customSources.set(id, url.href);
-  streamDialog.close();
-  filterChannels(); renderRail();
-  jumpToPlayer(); playChannel(id);
-});
-streamRemove.addEventListener('click', () => {
-  const id = streamChannelId;
-  state.customSources.delete(id);
-  streamDialog.close();
-  if (state.selected?.id === id) stopPrivatePlayback();
-  filterChannels(); renderRail();
-});
 document.querySelector('#cover-browse').addEventListener('click', () => { setNavActive('nav-guide'); jumpToGuide(); });
 document.querySelector('#header-guide').addEventListener('click', () => { setNavActive('nav-guide'); jumpToGuide(); });
 function setNavActive(id) {
@@ -685,7 +618,7 @@ document.querySelector('.mobile-tabs').addEventListener('click', event => {
 });
 document.querySelector('#nav-home').addEventListener('click', () => { radioMode.hide(); setNavActive('nav-home'); window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'instant' : 'smooth' }); });
 document.querySelector('#nav-guide').addEventListener('click', () => { setPrivateView(false); setNavActive('nav-guide'); jumpToGuide(); });
-document.querySelector('#nav-favorites').addEventListener('click', () => { setPrivateView(false); state.favoritesOnly = true; if (WEB_MODE) { state.search = ''; els.search.value = ''; state.category = 'all'; state.directoryView = false; state.sportsWorldwide = false; updateGuideMode(); } els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); if (WEB_MODE) loadFavoriteChannels(); jumpToGuide(); });
+document.querySelector('#nav-favorites').addEventListener('click', () => { setPrivateView(false); state.favoritesOnly = true; if (WEB_MODE) { state.search = ''; els.search.value = ''; state.category = 'all'; state.sportsWorldwide = false; } els.favoritesFilter.classList.add('active'); els.favoritesFilter.setAttribute('aria-pressed', 'true'); setNavActive('nav-favorites'); filterChannels(true); if (WEB_MODE) loadFavoriteChannels(); jumpToGuide(); });
 function showRadio() { els.video.pause(); setNavActive('nav-radio'); radioMode.show(); }
 document.querySelector('#nav-radio').addEventListener('click', showRadio);
 document.querySelector('#mobile-radio').addEventListener('click', showRadio);
@@ -705,8 +638,6 @@ document.querySelector('.brand').addEventListener('click', event => { event.prev
 els.list.addEventListener('click', event => {
   const save = event.target.closest('[data-save-id]');
   if (save) { toggleFavorite(save.dataset.saveId, save); return; }
-  const connect = event.target.closest('[data-connect-id]');
-  if (connect) { openStreamDialog(connect.dataset.connectId); return; }
   const row = event.target.closest('[data-id]'); if (row) { jumpToPlayer(); playChannel(row.dataset.id); }
 });
 els.rail.addEventListener('click', event => { const card = event.target.closest('[data-id]'); if (card) { jumpToPlayer(); playChannel(card.dataset.id); } });
@@ -724,9 +655,8 @@ els.list.addEventListener('keydown', event => {
   event.preventDefault();
 });
 async function activateWorldSports() {
-  state.category = 'sports'; state.language = 'all'; state.sportsCountry = 'all'; state.directoryView = false;
+  state.category = 'sports'; state.language = 'all'; state.sportsCountry = 'all';
   state.search = ''; state.aiCategory = null; els.search.value = ''; shown = 60;
-  updateGuideMode();
   filterChannels(true);
   try {
     const sports = await webCatalog.sports();
@@ -750,34 +680,6 @@ els.quick.addEventListener('click', event => {
   state.category = button.dataset.category;
   shown = 60; filterChannels(true);
 });
-function updateGuideMode() {
-  if (!WEB_MODE) return;
-  document.querySelector('#watch-mode').textContent = state.sportsWorldwide ? 'World sports' : 'Watch';
-  document.querySelector('#directory-mode').firstChild.textContent = state.sportsWorldwide ? `${countryName(state.country)} guide ` : 'All channels ';
-  for (const [id, selected] of [['watch-mode', !state.directoryView], ['directory-mode', state.directoryView]]) {
-    const button = document.querySelector(`#${id}`);
-    button.classList.toggle('selected', selected);
-    button.setAttribute('aria-pressed', String(selected));
-  }
-  document.querySelector('#directory-total').textContent = state.sportsWorldwide ? '' : webCatalogIndex?.countries.find(country => country.code === state.country)?.directory_count?.toLocaleString() || '';
-}
-function setDirectoryView(on) {
-  if (!WEB_MODE || (state.directoryView === on && !state.sportsWorldwide)) return;
-  state.directoryView = on;
-  state.sportsWorldwide = false;
-  state.favoritesOnly = false;
-  state.search = '';
-  state.category = 'all';
-  state.aiCategory = null;
-  els.search.value = '';
-  els.favoritesFilter.classList.remove('active');
-  els.favoritesFilter.setAttribute('aria-pressed', 'false');
-  shown = 60;
-  updateGuideMode();
-  filterChannels(true);
-}
-document.querySelector('#watch-mode').addEventListener('click', () => setDirectoryView(false));
-document.querySelector('#directory-mode').addEventListener('click', () => setDirectoryView(true));
 function setFiltersOpen(open) {
   els.advanced.hidden = !open;
   els.filterToggle.setAttribute('aria-expanded', String(open));
@@ -801,10 +703,9 @@ function setPickerBackgroundInert(inert) {
   }
 }
 function pickerOptions() {
-  if (activePicker === 'country') return [...(state.sportsWorldwide || !WEB_MODE ? [{ value: 'all', label: state.sportsWorldwide ? 'Worldwide sports' : 'Everywhere' }] : []), ...state.countries.map(c => ({ value: c.code, label: WEB_MODE && !state.sportsWorldwide ? `${c.name} · ${c.count ? `${c.count.toLocaleString()} stream links` : `${c.directory_count.toLocaleString()} in directory`}` : c.name }))];
+  if (activePicker === 'country') return [...(state.sportsWorldwide || !WEB_MODE ? [{ value: 'all', label: state.sportsWorldwide ? 'Worldwide sports' : 'Everywhere' }] : []), ...state.countries.map(c => ({ value: c.code, label: WEB_MODE && !state.sportsWorldwide ? `${c.name} · ${c.count.toLocaleString()} stream links` : c.name }))];
   if (activePicker === 'language') return [{ value: 'all', label: 'Any language' }, ...(state.sportsWorldwide ? webCatalogIndex.languages : state.languages).map(l => ({ value: l.code, label: l.name }))];
-  const categoryPool = WEB_MODE && state.directoryView ? [...state.channels, ...state.directory] : state.channels;
-  return (WEB_MODE ? categories.filter(c => c === 'all' || categoryPool.some(ch => ch.categories.includes(c))) : categories).map(c => ({ value: c, label: c === 'all' ? 'All categories' : titleCase(c) }));
+  return (WEB_MODE ? categories.filter(c => c === 'all' || state.channels.some(ch => ch.categories.includes(c))) : categories).map(c => ({ value: c, label: c === 'all' ? 'All categories' : titleCase(c) }));
 }
 function renderPickerOptions() {
   const query = els.pickerSearch.value.trim().toLowerCase();
@@ -931,7 +832,7 @@ document.querySelector('#search-form').addEventListener('submit', async event =>
 els.favoritesFilter.addEventListener('click', () => {
   if (state.privateOnly) setPrivateView(false);
   state.favoritesOnly = !state.favoritesOnly;
-  if (WEB_MODE && state.favoritesOnly) { state.search = ''; els.search.value = ''; state.category = 'all'; state.directoryView = false; state.sportsWorldwide = false; updateGuideMode(); }
+  if (WEB_MODE && state.favoritesOnly) { state.search = ''; els.search.value = ''; state.category = 'all'; state.sportsWorldwide = false; }
   els.favoritesFilter.classList.toggle('active', state.favoritesOnly);
   els.favoritesFilter.setAttribute('aria-pressed', String(state.favoritesOnly));
   setNavActive(state.favoritesOnly ? 'nav-favorites' : 'nav-guide');
@@ -943,7 +844,14 @@ async function loadFavoriteChannels() {
   const codes = [...new Set(ids.map(id => state.favoriteCountries[id] || (id.startsWith('in-') ? 'IN' : state.country)))]
     .filter(code => webCatalogIndex?.countries.some(country => country.code === code));
   const results = await Promise.allSettled(codes.map(code => webCatalog.country(code)));
-  const channels = results.flatMap(result => result.status === 'fulfilled' ? [...result.value.channels, ...result.value.directory] : []);
+  const channels = results.flatMap(result => result.status === 'fulfilled' ? result.value.channels.filter(channel => webStreamURLs(channel).length) : []);
+  const directIds = new Set(channels.map(channel => channel.id));
+  const directoryIds = results.flatMap(result => result.status === 'fulfilled' ? result.value.directory.map(channel => channel.id) : []);
+  for (const id of directoryIds) {
+    if (!directIds.has(id)) { state.favorites.delete(id); delete state.favoriteCountries[id]; }
+  }
+  localStorage.setItem('openwave-favorites', JSON.stringify([...state.favorites]));
+  localStorage.setItem('openwave-favorite-countries', JSON.stringify(state.favoriteCountries));
   state.favoriteChannels = channels.filter(channel => state.favorites.has(channel.id));
   if (state.favoritesOnly) filterChannels(true);
   renderRail();
@@ -1023,7 +931,6 @@ async function activateWebCountry(code, { loading = true } = {}) {
     const catalog = await webCatalog.country(code);
     if (ticket !== webCountryLoad) return;
     state.channels = catalog.channels.filter(channel => webStreamURLs(channel).length);
-    state.directory = catalog.directory;
     state.country = code;
     const countryLanguages = new Set(country.languages || []);
     state.languages = (webCatalogIndex.languages || []).filter(language => countryLanguages.has(language.code));
@@ -1036,13 +943,13 @@ async function activateWebCountry(code, { loading = true } = {}) {
     els.favoritesFilter.classList.remove('active');
     els.favoritesFilter.setAttribute('aria-pressed', 'false');
     shown = 60;
-    document.querySelector('.cover-content p').textContent = `${country.name} channels are indexed here. Pick one to try its direct stream.`;
+    document.querySelector('.cover-content p').textContent = `${country.name} streams are indexed here. Pick one to tune in.`;
     if (state.preferences?.completed && state.preferences.country !== code) {
       state.preferences = { ...state.preferences, country: code, language: state.language };
       localStorage.setItem('openwave-preferences', JSON.stringify(state.preferences));
       radioMode.applyPreferences(state.preferences);
     }
-    updateGuideMode(); renderRail(); filterChannels(true);
+    renderRail(); filterChannels(true);
   } catch {
     if (ticket !== webCountryLoad) return;
     els.result.textContent = `${country.name} guide could not load`;
@@ -1054,11 +961,12 @@ async function loadGuide() {
   try {
     if (WEB_MODE) {
       webCatalogIndex = await webCatalog.index();
-      state.countries = webCatalogIndex.countries;
+      state.countries = webCatalogIndex.countries.filter(country => country.count > 0);
       state.preferences = readStore('openwave-preferences', null);
       const wanted = state.preferences?.completed && state.countries.some(country => country.code === state.preferences.country) ? state.preferences.country : 'IN';
       state.language = state.preferences?.completed ? state.preferences.language || 'all' : 'all';
       await activateWebCountry(wanted, { loading: false });
+      if (state.favorites.size) void loadFavoriteChannels();
       if (state.preferences?.completed) radioMode.applyPreferences(state.preferences);
       if (!state.preferences?.completed) onboarding.show(state.countries, state.languages, null, onboardingOptions());
       return;
@@ -1067,11 +975,12 @@ async function loadGuide() {
     if (!response.ok) throw new Error(await response.text());
     const data = await response.json();
     state.channels = data.channels;
-    try {
-      const india = await webCatalog.country('IN');
-      const directIds = new Set(state.channels.map(channel => channel.id));
-      state.directory = india.directory.filter(channel => !directIds.has(channel.id)).map(channel => ({ ...channel, directoryOnly: true }));
-    } catch { state.directory = []; }
+    const availableIds = new Set(state.channels.map(channel => channel.id));
+    for (const id of state.favorites) {
+      if (!availableIds.has(id)) { state.favorites.delete(id); delete state.favoriteCountries[id]; }
+    }
+    localStorage.setItem('openwave-favorites', JSON.stringify([...state.favorites]));
+    localStorage.setItem('openwave-favorite-countries', JSON.stringify(state.favoriteCountries));
     state.countries = data.countries.sort((a, b) => a.name.localeCompare(b.name));
     state.languages = data.languages || [];
     state.preferences = readStore('openwave-preferences', null);
